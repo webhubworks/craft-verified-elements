@@ -3,21 +3,11 @@
 namespace webhubworks\verifiedentries\elements;
 
 use Craft;
-use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\elements\conditions\ElementConditionInterface;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\UrlHelper;
-use craft\web\CpScreenResponseBehavior;
-use webhubworks\verifiedentries\behaviors\EntryQueryBehavior;
-use webhubworks\verifiedentries\elements\conditions\VerifiedEntryCondition;
-use webhubworks\verifiedentries\elements\db\VerifiedEntryQuery;
-use webhubworks\verifiedentries\services\Verification;
 use webhubworks\verifiedentries\VerifiedEntries;
-use yii\web\Response;
 
 /**
  * Verified Entry element type
@@ -27,6 +17,11 @@ class VerifiedEntry extends Entry
     public static function refHandle(): ?string
     {
         return 'verifiedEntry';
+    }
+
+    public static function find(): EntryQuery
+    {
+        return new EntryQuery(Entry::class);
     }
 
     protected static function defineDefaultTableAttributes(string $source): array
