@@ -5,13 +5,13 @@
         {% if isVerified %}
             <span data-icon="circle-check" class="cp-icon puny"></span>
         {% endif %}
-        <span>Verification</span>
+        <span>{{ 'Verification'|t('verified-entries') }}</span>
     </legend>
 
     <div class="meta">
         {{ forms.selectizeField({
             label:
-                (not isVerified ? '<span data-icon="alert"></span>') ~ 'Verified until',
+                (not isVerified ? '<span data-icon="alert"></span>') ~ 'Verified until'|t('verified-entries'),
             id: 'verifiedUntilDate',
             name: 'verifiedUntilDate',
             options: options,
@@ -21,12 +21,12 @@
             },
             includeEnvVars: false,
             value: verifiedUntilDate ? verifiedUntilDate|date('Y-m-d') : false,
-            addOptionLabel: 'Specific Date',
+            addOptionLabel: 'Specific Date'|t('verified-entries'),
             addOptionFn: addOptionFn,
         }) }}
 
         {{ forms.elementSelectField({
-            label: 'Reviewer',
+            label: 'Reviewer'|t('verified-entries'),
             id: 'reviewerId',
             name: 'reviewerId',
             elementType: 'craft\\elements\\User',
