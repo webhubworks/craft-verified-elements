@@ -1,6 +1,19 @@
-# Verified Entries
+# Verified Entries for Craft CMS (beta)
 
-Verified Entries is a Craft CMS plugin that enables editors to take ownership of entries, verify them periodically, and set an expiration date for validity. It helps maintain content freshness by sending reminders to review and update entries before they become outdated.
+Keep your content fresh and accurate with streamlined review workflows built directly into your CMS. Verified Entries eliminates the need for external spreadsheets or manual tracking by bringing the entire content audit process where it belongs—right alongside your content in Craft CMS.
+
+**Why manage content reviews outside your CMS when you can handle everything in one place?**
+
+## Key Features
+
+- **Fine-grained section control** - Configure reviewable sections with default review periods and assigned reviewers
+- **Flexible verification options** - Verify entries individually or process multiple entries at once with batch operations
+- **Dashboard widget** - Get an at-a-glance view of overall verification statistics directly on your Craft dashboard
+- **Comprehensive plugin dashboard** - Search and filter entries by verification status, reviewer, or other criteria to manage your review workflow
+- **Automatic reviewer notifications** - Alert reviewers when content verification periods expire and action is needed
+- **Integration with Craft's native user system** and permissions
+
+Perfect for marketing teams, content editors, and organizations that need to maintain compliance, accuracy, and freshness across their digital content without leaving their familiar CMS environment.
 
 ## Requirements
 
