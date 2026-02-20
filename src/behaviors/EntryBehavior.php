@@ -123,6 +123,10 @@ class EntryBehavior extends Behavior
     {
         $sectionId = $this->owner->sectionId;
 
+        if ($sectionId === null) {
+            return false; // An entry must not have a section.
+        }
+        
         return VerifiedEntries::getInstance()
             ->sectionSettings
             ->getIsEnabledForSection($sectionId);
