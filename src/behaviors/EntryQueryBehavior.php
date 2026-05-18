@@ -83,11 +83,15 @@ class EntryQueryBehavior extends Behavior
         $query = $this->owner;
 
         if ($value) {
-            $query->andWhere('veea.verifiedUntilDate IS null')
-                ->orWhere('veea.verifiedUntilDate >= NOW()');
+            $query->andWhere(['or',
+                'veea.verifiedUntilDate IS NULL',
+                'veea.verifiedUntilDate >= NOW()',
+            ]);
         } else {
-            $query->andWhere('veea.verifiedUntilDate IS NOT null')
-                ->andWhere('veea.verifiedUntilDate < NOW()');
+            $query->andWhere(['and',
+                'veea.verifiedUntilDate IS NOT NULL',
+                'veea.verifiedUntilDate < NOW()',
+            ]);
         }
 
         return $query;
