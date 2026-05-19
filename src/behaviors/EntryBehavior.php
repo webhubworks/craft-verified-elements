@@ -8,6 +8,7 @@ use craft\elements\User;
 use craft\events\ModelEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use DateTime;
 use webhubworks\verifiedentries\migrations\Install;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -48,6 +49,10 @@ class EntryBehavior extends Behavior
     {
         /** @var Entry $entry */
         $entry = $event->sender;
+
+        if (ElementHelper::isDraftOrRevision($entry)) {
+            return;
+        }
 
         Db::upsert(Install::ENTRYATTRIBUTES_TABLE, [
             'entryId' => $entry->id,
