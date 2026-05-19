@@ -2,6 +2,7 @@
 
 namespace webhubworks\verifiedentries\behaviors;
 
+use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -10,7 +11,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use DateTime;
-use webhubworks\verifiedentries\migrations\Install;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Behavior;
 use yii\db\Exception;
@@ -43,7 +43,6 @@ class EntryBehavior extends Behavior
      * {@see Db::upsert()} is used to simplify the process of inserting *or* updating a record. Also notice the reference to `$this->owner` when getting the ID! This refers to the Entry element the Behavior is attached to.
      *
      * @param ModelEvent $event
-     * @throws Exception
      */
     public function afterSave(ModelEvent $event): void
     {
@@ -54,14 +53,22 @@ class EntryBehavior extends Behavior
             return;
         }
 
-        Db::upsert(Install::ENTRYATTRIBUTES_TABLE, [
-            'entryId' => $entry->id,
-            'reviewerId' => $this->_reviewerId,
-            'verifiedUntilDate' => Db::prepareDateForDb($this->_verifiedUntilDate),
-        ], [
-            'reviewerId' => $this->_reviewerId,
-            'verifiedUntilDate' => Db::prepareDateForDb($this->_verifiedUntilDate),
-        ]);
+        try {
+            VerifiedEntries::getInstance()->getVerification()->upsertEntryDetails(
+                $entry->getCanonicalId(),
+                $entry->siteId,
+                $this->getReviewerId(),
+                $this->getVerifiedUntilDate()
+            );
+        } catch (Exception $exception) {
+            Craft::error(sprintf(
+                'Error updating "Verified Entries" details for entry %s "%s" on site %s: %s',
+                $entry->getCanonicalId(),
+                $entry->title,
+                $entry->siteId,
+                $exception->getMessage()
+            ), __METHOD__);
+        }
     }
 
     /**
@@ -107,7 +114,7 @@ class EntryBehavior extends Behavior
             return null;
         }
 
-        return \Craft::$app->users->getUserById($this->_reviewerId);
+        return Craft::$app->users->getUserById($this->_reviewerId);
     }
 
     public function getHasVerifiedUntilDate(): bool

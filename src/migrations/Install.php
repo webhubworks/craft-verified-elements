@@ -23,12 +23,16 @@ class Install extends Migration
     {
         $this->createTable(self::ENTRYATTRIBUTES_TABLE, [
             'id' => $this->primaryKey(),
-            'entryId' => $this->integer()->notNull()->unique(),
+            'entryId' => $this->integer()->notNull(),
+            'siteId' => $this->integer()->notNull(),
             'reviewerId' => $this->integer()->null(),
             'verifiedUntilDate' => $this->dateTime()->null(),
         ]);
 
+        $this->createIndex(null, self::ENTRYATTRIBUTES_TABLE, ['entryId', 'siteId'], true);
+
         $this->addForeignKey(null, self::ENTRYATTRIBUTES_TABLE, ['entryId'], Table::ENTRIES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, self::ENTRYATTRIBUTES_TABLE, ['siteId'], Table::SITES, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, self::ENTRYATTRIBUTES_TABLE, ['reviewerId'], Table::USERS, ['id'], 'SET NULL');
 
         $this->createTable(self::ENTRYATTRIBUTES_SECTIONS, [
