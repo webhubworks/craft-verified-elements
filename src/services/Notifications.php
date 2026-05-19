@@ -43,7 +43,7 @@ class Notifications extends Component
             ) . "\n\n";
 
         $link = UrlHelper::cpUrl('entries', [
-            'site' => Craft::$app->sites->getPrimarySite()->handle,
+            // 'site' will automatically be set by Craft to $reviewer's preferred site.
             'source' => '*',
             'filters' => Verification::getFilterParams($reviewer->id),
         ]);
@@ -51,7 +51,10 @@ class Notifications extends Component
         $body .= "[" . Craft::t('verified-entries', 'View all', null, $language) . "]($link)\n\n";
 
         foreach ($entries as $entry) {
-            $cpEditUrl = UrlHelper::cpUrl("entries/{$entry['sectionHandle']}/{$entry['entryId']}");
+            // TODO add 'site' once siteId is selected in checkExpiredVerifications (pending schema migration)
+            $cpEditUrl = UrlHelper::cpUrl(
+                "entries/{$entry['sectionHandle']}/{$entry['entryId']}"
+            );
             $body .= "- **{$entry['title']}** "
                 . "(" . Craft::t('verified-entries', 'Verified until', null, $language) . " " . $formatter->asDate($entry['verifiedUntilDate'], Locale::LENGTH_MEDIUM) . ")"
                 . " [" . Craft::t('app', 'Edit', null, $language) . "]($cpEditUrl)\n";
@@ -93,7 +96,10 @@ class Notifications extends Component
         $body .= "**{$entry->title}**<br>";
         $body .= Craft::t('verified-entries', 'Verified until', null, $language) . " " . $formatter->asDate($entry->verifiedUntilDate, Locale::LENGTH_MEDIUM) . "\n\n";
 
-        $cpEditUrl = UrlHelper::cpUrl("entries/{$entry->section->handle}/{$entry->id}");
+        $cpEditUrl = UrlHelper::cpUrl(
+            "entries/{$entry->section->handle}/{$entry->id}",
+            ['site' => $entry->getSite()->handle]
+        );
         $body .= "[" . Craft::t('app', 'Show', null, $language) . "]($cpEditUrl)";
 
         $html = Markdown::process($body);
