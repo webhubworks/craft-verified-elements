@@ -60,10 +60,12 @@ use webhubworks\verifiedentries\widgets\VerificationHealth;
  * @author webhubworks <support@webhub.de>
  * @copyright webhubworks
  * @license https://craftcms.github.io/license/ Craft License
- * @property-read SectionSettingsService $sectionSettings
- * @property-read VerifiedEntriesUsersService $users
- * @property-read VerificationService $verification
  * @property-read NotificationsService $notifications
+ * @property-read SectionSettingsService $sectionSettings
+ * @property-read VerificationService $verification
+ * @property-read VerifiedEntriesUsersService $users
+ * @property-read null $settingsResponse
+ * @property-read null|array $cpNavItem
  */
 class VerifiedEntries extends Plugin
 {
@@ -116,6 +118,26 @@ class VerifiedEntries extends Plugin
         Craft::$app->onInit(function () {
             $this->attachEventHandlers();
         });
+    }
+
+    public function getNotifications(): NotificationsService
+    {
+        return $this->get('notifications', new NotificationsService());
+    }
+
+    public function getSectionSettings(): SectionSettingsService
+    {
+        return $this->get('sectionSettings', new SectionSettingsService());
+    }
+
+    public function getUsers(): VerifiedEntriesUsersService
+    {
+        return $this->get('users', new VerifiedEntriesUsersService());
+    }
+
+    public function getVerification(): VerificationService
+    {
+        return $this->get('verification', new VerificationService());
     }
 
     private function attachEventHandlers(): void
