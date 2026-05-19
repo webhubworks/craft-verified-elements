@@ -12,10 +12,13 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
+use DateTime;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
+use webhubworks\verifiedentries\migrations\Install;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
+use yii\db\Exception;
 
 class Verification extends Component
 {
@@ -30,7 +33,30 @@ class Verification extends Component
 
     public const INDEFINITELY = 'indefinitely';
 
-    public static function getOptions(?\DateTime $currentValue = null, ?int $sectionId = null): array
+    /**
+     * Adds or updates an entry's verification details ("Verified until" date and "Reviewer" user)
+     * in the database.
+     *
+     * @param int $entryId
+     * @param int $siteId
+     * @param int|null $reviewerId A Craft User ID
+     * @param DateTime|null $verifiedUntilDate
+     * @throws Exception
+     */
+    public function upsertEntryDetails(int $entryId, int $siteId, ?int $reviewerId, ?DateTime $verifiedUntilDate): void
+    {
+        Db::upsert(Install::ENTRYATTRIBUTES_TABLE, [
+            'entryId' => $entryId,
+            'siteId' => $siteId,
+            'reviewerId' => $reviewerId,
+            'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
+        ], [
+            'reviewerId' => $reviewerId,
+            'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
+        ]);
+    }
+
+    public static function getOptions(?DateTime $currentValue = null, ?int $sectionId = null): array
     {
         $formatter = new Formatter();
 
@@ -170,7 +196,7 @@ class Verification extends Component
             )
             ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
             ->innerJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
-            ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(new \DateTime())])
+            ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(new DateTime())])
             ->andWhere('elements.canonicalId IS null')
             ->andWhere(['entries.sectionId' => $enabledSections->pluck('sectionId')])
             ->all();
