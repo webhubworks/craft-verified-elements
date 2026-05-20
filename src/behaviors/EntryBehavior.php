@@ -93,6 +93,35 @@ class EntryBehavior extends Behavior
                 $exception->getMessage()
             ), __METHOD__);
         }
+
+        // Seed rows for any other supported sites that don't have a row yet.
+        // This handles initial entry creation before propagation fires.
+        foreach ($entry->getSupportedSites() as $siteInfo) {
+            $siteId = is_array($siteInfo) ? ($siteInfo['siteId'] ?? null) : (int)$siteInfo;
+
+            if (!$siteId || $siteId === $entry->siteId) {
+                continue;
+            }
+
+            if (!$verification->hasVerificationRow($entryId, $siteId)) {
+                try {
+                    $verification->upsertEntryDetails(
+                        $entryId,
+                        $siteId,
+                        $this->getReviewerId(),
+                        $this->getVerifiedUntilDate()
+                    );
+                } catch (Exception $exception) {
+                    Craft::error(sprintf(
+                        'Error seeding verification row for entry %s "%s" on site %s: %s',
+                        $entryId,
+                        $entry->title,
+                        $siteId,
+                        $exception->getMessage()
+                    ), __METHOD__);
+                }
+            }
+        }
     }
 
     /**
