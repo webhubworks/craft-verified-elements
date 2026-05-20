@@ -63,8 +63,8 @@ class EntriesController extends Controller
         $page = (int)$this->request->getParam('page', 1);
         $limit = (int)$this->request->getParam('per_page', 100);
         $orderBy = match ($this->request->getParam('sort.0.field')) {
-            '__slot:handle' => 'handle',
-            default => 'name',
+            '__slot:handle' => 'sectionHandle',
+            default => 'sectionName',
         };
 
         $sortDir = match ($this->request->getParam('sort.0.direction')) {

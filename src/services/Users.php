@@ -90,14 +90,11 @@ class Users extends Component
             $userId = Craft::$app->getUser()->getIdentity()->id;
         }
 
-        if ($siteId == null) {
-            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-        }
-
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'veea.id',
                 'veea.entryId',
+                'veea.siteId',
                 'veea.reviewerId',
                 'veea.verifiedUntilDate',
                 'entries.sectionId',
@@ -106,18 +103,25 @@ class Users extends Component
                 'es.dateUpdated',
                 'sections.name AS sectionName',
                 'sections.handle AS sectionHandle',
+                'sites.handle AS siteHandle',
             ])
             ->from(['veea' => '{{%verifiedentries_entryattributes}}'])
             ->rightJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
             ->leftJoin(
                 '{{%elements_sites}} es',
-                '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = :siteId',
-                ['siteId' => $siteId]
+                '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = [[veea.siteId]]'
             )
             ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
             ->leftJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
+            ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
             ->where(['veea.reviewerId' => $userId])
             ->andWhere('elements.canonicalId IS null');
+
+        if ($siteId !== null) {
+            $query->andWhere(['veea.siteId' => $siteId]);
+        }
+
+        return $query;
     }
 
     private function transformEntries(array $entries): array
@@ -129,12 +133,19 @@ class Users extends Component
 
             $isVerified = $verifiedUntilDate && $verifiedUntilDate > new \DateTime();
 
+            $uri = sprintf("%s/%s/%s-%s",
+                'entries',
+                $entry['sectionHandle'],
+                $entry['entryId'],
+                $entry['slug']
+            );
+
             return [
                 ...$entry,
                 'isVerified' => $isVerified ? 'Verified' : 'Expired',
                 'verifiedUntilDate' => $verifiedUntilDate ? $formatter->asDate($verifiedUntilDate) : 'Indefinitely',
                 'dateUpdated' => $formatter->asDate(DateTimeHelper::toDateTime($entry['dateUpdated'])),
-                'url' => UrlHelper::cpUrl('entries/' . $entry['sectionHandle'] . '/' . $entry['entryId'] . '-' . $entry['slug']),
+                'url' => UrlHelper::cpUrl($uri, ['site' => $entry['siteHandle']]),
             ];
         }, $entries);
     }
