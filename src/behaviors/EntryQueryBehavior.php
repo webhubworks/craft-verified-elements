@@ -3,10 +3,14 @@
 namespace webhubworks\verifiedentries\behaviors;
 
 use craft\db\Query;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\EntryQuery;
 use craft\helpers\Db;
 use yii\base\Behavior;
 
+/**
+ * @property EntryQuery $owner
+ */
 class EntryQueryBehavior extends Behavior
 {
     public ?bool $isVerified = null;
@@ -19,7 +23,7 @@ class EntryQueryBehavior extends Behavior
     public function events(): array
     {
         return [
-            EntryQuery::EVENT_BEFORE_PREPARE => 'beforePrepare',
+            ElementQuery::EVENT_BEFORE_PREPARE => 'beforePrepare',
         ];
     }
 
@@ -60,8 +64,9 @@ class EntryQueryBehavior extends Behavior
 
     private function hasJoin(Query $query, string $alias): bool
     {
-        if (!$query->join)
+        if (!$query->join) {
             return false;
+        }
 
         foreach ($query->join as $join) {
             if (is_array($join[1])) {
