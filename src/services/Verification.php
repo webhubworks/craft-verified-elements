@@ -56,6 +56,55 @@ class Verification extends Component
         ]);
     }
 
+    /**
+     * Returns true if a verification row already exists for the given entry and site.
+     *
+     * @param int $entryId
+     * @param int $siteId
+     * @return bool
+     */
+    public function hasVerificationRow(int $entryId, int $siteId): bool
+    {
+        return (new Query())
+            ->from(Install::ENTRYATTRIBUTES_TABLE)
+            ->where(['entryId' => $entryId, 'siteId' => $siteId])
+            ->exists();
+    }
+
+    /**
+     * Seeds a verification row for a propagated site by copying values from an
+     * existing row for the same entry. Does nothing if no source row can be found.
+     *
+     * @param int $entryId
+     * @param int $siteId
+     * @return void
+     * @throws Exception
+     */
+    public function seedVerificationRow(int $entryId, int $siteId): void
+    {
+        $sourceRow = (new Query())
+            ->select(['reviewerId', 'verifiedUntilDate'])
+            ->from(Install::ENTRYATTRIBUTES_TABLE)
+            ->where(['entryId' => $entryId])
+            ->one();
+
+        if (!$sourceRow) {
+            return;
+        }
+
+        $verifiedUntilDate = null;
+        if (isset($sourceRow['verifiedUntilDate'])) {
+            $verifiedUntilDate = DateTimeHelper::toDateTime($sourceRow['verifiedUntilDate']);
+        }
+
+        $this->upsertEntryDetails(
+            $entryId,
+            $siteId,
+            $sourceRow['reviewerId'],
+            $verifiedUntilDate
+        );
+    }
+
     public static function getOptions(?DateTime $currentValue = null, ?int $sectionId = null): array
     {
         $formatter = new Formatter();

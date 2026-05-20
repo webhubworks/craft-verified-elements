@@ -54,25 +54,40 @@ class EntryBehavior extends Behavior
         }
 
         $verification = VerifiedEntries::getInstance()->getVerification();
+        $entryId = $entry->getCanonicalId();
 
         // On propagation, only seed the row if one doesn't exist yet.
         // This prevents a save on one site from overwriting verification
         // settings that were independently set on another site.
-        if ($entry->propagating && $verification->hasVerificationRow($entry->getCanonicalId(), $entry->siteId)) {
+        if ($entry->propagating) {
+            if (!$verification->hasVerificationRow($entryId, $entry->siteId)) {
+                try {
+                    $verification->seedVerificationRow($entryId, $entry->siteId);
+                } catch (Exception $exception) {
+                    Craft::error(sprintf(
+                        'Error seeding verification row for entry %s "%s" on site %s: %s',
+                        $entryId,
+                        $entry->title,
+                        $entry->siteId,
+                        $exception->getMessage()
+                    ), __METHOD__);
+                }
+            }
+
             return;
         }
 
         try {
             $verification->upsertEntryDetails(
-                $entry->getCanonicalId(),
+                $entryId,
                 $entry->siteId,
                 $this->getReviewerId(),
                 $this->getVerifiedUntilDate()
             );
         } catch (Exception $exception) {
             Craft::error(sprintf(
-                'Error updating "Verified Entries" details for entry %s "%s" on site %s: %s',
-                $entry->getCanonicalId(),
+                'Error upserting "Verified Entries" details for entry %s "%s" on site %s: %s',
+                $entryId,
                 $entry->title,
                 $entry->siteId,
                 $exception->getMessage()
