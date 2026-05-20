@@ -51,9 +51,9 @@ class Notifications extends Component
         $body .= "[" . Craft::t('verified-entries', 'View all', null, $language) . "]($link)\n\n";
 
         foreach ($entries as $entry) {
-            // TODO add 'site' once siteId is selected in checkExpiredVerifications (pending schema migration)
             $cpEditUrl = UrlHelper::cpUrl(
-                "entries/{$entry['sectionHandle']}/{$entry['entryId']}"
+                "entries/{$entry['sectionHandle']}/{$entry['entryId']}",
+                ['site' => $entry['siteHandle']]
             );
             $body .= "- **{$entry['title']}** "
                 . "(" . Craft::t('verified-entries', 'Verified until', null, $language) . " " . $formatter->asDate($entry['verifiedUntilDate'], Locale::LENGTH_MEDIUM) . ")"
