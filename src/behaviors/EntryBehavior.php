@@ -53,8 +53,17 @@ class EntryBehavior extends Behavior
             return;
         }
 
+        $verification = VerifiedEntries::getInstance()->getVerification();
+
+        // On propagation, only seed the row if one doesn't exist yet.
+        // This prevents a save on one site from overwriting verification
+        // settings that were independently set on another site.
+        if ($entry->propagating && $verification->hasVerificationRow($entry->getCanonicalId(), $entry->siteId)) {
+            return;
+        }
+
         try {
-            VerifiedEntries::getInstance()->getVerification()->upsertEntryDetails(
+            $verification->upsertEntryDetails(
                 $entry->getCanonicalId(),
                 $entry->siteId,
                 $this->getReviewerId(),
@@ -102,7 +111,7 @@ class EntryBehavior extends Behavior
         if (!$value) {
             $this->_reviewerId = null;
         } elseif (is_string($value)) {
-            $this->_reviewerId = (int) $value;
+            $this->_reviewerId = (int)$value;
         } elseif (is_int($value)) {
             $this->_reviewerId = $value;
         }
@@ -138,7 +147,7 @@ class EntryBehavior extends Behavior
         if ($sectionId === null) {
             return false; // An entry must not have a section.
         }
-        
+
         return VerifiedEntries::getInstance()
             ->sectionSettings
             ->getIsEnabledForSection($sectionId);
