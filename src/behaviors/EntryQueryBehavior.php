@@ -24,26 +24,28 @@ class EntryQueryBehavior extends Behavior
     {
         return [
             ElementQuery::EVENT_BEFORE_PREPARE => 'beforePrepare',
+            ElementQuery::EVENT_AFTER_PREPARE => 'afterPrepare',
         ];
     }
 
+    /**
+     * Joins the verification table to the outer query and applies any filter criteria set on the query.
+     */
     public function beforePrepare(): void
     {
         /** @var Query $query */
         $query = $this->owner->query;
-        /** @var Query $subQuery */
-        $subQuery = $this->owner->subQuery;
 
-        // Join our `users` table:
+        // Join our `verifiedentries_entryattributes` table
         if (!$this->hasJoin($query, 'veea')) {
-            $query->leftJoin(['veea' => '{{%verifiedentries_entryattributes}}'], '[[veea.entryId]] = [[elements.id]]');
+            $query->leftJoin(
+                ['veea' => '{{%verifiedentries_entryattributes}}'],
+                '[[veea.entryId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
+            );
         }
 
-        if (!$this->hasJoin($subQuery, 'veea')) {
-            $subQuery->leftJoin(['veea' => '{{%verifiedentries_entryattributes}}'], '[[veea.entryId]] = [[elements.id]]');
-        }
-
-        // Select custom columns—Craft will attempt to assign anything defined here to the User element when populating it! Fortunately, your Behavior can also supply properties.
+        // Select custom columns. Craft will attempt to assign anything defined here to the Entry element when
+        // populating it! Fortunately, your Behavior can also supply properties.
         $query->addSelect([
             'veea.verifiedUntilDate',
             'veea.reviewerId',
@@ -59,6 +61,24 @@ class EntryQueryBehavior extends Behavior
 
         if ($this->verifiedUntil !== null) {
             $this->verifiedUntilDate($this->verifiedUntil);
+        }
+    }
+
+    /**
+     * Joins the verification table to the subQuery; must run after beforePrepare() because
+     * elements_sites isn't added to the subQuery until after that event fires.
+     */
+    public function afterPrepare(): void
+    {
+        /** @var Query $subQuery */
+        $subQuery = $this->owner->subQuery;
+
+        // Join our `verifiedentries_entryattributes` table
+        if (!$this->hasJoin($subQuery, 'veea')) {
+            $subQuery->leftJoin(
+                ['veea' => '{{%verifiedentries_entryattributes}}'],
+                '[[veea.entryId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
+            );
         }
     }
 
