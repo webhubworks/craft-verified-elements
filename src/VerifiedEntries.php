@@ -214,9 +214,8 @@ class VerifiedEntries extends Plugin
                 }
 
                 if (!$entry->isVerified) {
-                    $event->html .= Html::beginTag('div', [
-                            'class' => ['meta', 'warning'],
-                        ]) .
+                    $event->html .=
+                        Html::beginTag('div', ['class' => ['meta', 'warning']]) .
                         Html::tag('p', Craft::t('verified-entries', 'Entry has expired and is due to be verified.')) .
                         Html::endTag('div');
                 }

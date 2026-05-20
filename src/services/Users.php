@@ -62,13 +62,14 @@ class Users extends Component
     }
 
     public function getPaginatedEntries(
-        int $page,
-        int $limit,
-        int $sortDir = SORT_ASC,
+        int    $page,
+        int    $limit,
+        int    $sortDir = SORT_ASC,
         string $orderBy = 'verifiedUntilDate',
-        ?int $userId = null,
-        ?int $siteId = null,
-    ): array {
+        ?int   $userId = null,
+        ?int   $siteId = null,
+    ): array
+    {
         $offset = ($page - 1) * $limit;
 
         $query = $this->_createEntryQuery($userId, $siteId)
