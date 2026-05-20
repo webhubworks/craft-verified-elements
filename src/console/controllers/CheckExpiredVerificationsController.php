@@ -41,7 +41,7 @@ class CheckExpiredVerificationsController extends Controller
             $this->stdout('No expired entries.');
         } else {
             foreach ($expiredEntries as $entry) {
-                $this->stdout("Entry [{$entry['entryId']}] expired on {$entry['verifiedUntilDate']}. ");
+                $this->stdout("Entry [{$entry['entryId']}] (site: {$entry['siteHandle']}) expired on {$entry['verifiedUntilDate']}. ");
 
                 if ($entry['reviewerId']) {
                     $this->stdout("Sending a notification to User [{$entry['reviewerId']}].");

@@ -7,7 +7,6 @@ use craft\db\Query;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\errors\SiteNotFoundException;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
@@ -212,10 +211,7 @@ class Verification extends Component
             }
         JS;
     }
-
-    /**
-     * @throws SiteNotFoundException
-     */
+    
     public static function checkExpiredVerifications(): array
     {
         $enabledSections = (new Query())
@@ -224,25 +220,25 @@ class Verification extends Component
             ->where(['=', 'enabled', true])
             ->collect();
 
-        $primarySite = Craft::$app->sites->getPrimarySite();
-
         // Find entries where verification date is in the past
         $expiredEntries = (new Query())
             ->select([
                 'veea.entryId',
+                'veea.siteId',
                 'veea.reviewerId',
                 'veea.verifiedUntilDate',
                 'entries.sectionId',
                 'es.title',
                 'sections.handle AS sectionHandle',
+                'sites.handle AS siteHandle',
             ])
             ->from(['veea' => '{{%verifiedentries_entryattributes}}'])
             ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
             ->leftJoin(
                 '{{%elements_sites}} es',
-                '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = :siteId',
-                ['siteId' => $primarySite->id]
+                '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = [[veea.siteId]]'
             )
+            ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
             ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
             ->innerJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
             ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(new DateTime())])
