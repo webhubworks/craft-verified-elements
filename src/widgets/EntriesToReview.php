@@ -72,10 +72,10 @@ class EntriesToReview extends Widget
 
         $entries = Entry::find()
             ->status('live')
+            ->site('*')
             ->sectionId($enabledSections)
             ->reviewerId($userId)
             ->isVerified(false)
-            ->unique()
             ->limit($this->limit)
             ->all();
 

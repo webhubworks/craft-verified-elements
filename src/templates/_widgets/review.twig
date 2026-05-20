@@ -6,7 +6,7 @@
                     <span class="status pending"></span>
                     <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
                     <span class="light">
-                        {{ 'Expiry Date'|t('app') }}: {{ entry.verifiedUntilDate|timestamp('short') }}
+                        {{ entry.site.name }} &mdash; {{ 'Expiry Date'|t('app') }}: {{ entry.verifiedUntilDate|timestamp('short') }}
                     </span>
                 </li>
             {% endfor %}
