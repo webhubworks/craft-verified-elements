@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use webhubworks\verifiedentries\VerifiedEntries;
 
 class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
@@ -17,7 +18,7 @@ class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implemen
      */
     public function getLabel(): string
     {
-        return Craft::t('verified-entries', 'Verified until');
+        return Craft::t(VerifiedEntries::HANDLE, 'Verified until');
     }
 
     /**

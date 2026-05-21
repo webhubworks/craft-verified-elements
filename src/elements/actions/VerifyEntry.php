@@ -5,6 +5,7 @@ namespace webhubworks\verifiedentries\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
+use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
  * Verify Entry element action
@@ -15,7 +16,7 @@ class VerifyEntry extends ElementAction
 
     public static function displayName(): string
     {
-        return Craft::t('verified-entries', 'Verify Entry');
+        return Craft::t(VerifiedEntries::HANDLE, 'Verify Entry');
     }
 
     public function getTriggerHtml(): ?string
@@ -73,11 +74,11 @@ class VerifyEntry extends ElementAction
         }));
 
         if ($successCount !== count($elements)) {
-            $this->setMessage(Craft::t('verified-entries', 'Could not verify all entries.'));
+            $this->setMessage(Craft::t(VerifiedEntries::HANDLE, 'Could not verify all entries.'));
             return false;
         }
 
-        $this->setMessage(Craft::t('verified-entries', 'Entries verified.'));
+        $this->setMessage(Craft::t(VerifiedEntries::HANDLE, 'Entries verified.'));
         return true;
     }
 }

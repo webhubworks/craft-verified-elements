@@ -9,6 +9,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use Illuminate\Support\Collection;
+use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\helpers\Markdown;
 
@@ -27,7 +28,7 @@ class Notifications extends Component
         $formatter = self::getFormatter($language);
 
         $subject = Craft::t(
-            'verified-entries',
+            VerifiedEntries::HANDLE,
             '{count, number} {count, plural, =1{entry awaits} other{entries await}} your verification',
             ['count' => count($entries)],
             $language
@@ -36,7 +37,7 @@ class Notifications extends Component
         $body = "Hey {$reviewer->friendlyName},\n\n";
 
         $body .= Craft::t(
-                'verified-entries',
+                VerifiedEntries::HANDLE,
                 'the following entries have verification dates that have expired:',
                 null,
                 $language,
@@ -48,7 +49,7 @@ class Notifications extends Component
             'filters' => Verification::getFilterParams($reviewer->id),
         ]);
 
-        $body .= "[" . Craft::t('verified-entries', 'View all', null, $language) . "]($link)\n\n";
+        $body .= "[" . Craft::t(VerifiedEntries::HANDLE, 'View all', null, $language) . "]($link)\n\n";
 
         foreach ($entries as $entry) {
             $cpEditUrl = UrlHelper::cpUrl(
@@ -56,7 +57,7 @@ class Notifications extends Component
                 ['site' => $entry['siteHandle']]
             );
             $body .= "- **{$entry['title']}** "
-                . "(" . Craft::t('verified-entries', 'Verified until', null, $language) . " " . $formatter->asDate($entry['verifiedUntilDate'], Locale::LENGTH_MEDIUM) . ")"
+                . "(" . Craft::t(VerifiedEntries::HANDLE, 'Verified until', null, $language) . " " . $formatter->asDate($entry['verifiedUntilDate'], Locale::LENGTH_MEDIUM) . ")"
                 . " [" . Craft::t('app', 'Edit', null, $language) . "]($cpEditUrl)\n";
         }
 
@@ -84,17 +85,17 @@ class Notifications extends Component
         $formatter = self::getFormatter($language);
 
         $subject = Craft::t(
-            'verified-entries',
+            VerifiedEntries::HANDLE,
             'Entry has been updated',
             null,
             $language
         );
 
         $body = "Hey {$reviewer->friendlyName}!\n\n";
-        $body .= Craft::t('verified-entries', 'An entry you\'re assigned to review has been updated. Please take a moment to review the latest changes:', null, $language) . "\n\n";
+        $body .= Craft::t(VerifiedEntries::HANDLE, 'An entry you\'re assigned to review has been updated. Please take a moment to review the latest changes:', null, $language) . "\n\n";
 
         $body .= "**{$entry->title}**<br>";
-        $body .= Craft::t('verified-entries', 'Verified until', null, $language) . " " . $formatter->asDate($entry->verifiedUntilDate, Locale::LENGTH_MEDIUM) . "\n\n";
+        $body .= Craft::t(VerifiedEntries::HANDLE, 'Verified until', null, $language) . " " . $formatter->asDate($entry->verifiedUntilDate, Locale::LENGTH_MEDIUM) . "\n\n";
 
         $cpEditUrl = UrlHelper::cpUrl(
             "entries/{$entry->section->handle}/{$entry->id}",

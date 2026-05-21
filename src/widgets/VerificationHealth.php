@@ -15,7 +15,7 @@ class VerificationHealth extends Widget
 {
     public static function displayName(): string
     {
-        return Craft::t('verified-entries', 'Verification Health');
+        return Craft::t(VerifiedEntries::HANDLE, 'Verification Health');
     }
 
     public static function isSelectable(): bool
@@ -57,7 +57,7 @@ class VerificationHealth extends Widget
             ->isVerified(false)
             ->count();
 
-        return Craft::$app->getView()->renderTemplate('verified-entries/_widgets/health.twig', [
+        return Craft::$app->getView()->renderTemplate(VerifiedEntries::HANDLE . '/_widgets/health.twig', [
             'totalCount' => $totalEntryCount,
             'verifiedCount' => $verifiedEntryCount,
             'expiredCount' => $expiredEntryCount,

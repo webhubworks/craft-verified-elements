@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use webhubworks\verifiedentries\VerifiedEntries;
 
 class VerifiedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
@@ -17,7 +18,7 @@ class VerifiedConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function getLabel(): string
     {
-        return Craft::t('verified-entries', 'Verified');
+        return Craft::t(VerifiedEntries::HANDLE, 'Verified');
     }
 
     /**

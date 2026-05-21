@@ -12,12 +12,12 @@
         <ol class="widget__list" role="list">
             <li class="widget__list-item status-label">
                 <span class="status live"></span>
-                {{ 'Verified'|t('verified-entries') }}:
+                {{ 'Verified'|t(pluginHandle) }}:
                 <span class="light">{{ verifiedCount }} {{ 'Entries'|t('app') }}</span>
             </li>
             <li class="widget__list-item status-label">
                 <span class="status pending"></span>
-                {{ 'Expired'|t('verified-entries') }}:
+                {{ 'Expired'|t(pluginHandle) }}:
                 <span class="light">{{ expiredCount }} {{ 'Entries'|t('app') }}</span>
             </li>
             <li class="widget__list-item status-label">

@@ -17,7 +17,7 @@ class SectionSettingsController extends Controller
     {
         $sections = VerifiedEntries::getInstance()->sectionSettings->getAllSectionsWithSettings();
 
-        return $this->renderTemplate('verified-entries/_settings.twig', [
+        return $this->renderTemplate(VerifiedEntries::HANDLE . '/_settings.twig', [
             'sections' => $sections,
             'defaultPeriodOptions' => Verification::getDefaultOptions(),
         ]);
@@ -39,7 +39,7 @@ class SectionSettingsController extends Controller
             $service->saveSectionSettings($sectionId, $settings);
         }
 
-        $this->setSuccessFlash(Craft::t('verified-entries', 'Verification settings saved.'));
+        $this->setSuccessFlash(Craft::t(VerifiedEntries::HANDLE, 'Verification settings saved.'));
         return $this->asSuccess();
     }
 }

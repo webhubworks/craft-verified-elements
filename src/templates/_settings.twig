@@ -4,7 +4,7 @@
 {% set fullPageForm = true %}
 {% set selectedSubnavItem = 'settings' %}
 {% set crumbs = [
-    { label: 'Verified Entries'|t('verified-entries'), url: url('verified-entries') }
+    { label: 'Verified Entries'|t(pluginHandle), url: url(pluginHandle) }
 ] %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
@@ -29,8 +29,8 @@
                 <th scope="col">{{ 'Section'|t('app') }}-{{ 'Name'|t('app') }}</th>
                 <th scope="col">{{ 'Section Type'|t('app') }}</th>
                 <th scope="col">{{ 'Enabled'|t('app') }}</th>
-                <th scope="col">{{ 'Default Reviewer'|t('verified-entries') }}</th>
-                <th scope="col">{{ 'Default Period'|t('verified-entries') }}</th>
+                <th scope="col">{{ 'Default Reviewer'|t(pluginHandle) }}</th>
+                <th scope="col">{{ 'Default Period'|t(pluginHandle) }}</th>
             </thead>
             <tbody>
                 {% for section in sections %}

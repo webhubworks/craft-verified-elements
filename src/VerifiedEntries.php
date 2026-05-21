@@ -39,7 +39,6 @@ use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use webhubworks\verifiedentries\behaviors\EntryBehavior;
 use webhubworks\verifiedentries\behaviors\EntryQueryBehavior;
-use webhubworks\verifiedentries\controllers\UsersController as VerifiedEntriesUsersController;
 use webhubworks\verifiedentries\elements\VerifiedEntry;
 use webhubworks\verifiedentries\elements\actions\AssignReviewer;
 use webhubworks\verifiedentries\elements\actions\VerifyEntry;
@@ -119,6 +118,7 @@ class VerifiedEntries extends Plugin
 
         Craft::$app->onInit(function () {
             $this->attachEventHandlers();
+            Craft::$app->getView()->getTwig()->addGlobal('pluginHandle', self::HANDLE);
         });
     }
 
@@ -161,7 +161,7 @@ class VerifiedEntries extends Plugin
             Entry::class,
             Entry::EVENT_DEFINE_BEHAVIORS,
             function ($event) {
-               $event->behaviors['verified-entries.entry'] = EntryBehavior::class;
+               $event->behaviors[self::HANDLE . '.entry'] = EntryBehavior::class;
             }
         );
 
@@ -222,7 +222,7 @@ class VerifiedEntries extends Plugin
                         Html::endTag('div');
                 }
 
-                $event->html .= Craft::$app->getView()->renderTemplate('verified-entries/_sidebar.twig', [
+                $event->html .= Craft::$app->getView()->renderTemplate(self::HANDLE . '/_sidebar.twig', [
                     'verifiedUntilDate' => $entry->verifiedUntilDate,
                     'isVerified' => $entry->isVerified,
                     'reviewer' => $entry->reviewer,
@@ -419,7 +419,7 @@ class VerifiedEntries extends Plugin
                     return;
                 }
 
-                $event->screens[VerifiedEntriesUsersController::SCREEN_VERIFIED_ENTRIES] = [
+                $event->screens[self::HANDLE] = [
                     'label' => Craft::t(self::HANDLE, 'Verified Entries'),
                 ];
             }
@@ -449,13 +449,13 @@ class VerifiedEntries extends Plugin
 
         $nav['subnav']['overview'] = [
             'label' => Craft::t('app', 'Dashboard'),
-            'url' => 'verified-entries',
+            'url' => self::HANDLE,
         ];
 
         if ($currentUser->getIsAdmin() || $currentUser->checkPermission('manageVerificationSettings')) {
             $nav['subnav']['settings'] = [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => 'verified-entries/settings',
+                'url' => self::HANDLE . '/settings',
             ];
         }
 
@@ -470,15 +470,15 @@ class VerifiedEntries extends Plugin
             function (RegisterUrlRulesEvent $event) {
                 $currentUser = Craft::$app->user;
 
-                $event->rules['verified-entries'] = 'verified-entries/entries/index';
+                $event->rules[self::HANDLE] = self::HANDLE . '/entries/index';
 
                 if ($currentUser->getIsAdmin() || $currentUser->checkPermission('manageVerificationSettings')) {
-                    $event->rules['verified-entries/settings'] = 'verified-entries/section-settings/index';
+                    $event->rules[self::HANDLE . '/settings'] = self::HANDLE . '/section-settings/index';
                 }
 
                 // User edit screen
-                $event->rules['myaccount/verified-entries'] = 'verified-entries/users/index';
-                $event->rules['users/<userId:\d+>/verified-entries'] = 'verified-entries/users/index';
+                $event->rules['myaccount/' . self::HANDLE] = self::HANDLE . '/users/index';
+                $event->rules['users/<userId:\d+>/' . self::HANDLE] = self::HANDLE . '/users/index';
             }
         );
     }
@@ -513,7 +513,7 @@ class VerifiedEntries extends Plugin
     {
         // Redirect to our settings page
         Craft::$app->controller->redirect(
-            UrlHelper::cpUrl('verified-entries/settings')
+            UrlHelper::cpUrl(self::HANDLE . '/settings')
         );
 
         return null;

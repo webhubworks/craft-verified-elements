@@ -50,7 +50,7 @@ class VerifiedEntry extends Entry
         $sources = [
             [
                 'key' => 'expired',
-                'label' => Craft::t('verified-entries', 'Expired'),
+                'label' => Craft::t(VerifiedEntries::HANDLE, 'Expired'),
                 'criteria' => [
                     'isVerified' => false,
                     'sectionId' => $enabledSectionIds,
@@ -69,7 +69,7 @@ class VerifiedEntry extends Entry
             ],
             [
                 'key' => 'verified',
-                'label' => Craft::t('verified-entries', 'Verified'),
+                'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified'),
                 'criteria' => [
                     'isVerified' => true,
                     'sectionId' => $enabledSectionIds,
@@ -77,7 +77,7 @@ class VerifiedEntry extends Entry
                 ]
             ],
             [
-                'heading' => Craft::t('verified-entries', 'Reviewer'),
+                'heading' => Craft::t(VerifiedEntries::HANDLE, 'Reviewer'),
             ],
             [
                 'key' => 'mine',

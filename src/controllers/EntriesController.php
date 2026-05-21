@@ -14,7 +14,7 @@ class EntriesController extends Controller
 {
     public function actionIndex(): Response
     {
-        return $this->renderTemplate('verified-entries/index.twig');
+        return $this->renderTemplate(VerifiedEntries::HANDLE . '/index.twig');
     }
 
     public function actionRequestPeriod(): Response
@@ -22,8 +22,8 @@ class EntriesController extends Controller
         $periodOptions = Verification::getSelectOptions();
 
         $response = $this->asCpModal()
-            ->action('verified-entries/entries/obtain-date')
-            ->contentTemplate('verified-entries/_modals/_period.twig', [
+            ->action(VerifiedEntries::HANDLE . '/entries/obtain-date')
+            ->contentTemplate(VerifiedEntries::HANDLE . '/_modals/_period.twig', [
                 'periodOptions' => $periodOptions,
             ]);
 
@@ -48,7 +48,7 @@ class EntriesController extends Controller
         }
 
         if ($date === false) {
-            return $this->asFailure(Craft::t('verified-entries', 'Not a valid date.'));
+            return $this->asFailure(Craft::t(VerifiedEntries::HANDLE, 'Not a valid date.'));
         }
 
         return $this->asJson([

@@ -20,7 +20,7 @@ class EntriesToReview extends Widget
 {
     public static function displayName(): string
     {
-        return Craft::t('verified-entries', 'Entries to Review');
+        return Craft::t(VerifiedEntries::HANDLE, 'Entries to Review');
     }
 
     protected static function allowMultipleInstances(): bool
@@ -80,12 +80,12 @@ class EntriesToReview extends Widget
             ->all();
 
         if (empty($entries)) {
-            return Html::tag('div', Craft::t('verified-entries', 'There are no entries up for review.'), [
+            return Html::tag('div', Craft::t(VerifiedEntries::HANDLE, 'There are no entries up for review.'), [
                 'class' => ['zilch', 'small'],
             ]);
         }
 
-        return Craft::$app->getView()->renderTemplate('verified-entries/_widgets/review.twig',
+        return Craft::$app->getView()->renderTemplate(VerifiedEntries::HANDLE . '/_widgets/review.twig',
             [
                 'entries' => $entries,
             ]);

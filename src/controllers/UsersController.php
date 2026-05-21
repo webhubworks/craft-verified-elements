@@ -12,8 +12,6 @@ class UsersController extends Controller
 {
     use EditUserTrait;
 
-    public const SCREEN_VERIFIED_ENTRIES = 'verified-entries';
-
     /**
      * @inheritdoc
      */
@@ -24,9 +22,9 @@ class UsersController extends Controller
         $user = $this->editedUser($userId);
 
         /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditUserScreen($user, self::SCREEN_VERIFIED_ENTRIES);
+        $response = $this->asEditUserScreen($user, VerifiedEntries::HANDLE);
 
-        $response->contentTemplate('verified-entries/_user.twig', [
+        $response->contentTemplate(VerifiedEntries::HANDLE . '/_user.twig', [
             'sections' => VerifiedEntries::getInstance()->users->getSections($userId),
             'userId' => $userId,
         ]);

@@ -6,6 +6,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
 use craft\elements\User;
+use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
  * Assign Reviewer element action
@@ -16,7 +17,7 @@ class AssignReviewer extends ElementAction
 
     public static function displayName(): string
     {
-        return Craft::t('verified-entries', 'Assign Reviewer');
+        return Craft::t(VerifiedEntries::HANDLE, 'Assign Reviewer');
     }
 
     public function getTriggerHtml(): ?string
