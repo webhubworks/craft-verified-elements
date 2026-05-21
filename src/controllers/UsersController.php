@@ -12,11 +12,6 @@ class UsersController extends Controller
 {
     use EditUserTrait;
 
-    /**
-     * @inheritdoc
-     */
-    protected array|bool|int $allowAnonymous = true;
-
     public function actionIndex(?int $userId = null): Response
     {
         $user = $this->editedUser($userId);
