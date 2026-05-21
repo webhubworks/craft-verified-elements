@@ -162,7 +162,7 @@ class VerifiedEntries extends Plugin
             Entry::class,
             Entry::EVENT_DEFINE_BEHAVIORS,
             function ($event) {
-               $event->behaviors[self::HANDLE . '.entry'] = EntryBehavior::class;
+                $event->behaviors[self::HANDLE . '.entry'] = EntryBehavior::class;
             }
         );
 
@@ -175,16 +175,16 @@ class VerifiedEntries extends Plugin
 
                 if (!$entry->getHasVerifiedUntilDate()) {
                     $status = Cp::statusIndicatorHtml('unverified', [
-                        'color' => Color::Gray,
-                    ]) . Html::tag('span', Craft::t(self::HANDLE, 'Unverified'));;
+                            'color' => Color::Gray,
+                        ]) . Html::tag('span', Craft::t(self::HANDLE, 'Unverified'));;
                 } elseif ($entry->isVerified) {
                     $status = Cp::statusIndicatorHtml('live', [
-                        'color' => Color::Teal,
-                    ]) . Html::tag('span', Craft::t(self::HANDLE, 'Verified'));;
+                            'color' => Color::Teal,
+                        ]) . Html::tag('span', Craft::t(self::HANDLE, 'Verified'));;
                 } else {
-                    $status = Cp::statusIndicatorHtml( 'expired', [
-                        'color' => Color::Red,
-                    ]) . Html::tag('span', Craft::t(self::HANDLE, 'Expired'));
+                    $status = Cp::statusIndicatorHtml('expired', [
+                            'color' => Color::Red,
+                        ]) . Html::tag('span', Craft::t(self::HANDLE, 'Expired'));
                 }
 
                 $event->metadata[Craft::t(self::HANDLE, 'Verification')] = $status;
@@ -209,9 +209,9 @@ class VerifiedEntries extends Plugin
                 $entry = $event->sender;
                 $currentUser = Craft::$app->user;
 
-                if (!$entry->getIsSectionEnabledForVerification()
-                    || !$currentUser->getIsAdmin()
-                    || !$currentUser->checkPermission(Permission::VerifyEntries->value)
+                if (
+                    !$entry->getIsSectionEnabledForVerification() ||
+                    (!$currentUser->getIsAdmin() && !$currentUser->checkPermission(Permission::VerifyEntries->value))
                 ) {
                     return;
                 }
