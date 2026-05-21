@@ -16,6 +16,7 @@ use webhubworks\verifiedentries\db\Queries;
 use webhubworks\verifiedentries\db\Table;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
+use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\db\Exception;
@@ -25,17 +26,6 @@ use yii\db\Exception;
  */
 class Verification extends Component
 {
-    public static array $INTERVALS = [
-        "P7D",
-        "P30D",
-        "P90D",
-        "P1Y"
-    ];
-
-    public const SPECIFIC_DATE = 'specific-date';
-
-    public const INDEFINITELY = 'indefinitely';
-
     /**
      * Adds or updates an entry's verification details ("Verified until" date and "Reviewer" user)
      * in the database.
@@ -122,8 +112,9 @@ class Verification extends Component
             ];
         }
 
-        foreach (self::$INTERVALS as $interval) {
-            $dateInterval = new \DateInterval($interval);
+        foreach (VerificationPeriod::intervals() as $period) {
+            $dateInterval = $period->toDateInterval();
+
             $date = DateTimeHelper::now()->add($dateInterval);
 
             if ($currentValue && $date->format('Y-m-d') === $currentValue->format('Y-m-d')) {
@@ -136,7 +127,7 @@ class Verification extends Component
                 'data' => [
                     'hint' => implode(' ', [
                         DateTimeHelper::humanDuration($dateInterval),
-                        $interval === $defaultPeriod ? Craft::t(VerifiedEntries::HANDLE, '(Standard)') : ''
+                        $period->value === $defaultPeriod ? Craft::t(VerifiedEntries::HANDLE, '(Standard)') : ''
                     ])
                 ],
             ];
@@ -154,18 +145,18 @@ class Verification extends Component
     {
         $options = [];
 
-        foreach (self::$INTERVALS as $interval) {
-            $dateInterval = new \DateInterval($interval);
+        foreach (VerificationPeriod::intervals() as $period) {
+            $dateInterval = $period->toDateInterval();
 
             $options[] = [
                 'label' => DateTimeHelper::humanDuration($dateInterval),
-                'value' => $interval,
+                'value' => $period->value,
             ];
         }
 
         $options[] = [
             'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
-            'value' => self::INDEFINITELY,
+            'value' => VerificationPeriod::Indefinitely->value,
         ];
 
         return $options;
@@ -177,7 +168,7 @@ class Verification extends Component
 
         $options[] = [
             'label' => Craft::t(VerifiedEntries::HANDLE, 'Specific Date'),
-            'value' => self::SPECIFIC_DATE,
+            'value' => VerificationPeriod::SpecificDate->value,
         ];
 
         return $options;

@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\AdminTable;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
+use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\services\Verification;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\web\Response;
@@ -35,15 +36,15 @@ class EntriesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $verifcationPeriod = $this->request->getRequiredBodyParam('verificationPeriod');
+        $verificationPeriod = $this->request->getRequiredBodyParam('verificationPeriod');
 
-        if ($verifcationPeriod === Verification::SPECIFIC_DATE) {
+        if ($verificationPeriod === VerificationPeriod::SpecificDate->value) {
             $inputDate = $this->request->getRequiredBodyParam('specificDate');
             $date = DateTimeHelper::toDateTime($inputDate);
-        } elseif ($verifcationPeriod === Verification::INDEFINITELY) {
+        } elseif ($verificationPeriod === VerificationPeriod::Indefinitely->value) {
             $date = null;
         } else {
-            $interval = new \DateInterval($verifcationPeriod);
+            $interval = new \DateInterval($verificationPeriod);
             $date = DateTimeHelper::now()->add($interval);
         }
 
@@ -52,7 +53,7 @@ class EntriesController extends Controller
         }
 
         return $this->asJson([
-            'date' => $date->format('Y-m-d'),
+            'date' => $date?->format('Y-m-d'),
         ]);
     }
 
