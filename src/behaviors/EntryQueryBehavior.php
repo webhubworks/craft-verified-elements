@@ -6,6 +6,7 @@ use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\EntryQuery;
 use craft\helpers\Db;
+use webhubworks\verifiedentries\db\Table;
 use yii\base\Behavior;
 
 /**
@@ -39,7 +40,7 @@ class EntryQueryBehavior extends Behavior
         // Join our `verifiedentries_entryattributes` table
         if (!$this->hasJoin($query, 'veea')) {
             $query->leftJoin(
-                ['veea' => '{{%verifiedentries_entryattributes}}'],
+                ['veea' => Table::ENTRIES],
                 '[[veea.entryId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
             );
         }
@@ -76,7 +77,7 @@ class EntryQueryBehavior extends Behavior
         // Join our `verifiedentries_entryattributes` table
         if (!$this->hasJoin($subQuery, 'veea')) {
             $subQuery->leftJoin(
-                ['veea' => '{{%verifiedentries_entryattributes}}'],
+                ['veea' => Table::ENTRIES],
                 '[[veea.entryId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
             );
         }
