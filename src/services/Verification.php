@@ -12,13 +12,17 @@ use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
+use webhubworks\verifiedentries\db\Queries;
+use webhubworks\verifiedentries\db\Table;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
-use webhubworks\verifiedentries\migrations\Install;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\db\Exception;
 
+/**
+ * The Verification service represents logic related to verifiable entries and their verification status.
+ */
 class Verification extends Component
 {
     public static array $INTERVALS = [
@@ -44,7 +48,7 @@ class Verification extends Component
      */
     public function upsertEntryDetails(int $entryId, int $siteId, ?int $reviewerId, ?DateTime $verifiedUntilDate): void
     {
-        Db::upsert(Install::ENTRYATTRIBUTES_TABLE, [
+        Db::upsert(Table::ENTRIES, [
             'entryId' => $entryId,
             'siteId' => $siteId,
             'reviewerId' => $reviewerId,
@@ -64,10 +68,7 @@ class Verification extends Component
      */
     public function hasVerificationRow(int $entryId, int $siteId): bool
     {
-        return (new Query())
-            ->from(Install::ENTRYATTRIBUTES_TABLE)
-            ->where(['entryId' => $entryId, 'siteId' => $siteId])
-            ->exists();
+        return Queries::verifiableEntry($entryId, $siteId)->exists();
     }
 
     /**
@@ -83,7 +84,7 @@ class Verification extends Component
     {
         $sourceRow = (new Query())
             ->select(['reviewerId', 'verifiedUntilDate'])
-            ->from(Install::ENTRYATTRIBUTES_TABLE)
+            ->from(Table::ENTRIES)
             ->where(['entryId' => $entryId])
             ->one();
 
@@ -135,14 +136,14 @@ class Verification extends Component
                 'data' => [
                     'hint' => implode(' ', [
                         DateTimeHelper::humanDuration($dateInterval),
-                        $interval === $defaultPeriod ? Craft::t('verified-entries', '(Standard)') : ''
+                        $interval === $defaultPeriod ? Craft::t(VerifiedEntries::HANDLE, '(Standard)') : ''
                     ])
                 ],
             ];
         }
 
         $options[] = [
-            'label' => Craft::t('verified-entries', 'Indefinitely'),
+            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
             'value' => false,
         ];
 
@@ -163,7 +164,7 @@ class Verification extends Component
         }
 
         $options[] = [
-            'label' => Craft::t('verified-entries', 'Indefinitely'),
+            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
             'value' => self::INDEFINITELY,
         ];
 
@@ -175,7 +176,7 @@ class Verification extends Component
         $options = self::getDefaultOptions();
 
         $options[] = [
-            'label' => Craft::t('verified-entries', 'Specific Date'),
+            'label' => Craft::t(VerifiedEntries::HANDLE, 'Specific Date'),
             'value' => self::SPECIFIC_DATE,
         ];
 
@@ -214,35 +215,10 @@ class Verification extends Component
     
     public static function checkExpiredVerifications(): array
     {
-        $enabledSections = (new Query())
-            ->select(['sectionId', 'reviewerId'])
-            ->from('{{%verifiedentries_sections}}')
-            ->where(['=', 'enabled', true])
-            ->collect();
+        $enabledSections = Queries::enabledSections()->select(['sectionId', 'reviewerId'])->collect();
 
         // Find entries where verification date is in the past
-        $expiredEntries = (new Query())
-            ->select([
-                'veea.entryId',
-                'veea.siteId',
-                'veea.reviewerId',
-                'veea.verifiedUntilDate',
-                'entries.sectionId',
-                'es.title',
-                'sections.handle AS sectionHandle',
-                'sites.handle AS siteHandle',
-            ])
-            ->from(['veea' => '{{%verifiedentries_entryattributes}}'])
-            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
-            ->leftJoin(
-                '{{%elements_sites}} es',
-                '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = [[veea.siteId]]'
-            )
-            ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
-            ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
-            ->innerJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
-            ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(new DateTime())])
-            ->andWhere('elements.canonicalId IS null')
+        $expiredEntries = Queries::expiredVerifiableEntries()
             ->andWhere(['entries.sectionId' => $enabledSections->pluck('sectionId')])
             ->all();
 
@@ -250,11 +226,11 @@ class Verification extends Component
             // Log the expired entries
             Craft::warning(
                 Craft::t(
-                    'verified-entries',
+                    VerifiedEntries::HANDLE,
                     'Found {count} entries with expired verification dates',
                     ['count' => count($expiredEntries)]
                 ),
-                'verified-entries'
+                __METHOD__
             );
 
             self::notifyAboutExpiredEntries($expiredEntries);
@@ -278,7 +254,7 @@ class Verification extends Component
             if (!$reviewer) {
                 Craft::warning(
                     "Could not notify reviewer ($reviewerId) about expired entries",
-                    'verified-entries'
+                    __METHOD__
                 );
                 continue;
             }
