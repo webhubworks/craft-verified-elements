@@ -69,6 +69,8 @@ use webhubworks\verifiedentries\widgets\VerificationHealth;
  */
 class VerifiedEntries extends Plugin
 {
+    public const HANDLE = 'verified-entries';
+
     public string $schemaVersion = '1.0.0';
 
     public bool $hasCpSettings = true;
@@ -91,7 +93,7 @@ class VerifiedEntries extends Plugin
     {
         parent::init();
 
-        $this->name = Craft::t('verified-entries', 'Verified Entries');
+        $this->name = Craft::t(self::HANDLE, 'Verified Entries');
 
         if (Craft::$app->getRequest()->getIsCpRequest()) {
             $this->registerCpRoutes();
@@ -173,18 +175,18 @@ class VerifiedEntries extends Plugin
                 if (!$entry->getHasVerifiedUntilDate()) {
                     $status = Cp::statusIndicatorHtml('unverified', [
                         'color' => Color::Gray,
-                    ]) . Html::tag('span', Craft::t('verified-entries', 'Unverified'));;
+                    ]) . Html::tag('span', Craft::t(self::HANDLE, 'Unverified'));;
                 } elseif ($entry->isVerified) {
                     $status = Cp::statusIndicatorHtml('live', [
                         'color' => Color::Teal,
-                    ]) . Html::tag('span', Craft::t('verified-entries', 'Verified'));;
+                    ]) . Html::tag('span', Craft::t(self::HANDLE, 'Verified'));;
                 } else {
                     $status = Cp::statusIndicatorHtml( 'expired', [
                         'color' => Color::Red,
-                    ]) . Html::tag('span', Craft::t('verified-entries', 'Expired'));
+                    ]) . Html::tag('span', Craft::t(self::HANDLE, 'Expired'));
                 }
 
-                $event->metadata[Craft::t('verified-entries', 'Verification')] = $status;
+                $event->metadata[Craft::t(self::HANDLE, 'Verification')] = $status;
             }
         );
 
@@ -216,7 +218,7 @@ class VerifiedEntries extends Plugin
                 if (!$entry->isVerified) {
                     $event->html .=
                         Html::beginTag('div', ['class' => ['meta', 'warning']]) .
-                        Html::tag('p', Craft::t('verified-entries', 'Entry has expired and is due to be verified.')) .
+                        Html::tag('p', Craft::t(self::HANDLE, 'Entry has expired and is due to be verified.')) .
                         Html::endTag('div');
                 }
 
@@ -235,7 +237,7 @@ class VerifiedEntries extends Plugin
             Entry::EVENT_REGISTER_SORT_OPTIONS,
             function (RegisterElementSortOptionsEvent $event) {
                 $event->sortOptions[] = [
-                    'label' => Craft::t('verified-entries', 'Verified until'),
+                    'label' => Craft::t(self::HANDLE, 'Verified until'),
                     'orderBy' => 'verifiedUntilDate',
                     'defaultDir' => 'desc',
                 ];
@@ -247,15 +249,15 @@ class VerifiedEntries extends Plugin
             Entry::EVENT_REGISTER_TABLE_ATTRIBUTES,
             function (RegisterElementTableAttributesEvent $event) {
                 $event->tableAttributes['verifiedUntilDate'] = [
-                    'label' => Craft::t('verified-entries', 'Verified until')
+                    'label' => Craft::t(self::HANDLE, 'Verified until')
                 ];
 
                 $event->tableAttributes['isVerified'] = [
-                    'label' => Craft::t('verified-entries', 'Verification'),
+                    'label' => Craft::t(self::HANDLE, 'Verification'),
                 ];
 
                 $event->tableAttributes['reviewer'] = [
-                    'label' => Craft::t('verified-entries', 'Reviewer'),
+                    'label' => Craft::t(self::HANDLE, 'Reviewer'),
                 ];
             }
         );
@@ -272,18 +274,18 @@ class VerifiedEntries extends Plugin
                         if ($entry->isVerified) {
                             $event->html = Cp::statusLabelHtml([
                                 'color' => Color::Teal,
-                                'label' => Craft::t('verified-entries', 'Verified')
+                                'label' => Craft::t(self::HANDLE, 'Verified')
                             ]);
                         } else {
                             $event->html = Cp::statusLabelHtml([
                                 'color' => Color::Red,
-                                'label' => Craft::t('verified-entries', 'Expired'),
+                                'label' => Craft::t(self::HANDLE, 'Expired'),
                             ]);
                         }
                         break;
                     case "verifiedUntilDate":
                         if ($entry->verifiedUntilDate === null) {
-                            $event->html = Craft::t('verified-entries', 'Indefinitely');
+                            $event->html = Craft::t(self::HANDLE, 'Indefinitely');
                         }
 //                        else {
 //                            $difference = date_diff(DateTimeHelper::now(), $entry->verifiedUntilDate);
@@ -314,7 +316,7 @@ class VerifiedEntries extends Plugin
                     $event->html = Cp::elementSelectHtml([
                         'id' => 'reviewerId',
                         'name' => 'reviewerId',
-                        'label' => Craft::t('verified-entries', 'Reviewer'),
+                        'label' => Craft::t(self::HANDLE, 'Reviewer'),
                         'single' => true,
                         'elementType' => User::class,
                         'elements' => $entry->reviewer ? [$entry->reviewer] : null,
@@ -418,7 +420,7 @@ class VerifiedEntries extends Plugin
                 }
 
                 $event->screens[VerifiedEntriesUsersController::SCREEN_VERIFIED_ENTRIES] = [
-                    'label' => Craft::t('verified-entries', 'Verified Entries'),
+                    'label' => Craft::t(self::HANDLE, 'Verified Entries'),
                 ];
             }
         );
@@ -484,13 +486,13 @@ class VerifiedEntries extends Plugin
     public function registerPermissions(RegisterUserPermissionsEvent $event): void
     {
         $event->permissions[] = [
-            'heading' => Craft::t('verified-entries', 'Verified Entries'),
+            'heading' => Craft::t(self::HANDLE, 'Verified Entries'),
             'permissions' => [
                 'manageVerificationSettings' => [
-                    'label' => Craft::t('verified-entries', 'Manage Verification Settings'),
+                    'label' => Craft::t(self::HANDLE, 'Manage Verification Settings'),
                 ],
                 'verifyEntries' => [
-                    'label' => Craft::t('verified-entries', 'Verify entries'),
+                    'label' => Craft::t(self::HANDLE, 'Verify entries'),
                 ]
             ],
         ];
