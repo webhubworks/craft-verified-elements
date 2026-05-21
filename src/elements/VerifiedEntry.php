@@ -7,6 +7,7 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
+use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -43,7 +44,7 @@ class VerifiedEntry extends Entry
 
         $currentUser = Craft::$app->user;
         $reviewers = User::find()
-            ->can('verifyEntries')
+            ->can(Permission::VerifyEntries->value)
             ->id(['not', $currentUser->id])
             ->all();
 

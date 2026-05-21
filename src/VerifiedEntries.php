@@ -45,6 +45,7 @@ use webhubworks\verifiedentries\elements\actions\VerifyEntry;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedUntilDateConditionRule;
+use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\services\Notifications as NotificationsService;
 use webhubworks\verifiedentries\services\SectionSettings as SectionSettingsService;
 use webhubworks\verifiedentries\services\Reviewers as VerifiedEntriesUsersService;
@@ -210,7 +211,7 @@ class VerifiedEntries extends Plugin
 
                 if (!$entry->getIsSectionEnabledForVerification()
                     || !$currentUser->getIsAdmin()
-                    || !$currentUser->checkPermission('verifyEntries')
+                    || !$currentUser->checkPermission(Permission::VerifyEntries->value)
                 ) {
                     return;
                 }
@@ -309,7 +310,7 @@ class VerifiedEntries extends Plugin
                 /** @var Entry $entry */
                 $entry = $event->sender;
                 $currentUser = Craft::$app->user;
-                $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission('verifyEntries');
+                $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
 
 
                 if ($event->attribute === 'reviewer') {
@@ -322,7 +323,7 @@ class VerifiedEntries extends Plugin
                         'elements' => $entry->reviewer ? [$entry->reviewer] : null,
                         'criteria' => [
                             'status' => 'active',
-                            'can' => 'verifyEntries',
+                            'can' => Permission::VerifyEntries->value,
                         ],
                         'disabled' => !$canVerifyEntries,
                     ]);
@@ -353,7 +354,7 @@ class VerifiedEntries extends Plugin
             function (RegisterElementActionsEvent $event) {
                 $currentUser = Craft::$app->user;
 
-                if ($currentUser->getIsAdmin() || $currentUser->checkPermission('verifyEntries')) {
+                if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value)) {
                     $event->actions[] = VerifyEntry::class;
                     $event->actions[] = AssignReviewer::class;
                 }
@@ -415,7 +416,7 @@ class VerifiedEntries extends Plugin
             UsersController::class,
             UsersController::EVENT_DEFINE_EDIT_SCREENS,
             function (DefineEditUserScreensEvent $event) {
-                if (!$event->editedUser->can('verifyEntries')) {
+                if (!$event->editedUser->can(Permission::VerifyEntries->value)) {
                     return;
                 }
 
@@ -452,7 +453,7 @@ class VerifiedEntries extends Plugin
             'url' => self::HANDLE,
         ];
 
-        if ($currentUser->getIsAdmin() || $currentUser->checkPermission('manageVerificationSettings')) {
+        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
             $nav['subnav']['settings'] = [
                 'label' => Craft::t('app', 'Settings'),
                 'url' => self::HANDLE . '/settings',
@@ -472,7 +473,7 @@ class VerifiedEntries extends Plugin
 
                 $event->rules[self::HANDLE] = self::HANDLE . '/entries/index';
 
-                if ($currentUser->getIsAdmin() || $currentUser->checkPermission('manageVerificationSettings')) {
+                if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
                     $event->rules[self::HANDLE . '/settings'] = self::HANDLE . '/section-settings/index';
                 }
 
@@ -488,10 +489,10 @@ class VerifiedEntries extends Plugin
         $event->permissions[] = [
             'heading' => Craft::t(self::HANDLE, 'Verified Entries'),
             'permissions' => [
-                'manageVerificationSettings' => [
+                Permission::ManageVerificationSettings->value => [
                     'label' => Craft::t(self::HANDLE, 'Manage Verification Settings'),
                 ],
-                'verifyEntries' => [
+                Permission::VerifyEntries->value => [
                     'label' => Craft::t(self::HANDLE, 'Verify entries'),
                 ]
             ],
@@ -504,7 +505,7 @@ class VerifiedEntries extends Plugin
 
         $event->types[] = VerificationHealth::class;
 
-        if ($currentUser->checkPermission('verifyEntries')) {
+        if ($currentUser->checkPermission(Permission::VerifyEntries->value)) {
             $event->types[] = EntriesToReview::class;
         }
     }
