@@ -3,16 +3,10 @@
 namespace webhubworks\verifiedentries\services;
 
 use Craft;
-use craft\db\Query;
-use craft\elements\conditions\entries\EntryCondition;
-use craft\gql\types\DateTime;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use craft\records\Entry;
-use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
+use webhubworks\verifiedentries\db\Queries;
 use yii\base\Component;
 
 /**
@@ -20,28 +14,21 @@ use yii\base\Component;
  */
 class Users extends Component
 {
+    /**
+     * Get all sections assigned to a reviewer.
+     *
+     * @param int|null $userId
+     * @return array
+     */
     public function getSections(?int $userId = null): array
     {
         if ($userId === null) {
-            $userId = Craft::$app->getUser()->getIdentity()->id;
+            $userId = Craft::$app->getUser()->getId();
         }
 
-        $sections = (new Query())
-            ->select([
-                'ves.id',
-                'ves.sectionId',
-                'ves.defaultPeriod',
-                's.name',
-                's.type',
-                's.handle',
-            ])
-            ->from(['ves' => '{{%verifiedentries_sections}}'])
-            ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.sectionId]]')
-            ->where(['ves.enabled' => true])
-            ->andWhere(['ves.reviewerId' => $userId])
-            ->all();
+        $sections = Queries::sectionsByReviewer($userId)->all();
 
-        $sections = array_map(function ($section) {
+        return array_map(static function ($section) {
             return [
                 ...$section,
                 'defaultPeriod' => DateTimeHelper::humanDuration($section['defaultPeriod']),
@@ -51,13 +38,23 @@ class Users extends Component
 
             ];
         }, $sections);
-
-        return $sections;
     }
 
+    /**
+     * Get all entries assigned to a reviewer.
+     *
+     * @param int|null $userId
+     * @param int|null $siteId
+     * @return array
+     */
     public function getEntries(?int $userId = null, ?int $siteId = null): array
     {
-        $entries = $this->_createEntryQuery($userId, $siteId)->all();
+        if ($userId === null) {
+            $userId = Craft::$app->getUser()->getId();
+        }
+
+        $entries = Queries::entriesByReviewer($userId, $siteId)->all();
+
         return $this->transformEntries($entries);
     }
 
@@ -70,10 +67,13 @@ class Users extends Component
         ?int   $siteId = null,
     ): array
     {
+        if ($userId === null) {
+            $userId = Craft::$app->getUser()->getId();
+        }
+
         $offset = ($page - 1) * $limit;
 
-        $query = $this->_createEntryQuery($userId, $siteId)
-            ->orderBy([$orderBy => $sortDir]);
+        $query = Queries::entriesByReviewer($userId, $siteId)->orderBy([$orderBy => $sortDir]);
 
         $total = $query->count();
 
@@ -83,46 +83,6 @@ class Users extends Component
         $entries = $this->transformEntries($query->all());
 
         return [$entries, $total];
-    }
-
-    private function _createEntryQuery(?int $userId = null, ?int $siteId = null): Query
-    {
-        if ($userId === null) {
-            $userId = Craft::$app->getUser()->getIdentity()->id;
-        }
-
-        $query = (new Query())
-            ->select([
-                'veea.id',
-                'veea.entryId',
-                'veea.siteId',
-                'veea.reviewerId',
-                'veea.verifiedUntilDate',
-                'entries.sectionId',
-                'es.title',
-                'es.slug',
-                'es.dateUpdated',
-                'sections.name AS sectionName',
-                'sections.handle AS sectionHandle',
-                'sites.handle AS siteHandle',
-            ])
-            ->from(['veea' => '{{%verifiedentries_entryattributes}}'])
-            ->rightJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
-            ->leftJoin(
-                '{{%elements_sites}} es',
-                '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = [[veea.siteId]]'
-            )
-            ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
-            ->leftJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
-            ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
-            ->where(['veea.reviewerId' => $userId])
-            ->andWhere('elements.canonicalId IS null');
-
-        if ($siteId !== null) {
-            $query->andWhere(['veea.siteId' => $siteId]);
-        }
-
-        return $query;
     }
 
     private function transformEntries(array $entries): array
