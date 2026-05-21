@@ -48,7 +48,7 @@ use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedUntilDateConditionRule;
 use webhubworks\verifiedentries\services\Notifications as NotificationsService;
 use webhubworks\verifiedentries\services\SectionSettings as SectionSettingsService;
-use webhubworks\verifiedentries\services\Users as VerifiedEntriesUsersService;
+use webhubworks\verifiedentries\services\Reviewers as VerifiedEntriesUsersService;
 use webhubworks\verifiedentries\services\Verification as VerificationService;
 use webhubworks\verifiedentries\widgets\EntriesToReview;
 use webhubworks\verifiedentries\widgets\VerificationHealth;

@@ -3,6 +3,7 @@
 namespace webhubworks\verifiedentries\db;
 
 use craft\db\Query;
+use webhubworks\verifiedentries\services\Reviewers;
 
 abstract class Queries
 {
@@ -10,11 +11,12 @@ abstract class Queries
     // =================================================================================================================
 
     /**
-     * Returns all sections (channels, structures, singles) assigned to a reviewer.
+     * Returns a query for all sections (channels, structures, singles) assigned to a reviewer.
      *
      * @param int $userId The Reviewer
      * @param int|null $siteId
      * @return Query
+     * @see Reviewers
      */
     public static function sectionsByReviewer(int $userId, ?int $siteId = null): Query
     {
@@ -34,11 +36,12 @@ abstract class Queries
     }
 
     /**
-     * Returns all entries assigned to a reviewer.
+     * Returns a query for all entries assigned to a reviewer.
      *
      * @param int $userId The Reviewer
      * @param int|null $siteId
      * @return Query
+     * @see Reviewers
      */
     public static function entriesByReviewer(int $userId, ?int $siteId = null): Query
     {

@@ -10,9 +10,9 @@ use webhubworks\verifiedentries\db\Queries;
 use yii\base\Component;
 
 /**
- * User service
+ * The Reviewer service represents logic related to Craft Users who get assigned to review entries.
  */
-class Users extends Component
+class Reviewers extends Component
 {
     /**
      * Get all sections assigned to a reviewer.
@@ -58,6 +58,17 @@ class Users extends Component
         return $this->transformEntries($entries);
     }
 
+    /**
+     * Get all entries assigned to a reviewer, but paginate the results.
+     *
+     * @param int $page
+     * @param int $limit
+     * @param int $sortDir
+     * @param string $orderBy
+     * @param int|null $userId
+     * @param int|null $siteId
+     * @return array
+     */
     public function getPaginatedEntries(
         int    $page,
         int    $limit,
@@ -85,6 +96,13 @@ class Users extends Component
         return [$entries, $total];
     }
 
+    /**
+     * Transform the result of the query to an array of entries.
+     *
+     * @param array $entries
+     * @return array
+     * TODO address the toDateTime exception that could be thrown
+     */
     private function transformEntries(array $entries): array
     {
         $formatter = new Formatter();
