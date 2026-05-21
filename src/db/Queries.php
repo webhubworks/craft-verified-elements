@@ -7,7 +7,9 @@ use craft\helpers\Db;
 use DateTime;
 
 /**
- * Class for abstracting out the many complicated database queries used throughout the plugin.
+ * Class for abstracting out the many complicated database queries used throughout the plugin. Queries that belong in
+ * this file are those with joins, requiring multiple tables to be queried. Single-table queries can remain as they are
+ * throughout the plugin's logic.
  */
 abstract class Queries
 {
@@ -148,6 +150,29 @@ abstract class Queries
     }
 
 
-    //
+    // SETTINGS
     // =================================================================================================================
+
+    /**
+     * Returns a query for sections (channels, structures, singles) that have settings.
+     *
+     * @return Query
+     * @see \webhubworks\verifiedentries\services\SectionSettings::getAllSectionsWithSettings
+     */
+    public static function sectionsWithSettings(): Query
+    {
+        return (new Query())
+            ->select([
+                's.id',
+                's.uid',
+                's.name',
+                's.handle',
+                's.type',
+                'ves.reviewerId',
+                'ves.enabled',
+                'ves.defaultPeriod'
+            ])
+            ->from(['s' => '{{%sections}}'])
+            ->leftJoin(Table::SECTIONS. ' ves', '[[ves.sectionId]] = [[s.id]]');
+    }
 }
