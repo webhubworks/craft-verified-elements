@@ -13,17 +13,17 @@ use yii\db\Exception;
 /**
  * The SectionSettings service represents logic related to Craft Sections (channels, structures, singles) that are
  * enabled for this plugin.
+ *
+ * @property-read array $enabledSections
+ * @property-read array $allSectionsWithSettings
  */
 class SectionSettings extends Component
 {
-    public function getAllSectionSettings(): array
-    {
-        return (new Query())
-            ->from(Table::SECTIONS)
-            ->indexBy('sectionId')
-            ->all();
-    }
-
+    /**
+     * Returns the sections (channels, structures, singles) to list on the plugin's Settings page.
+     *
+     * @return array
+     */
     public function getAllSectionsWithSettings(): array
     {
         $rows = Queries::sectionsWithSettings()->all();
@@ -53,6 +53,12 @@ class SectionSettings extends Component
     }
 
     /**
+     * Saves the configuration for a section (channels, structures, singles) on the plugin's
+     * Settings page.
+     *
+     * @param int $sectionId
+     * @param array $settings
+     * @return void
      * @throws Exception
      */
     public function saveSectionSettings(int $sectionId, array $settings): void
@@ -67,18 +73,17 @@ class SectionSettings extends Component
             $reviewerId = $reviewerId ?: null;
         }
 
-        Db::upsert(Table::SECTIONS, [
-            'sectionId' => $sectionId,
-            'reviewerId' => $reviewerId,
-            'enabled' => $enabled,
-            'defaultPeriod' => $defaultPeriod,
-        ], [
-            'reviewerId' => $reviewerId,
-            'enabled' => $enabled,
-            'defaultPeriod' => $defaultPeriod,
-        ]);
+        Db::upsert(Table::SECTIONS,
+            compact('sectionId', 'reviewerId', 'enabled', 'defaultPeriod'),
+            compact('reviewerId', 'enabled', 'defaultPeriod'));
     }
 
+    /**
+     * Checks if a section is enabled for this plugin.
+     *
+     * @param int $sectionId
+     * @return bool
+     */
     public function getIsEnabledForSection(int $sectionId): bool
     {
         return (new Query())
@@ -87,6 +92,11 @@ class SectionSettings extends Component
             ->exists();
     }
 
+    /**
+     * Returns all sections (channels, structures, singles) enabled for this plugin.
+     *
+     * @return array
+     */
     public function getEnabledSections(): array
     {
         return (new Query())
@@ -96,6 +106,13 @@ class SectionSettings extends Component
             ->column();
     }
 
+    /**
+     * Returns default configuration for a specific section (channels, structures, singles) that
+     * this plugin is applied to.
+     *
+     * @param int $sectionId
+     * @return array|null
+     */
     public function getDefaultSettingsForSection(int $sectionId): ?array
     {
         $result = (new Query())
