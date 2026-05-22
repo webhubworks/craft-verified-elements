@@ -9,6 +9,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use Illuminate\Support\Collection;
+use webhubworks\verifiedentries\behaviors\EntryBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\helpers\Markdown;
@@ -28,6 +29,10 @@ class Notifications extends Component
      */
     public function sendExpiredNotification(User $reviewer, array|Collection $entries): void
     {
+        if (empty($entries)) {
+            return;
+        }
+
         $language = $reviewer->getPreferredLanguage();
         $formatter = $this->getFormatter($language);
 
@@ -38,39 +43,59 @@ class Notifications extends Component
             $language
         );
 
-        $body = "Hey {$reviewer->friendlyName},\n\n";
+        $body = 'Hi ' . $reviewer->getFriendlyName() . ",\n\n";
 
         $body .= Craft::t(
-                VerifiedEntries::HANDLE,
-                'the following entries have verification dates that have expired:',
-                null,
-                $language,
-            ) . "\n\n";
+            VerifiedEntries::HANDLE,
+            'the following entries have verification dates that have expired:',
+            null,
+            $language,
+        ) . "\n\n";
 
-        $link = UrlHelper::cpUrl('entries', [
+        $linkText = Craft::t(
+            VerifiedEntries::HANDLE,
+            'View all',
+            null,
+            $language
+        );
+
+        $cpEditUrl = UrlHelper::cpUrl('entries', [
             // 'site' will automatically be set by Craft to $reviewer's preferred site.
             'source' => '*',
             'filters' => Verification::getFilterParams($reviewer->id),
         ]);
 
-        $body .= "[" . Craft::t(VerifiedEntries::HANDLE, 'View all', null, $language) . "]($link)\n\n";
+        $body .= "[$linkText]($cpEditUrl)\n\n";
 
+        $body .= '<ol>';
         foreach ($entries as $entry) {
+            $verifiedUntilText = Craft::t(
+                VerifiedEntries::HANDLE,
+                'Verified until',
+                null,
+                $language
+            );
+
+            $verifiedUntilDate = $formatter->asDate(
+                $entry['verifiedUntilDate'],
+                Locale::LENGTH_MEDIUM
+            );
+
+            $linkText = Craft::t('app', 'Edit', null, $language);
+
             $cpEditUrl = UrlHelper::cpUrl(
                 "entries/{$entry['sectionHandle']}/{$entry['entryId']}",
                 ['site' => $entry['siteHandle']]
             );
-            $body .= "- **{$entry['title']}** "
-                . "(" . Craft::t(VerifiedEntries::HANDLE, 'Verified until', null, $language) . " " . $formatter->asDate($entry['verifiedUntilDate'], Locale::LENGTH_MEDIUM) . ")"
-                . " [" . Craft::t('app', 'Edit', null, $language) . "]($cpEditUrl)\n";
-        }
 
-        $html = Markdown::process($body);
+            $body .= "<li>**{$entry['title']}** ($verifiedUntilText $verifiedUntilDate) [$linkText]($cpEditUrl)\n</li>";
+        }
+        $body .= '</ol>';
 
         Craft::$app->getMailer()->compose()
             ->setTo($reviewer->email)
             ->setSubject($subject)
-            ->setHtmlBody($html)
+            ->setHtmlBody(Markdown::process($body))
             ->send();
 
     }
@@ -79,21 +104,21 @@ class Notifications extends Component
      * Send an entry's Reviewer an email that someone has updated their entry
      * and that they should verify the changes.
      *
-     * @param Entry $entry
+     * @param Entry|EntryBehavior $entry
+     * @param User $reviewer
      * @return void
      */
-    public function sendChangeNotification(Entry $entry): void
+    public function sendChangeNotification(Entry|EntryBehavior $entry, User $reviewer): void
     {
-        /** @var User|null $reviewer */
-        $reviewer = $entry->reviewer;
-
-        if (!$reviewer || !$reviewer->active) {
-            Craft::info('Entry has no reviewer to notify', __METHOD__);
-            return;
-        }
-
         $language = $reviewer->getPreferredLanguage();
         $formatter = $this->getFormatter($language);
+
+        $sectionHandle = $entry->getSection()->handle;
+
+        $cpEditUrl = UrlHelper::cpUrl(
+            "entries/$sectionHandle/$entry->id",
+            ['site' => $entry->getSite()->handle]
+        );
 
         $subject = Craft::t(
             VerifiedEntries::HANDLE,
@@ -102,24 +127,39 @@ class Notifications extends Component
             $language
         );
 
-        $body = "Hey {$reviewer->friendlyName}!\n\n";
-        $body .= Craft::t(VerifiedEntries::HANDLE, 'An entry you\'re assigned to review has been updated. Please take a moment to review the latest changes:', null, $language) . "\n\n";
+        $greeting = 'Hi ' . $reviewer->getFriendlyName() . ',';
 
-        $body .= "**{$entry->title}**<br>";
-        $body .= Craft::t(VerifiedEntries::HANDLE, 'Verified until', null, $language) . " " . $formatter->asDate($entry->verifiedUntilDate, Locale::LENGTH_MEDIUM) . "\n\n";
-
-        $cpEditUrl = UrlHelper::cpUrl(
-            "entries/{$entry->section->handle}/{$entry->id}",
-            ['site' => $entry->getSite()->handle]
+        $message = Craft::t(
+            VerifiedEntries::HANDLE,
+            "An entry you're assigned to review has been updated. Please take a moment to review the latest changes:",
+            null,
+            $language
         );
-        $body .= "[" . Craft::t('app', 'Show', null, $language) . "]($cpEditUrl)";
 
-        $html = Markdown::process($body);
+        $verifiedUntil = Craft::t(
+            VerifiedEntries::HANDLE,
+            'Verified until',
+            null,
+            $language
+        );
+
+        $verifiedUntilDate = $formatter->asDate(
+            $entry->getVerifiedUntilDate(),
+            Locale::LENGTH_MEDIUM
+        );
+
+        $linkText = Craft::t('app', 'Show', null, $language);
+
+        $body = "$greeting\n\n";
+        $body .= "$message\n\n";
+        $body .= "**$entry->title**<br>";
+        $body .= "$verifiedUntil $verifiedUntilDate\n\n";
+        $body .= "[$linkText]($cpEditUrl)";
 
         Craft::$app->getMailer()->compose()
             ->setTo($reviewer->email)
             ->setSubject($subject)
-            ->setHtmlBody($html)
+            ->setHtmlBody(Markdown::process($body))
             ->send();
     }
 

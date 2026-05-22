@@ -372,14 +372,22 @@ class VerifiedEntries extends Plugin
                     return;
                 }
 
-                if (ElementHelper::isRevision($entry)) {
-                    $reviewerId = $entry->reviewerId;
-                    $creatorId = $entry->getBehavior('revision')->creatorId;
-
-                    if ($reviewerId !== null && $reviewerId !== $creatorId) {
-                        $this->getNotifications()->sendChangeNotification($entry);
-                    }
+                if (! ElementHelper::isRevision($entry)) {
+                    return;
                 }
+
+                $reviewer = $entry->getReviewer();
+                if (!$reviewer || !$reviewer->active) {
+                    Craft::info('Entry has no reviewer to notify', __METHOD__);
+                    return;
+                }
+
+                $creatorId = $entry->getBehavior('revision')->creatorId;
+                if ($reviewer->id === $creatorId) {
+                    return;
+                }
+
+                $this->getNotifications()->sendChangeNotification($entry, $reviewer);
             }
         );
 
