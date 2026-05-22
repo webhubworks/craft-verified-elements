@@ -13,19 +13,23 @@ use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\helpers\Markdown;
 
+/**
+ * The Notifications service represents logic related to notifying Reviewers about entries
+ * assigned to them.
+ */
 class Notifications extends Component
 {
-    private static function getFormatter(string|null $locale): Formatter
-    {
-        return $locale
-            ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter()
-            : Craft::$app->getFormatter();
-    }
-
-    public static function sendExpiredNotification(User $reviewer, array|Collection $entries): void
+    /**
+     * Send a Reviewer a digest of expired entries assigned to them, prompting them to review them.
+     *
+     * @param User $reviewer
+     * @param array|Collection $entries
+     * @return void
+     */
+    public function sendExpiredNotification(User $reviewer, array|Collection $entries): void
     {
         $language = $reviewer->getPreferredLanguage();
-        $formatter = self::getFormatter($language);
+        $formatter = $this->getFormatter($language);
 
         $subject = Craft::t(
             VerifiedEntries::HANDLE,
@@ -71,18 +75,25 @@ class Notifications extends Component
 
     }
 
-    public static function sendChangeNotification(Entry $entry): void
+    /**
+     * Send an entry's Reviewer an email that someone has updated their entry
+     * and that they should verify the changes.
+     *
+     * @param Entry $entry
+     * @return void
+     */
+    public function sendChangeNotification(Entry $entry): void
     {
         /** @var User|null $reviewer */
         $reviewer = $entry->reviewer;
 
         if (!$reviewer || !$reviewer->active) {
-            Craft::info('Entry has no reviewer to notify');
+            Craft::info('Entry has no reviewer to notify', __METHOD__);
             return;
         }
 
         $language = $reviewer->getPreferredLanguage();
-        $formatter = self::getFormatter($language);
+        $formatter = $this->getFormatter($language);
 
         $subject = Craft::t(
             VerifiedEntries::HANDLE,
@@ -110,5 +121,22 @@ class Notifications extends Component
             ->setSubject($subject)
             ->setHtmlBody($html)
             ->send();
+    }
+
+
+    // HELPERS
+    // =============================================================================================
+
+    /**
+     * Return Yii/Craft's object for formatting dates and times by language/locales.
+     *
+     * @param string|null $locale
+     * @return Formatter
+     */
+    private function getFormatter(string|null $locale): Formatter
+    {
+        return $locale
+            ? Craft::$app->getI18n()->getLocaleById($locale)->getFormatter()
+            : Craft::$app->getFormatter();
     }
 }

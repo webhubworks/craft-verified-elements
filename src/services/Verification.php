@@ -250,7 +250,7 @@ class Verification extends Component
                 continue;
             }
 
-            Notifications::sendExpiredNotification($reviewer, $entries);
+            VerifiedEntries::getInstance()->getNotifications()->sendExpiredNotification($reviewer, $entries);
         }
     }
 

@@ -365,7 +365,7 @@ class VerifiedEntries extends Plugin
             Entry::class,
             Element::EVENT_AFTER_SAVE,
             function (ModelEvent $event) {
-                /** @var Entry $entry */
+                /** @var Entry|EntryBehavior $entry */
                 $entry = $event->sender;
 
                 if (!$entry->getHasVerifiedUntilDate() || !$entry->enabled) {
@@ -377,7 +377,7 @@ class VerifiedEntries extends Plugin
                     $creatorId = $entry->getBehavior('revision')->creatorId;
 
                     if ($reviewerId !== null && $reviewerId !== $creatorId) {
-                        NotificationsService::sendChangeNotification($entry);
+                        $this->getNotifications()->sendChangeNotification($entry);
                     }
                 }
             }
