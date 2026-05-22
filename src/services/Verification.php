@@ -23,6 +23,10 @@ use yii\db\Exception;
 
 /**
  * The Verification service represents logic related to verifiable entries and their verification status.
+ *
+ * @property-read array $periodOptionsWithCustomDate
+ * @property-read string $addOptionFn
+ * @property-read array $periodOptions
  */
 class Verification extends Component
 {
@@ -84,6 +88,7 @@ class Verification extends Component
 
         $verifiedUntilDate = null;
         if (isset($sourceRow['verifiedUntilDate'])) {
+            // TODO handle toDateTime exception
             $verifiedUntilDate = DateTimeHelper::toDateTime($sourceRow['verifiedUntilDate']);
         }
 
@@ -95,20 +100,32 @@ class Verification extends Component
         );
     }
 
-    public static function getOptions(?DateTime $currentValue = null, ?int $sectionId = null): array
+    /**
+     * Returns the options for the "Verified until" select field located in the sidebar of an
+     * entry's edit page.
+     *
+     * @param DateTime|null $currentUntilDate The field's currently selected value
+     * @param int|null $sectionId
+     * @return array The dropdown field's options
+     * @see VerificationPeriod enum
+     */
+    public function getDateOptionsForEntry(?DateTime $currentUntilDate = null, ?int $sectionId = null): array
     {
         $formatter = new Formatter();
 
+        $defaultPeriod = null;
         if ($sectionId !== null) {
-            [$reviewerId, $defaultPeriod] = VerifiedEntries::getInstance()->sectionSettings->getDefaultSettingsForSection($sectionId);
+            [$reviewerId, $defaultPeriod] = VerifiedEntries::getInstance()
+                ->getSectionSettings()
+                ->getDefaultSettingsForSection($sectionId);
         }
 
         $options = [];
 
-        if ($currentValue) {
+        if ($currentUntilDate) {
             $options[] = [
-                'label' => $formatter->asDate($currentValue),
-                'value' => $currentValue->format('Y-m-d'),
+                'label' => $formatter->asDate($currentUntilDate),
+                'value' => $currentUntilDate->format('Y-m-d'),
             ];
         }
 
@@ -117,7 +134,7 @@ class Verification extends Component
 
             $date = DateTimeHelper::now()->add($dateInterval);
 
-            if ($currentValue && $date->format('Y-m-d') === $currentValue->format('Y-m-d')) {
+            if ($currentUntilDate && $date->format('Y-m-d') === $currentUntilDate->format('Y-m-d')) {
                 continue;
             }
 
@@ -141,7 +158,16 @@ class Verification extends Component
         return $options;
     }
 
-    public static function getDefaultOptions(): array
+    /**
+     * Returns verification period intervals as options for a select field.
+     *
+     * An example of this can be found in the plugin's settings page in the "Default Period"
+     * column.
+     *
+     * @return array The default options
+     * @see VerificationPeriod enum
+     */
+    public function getPeriodOptions(): array
     {
         $options = [];
 
@@ -162,9 +188,19 @@ class Verification extends Component
         return $options;
     }
 
-    public static function getSelectOptions(): array
+    /**
+     * Returns verification period intervals as options for a select field with the additional
+     * option to choose an arbitrary date.
+     *
+     * An example of this can be found in an entry's sidebar when selecting a custom
+     * "Verified until" date.
+     *
+     * @return array The dropdown's options
+     * @see VerificationPeriod enum
+     */
+    public function getPeriodOptionsWithCustomDate(): array
     {
-        $options = self::getDefaultOptions();
+        $options = $this->getPeriodOptions();
 
         $options[] = [
             'label' => Craft::t(VerifiedEntries::HANDLE, 'Specific Date'),
@@ -174,7 +210,14 @@ class Verification extends Component
         return $options;
     }
 
-    public static function getAddOptionFn(): string
+    /**
+     * Returns JavaScript code to manage Craft's custom-date modal for selecting a specific
+     * verification date.
+     *
+     * @return string JS code to be executed by Craft
+     * @noinspection JSUnresolvedReference
+     */
+    public function getAddOptionFn(): string
     {
         return <<<JS
             (createOption, selectize) => {
@@ -203,10 +246,19 @@ class Verification extends Component
             }
         JS;
     }
-    
-    public static function checkExpiredVerifications(): array
+
+    /**
+     * Runs the action of checking for entries whose verification date is in the past
+     * and notifying the entry's Reviewer user via email.
+     *
+     * @return array The expired verification entries
+     * @see self::notifyAboutExpiredEntries()
+     */
+    public function checkExpiredVerifications(): array
     {
-        $enabledSections = Queries::enabledSections()->select(['sectionId', 'reviewerId'])->collect();
+        $enabledSections = Queries::enabledSections()
+            ->select(['sectionId', 'reviewerId'])
+            ->collect();
 
         // Find entries where verification date is in the past
         $expiredEntries = Queries::expiredVerifiableEntries()
@@ -224,13 +276,19 @@ class Verification extends Component
                 __METHOD__
             );
 
-            self::notifyAboutExpiredEntries($expiredEntries);
+            $this->notifyAboutExpiredEntries($expiredEntries);
         }
 
         return $expiredEntries;
     }
 
-    private static function notifyAboutExpiredEntries(array $expiredEntries): void
+    /**
+     * Runs the action of notifying Reviewers about expired verification entries.
+     *
+     * @param array $expiredEntries
+     * @return void
+     */
+    public function notifyAboutExpiredEntries(array $expiredEntries): void
     {
         $entriesPerReviewer = collect($expiredEntries)
             ->groupBy('reviewerId');
@@ -254,7 +312,14 @@ class Verification extends Component
         }
     }
 
-    public static function getFilterParams(?int $reviewerId = null): string
+    /**
+     * Returns URL query params for an entry's edit page that corresponds to set values in the
+     * plugin's verification fields.
+     *
+     * @param int|null $reviewerId
+     * @return string The URL query params
+     */
+    public function getFilterParams(?int $reviewerId = null): string
     {
         $condition = new EntryCondition(Entry::class);
 

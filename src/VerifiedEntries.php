@@ -113,7 +113,7 @@ class VerifiedEntries extends Plugin
             Gc::class,
             Gc::EVENT_RUN,
             function (\yii\base\Event $event) {
-                VerificationService::checkExpiredVerifications();
+                $this->getVerification()->checkExpiredVerifications();
             }
         );
 
@@ -205,7 +205,7 @@ class VerifiedEntries extends Plugin
             Entry::class,
             Entry::EVENT_DEFINE_SIDEBAR_HTML,
             function (DefineHtmlEvent $event) {
-                /** @var Entry $entry */
+                /** @var Entry|EntryBehavior $entry */
                 $entry = $event->sender;
                 $currentUser = Craft::$app->user;
 
@@ -223,13 +223,21 @@ class VerifiedEntries extends Plugin
                         Html::endTag('div');
                 }
 
-                $event->html .= Craft::$app->getView()->renderTemplate(self::HANDLE . '/_sidebar.twig', [
-                    'verifiedUntilDate' => $entry->verifiedUntilDate,
-                    'isVerified' => $entry->isVerified,
-                    'reviewer' => $entry->reviewer,
-                    'options' => VerificationService::getOptions($entry->verifiedUntilDate, $entry->sectionId),
-                    'addOptionFn' => VerificationService::getAddOptionFn(),
-                ]);
+                $verification = $this->getVerification();
+
+                $event->html .= Craft::$app->getView()->renderTemplate(
+                    self::HANDLE . '/_sidebar.twig',
+                    [
+                        'addOptionFn' => $verification->getAddOptionFn(),
+                        'verifiedUntilDate' => $entry->getVerifiedUntilDate(),
+                        'isVerified' => $entry->getIsVerified(),
+                        'reviewer' => $entry->getReviewer(),
+                        'options' => $verification->getDateOptionsForEntry(
+                            $entry->getVerifiedUntilDate(),
+                            $entry->sectionId
+                        ),
+                    ]
+                );
             }
         );
 
@@ -305,9 +313,9 @@ class VerifiedEntries extends Plugin
 
         Event::on(
             Entry::class,
-            Entry::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML,
+            Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML,
             function (DefineAttributeHtmlEvent $event) {
-                /** @var Entry $entry */
+                /** @var Entry|EntryBehavior $entry */
                 $entry = $event->sender;
                 $currentUser = Craft::$app->user;
                 $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
@@ -331,17 +339,21 @@ class VerifiedEntries extends Plugin
                 }
 
                 if ($event->attribute === 'verifiedUntilDate') {
+                    $verification = $this->getVerification();
                     $event->html = Cp::selectizeFieldHtml([
                         'id' => 'verifiedUntilDate',
                         'name' => 'verifiedUntilDate',
-                        'options' => VerificationService::getOptions($entry->verifiedUntilDate, $entry->getSection()->id),
+                        'options' => $verification->getDateOptionsForEntry(
+                            $entry->getVerifiedUntilDate(),
+                            $entry->getSection()->id
+                        ),
                         'selectizeOptions' => [
                             'allowEmptyOption' => false,
                             'autocomplete' => false,
                         ],
-                        'value' => $entry->verifiedUntilDate ? $entry->verifiedUntilDate->format('Y-m-d') : false,
+                        'value' => $entry->getVerifiedUntilDate() ? $entry->getVerifiedUntilDate()->format('Y-m-d') : false,
                         'addOptionLabel' => 'specificDate',
-                        'addOptionFn' => VerificationService::getAddOptionFn(),
+                        'addOptionFn' => $verification->getAddOptionFn(),
                         'disabled' => !$canVerifyEntries,
                     ]);
                 }

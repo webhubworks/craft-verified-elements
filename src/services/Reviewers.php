@@ -8,6 +8,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
 use webhubworks\verifiedentries\db\Queries;
+use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
 /**
@@ -28,14 +29,18 @@ class Reviewers extends Component
         }
 
         $sections = Queries::sectionsByReviewer($userId)->all();
+        $filters = VerifiedEntries::getInstance()->getVerification()->getFilterParams();
 
-        return array_map(static function ($section) {
+        return array_map(static function ($section) use ($filters) {
             return [
                 ...$section,
                 'defaultPeriod' => DateTimeHelper::humanDuration($section['defaultPeriod']),
                 'url' => $section['type'] == 'single'
                     ? UrlHelper::cpUrl('entries/singles')
-                    : UrlHelper::cpUrl('entries/' . $section['handle'], ['filters' => Verification::getFilterParams()]),
+                    : UrlHelper::cpUrl(
+                        'entries/' . $section['handle'],
+                        ['filters' => $filters]
+                    ),
 
             ];
         }, $sections);

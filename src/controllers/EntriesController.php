@@ -7,7 +7,6 @@ use craft\helpers\AdminTable;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
-use webhubworks\verifiedentries\services\Verification;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\web\Response;
 
@@ -20,15 +19,15 @@ class EntriesController extends Controller
 
     public function actionRequestPeriod(): Response
     {
-        $periodOptions = Verification::getSelectOptions();
+        $periodOptions = VerifiedEntries::getInstance()
+            ->getVerification()
+            ->getPeriodOptionsWithCustomDate();
 
-        $response = $this->asCpModal()
+        return $this->asCpModal()
             ->action(VerifiedEntries::HANDLE . '/entries/obtain-date')
             ->contentTemplate(VerifiedEntries::HANDLE . '/_modals/_period.twig', [
                 'periodOptions' => $periodOptions,
             ]);
-
-        return $response;
     }
 
     public function actionObtainDate(): Response

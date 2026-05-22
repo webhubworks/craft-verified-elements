@@ -17,10 +17,13 @@ class SectionSettingsController extends Controller
     {
         $sections = VerifiedEntries::getInstance()->sectionSettings->getAllSectionsWithSettings();
 
-        return $this->renderTemplate(VerifiedEntries::HANDLE . '/_settings.twig', [
-            'sections' => $sections,
-            'defaultPeriodOptions' => Verification::getDefaultOptions(),
-        ]);
+        return $this->renderTemplate(
+            VerifiedEntries::HANDLE . '/_settings.twig',
+            [
+                'sections' => $sections,
+                'defaultPeriodOptions' => VerifiedEntries::getInstance()->getVerification()->getPeriodOptions(),
+            ]
+        );
     }
 
     /**

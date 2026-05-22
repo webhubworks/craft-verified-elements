@@ -62,7 +62,9 @@ class Notifications extends Component
         $cpEditUrl = UrlHelper::cpUrl('entries', [
             // 'site' will automatically be set by Craft to $reviewer's preferred site.
             'source' => '*',
-            'filters' => Verification::getFilterParams($reviewer->id),
+            'filters' => VerifiedEntries::getInstance()
+                ->getVerification()
+                ->getFilterParams($reviewer->id),
         ]);
 
         $body .= "[$linkText]($cpEditUrl)\n\n";

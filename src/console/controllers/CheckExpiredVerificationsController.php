@@ -35,22 +35,24 @@ class CheckExpiredVerificationsController extends Controller
     {
         $this->stdout("Checking verification dates of all entries in enabled sections...\n");
 
-        $expiredEntries = Verification::checkExpiredVerifications();
+        $expiredEntries = VerifiedEntries::getInstance()->getVerification()->checkExpiredVerifications();
 
         if (count($expiredEntries) === 0) {
             $this->stdout('No expired entries.');
-        } else {
-            foreach ($expiredEntries as $entry) {
-                $this->stdout("Entry [{$entry['entryId']}] (site: {$entry['siteHandle']}) expired on {$entry['verifiedUntilDate']}. ");
 
-                if ($entry['reviewerId']) {
-                    $this->stdout("Sending a notification to User [{$entry['reviewerId']}].");
-                } else {
-                    $this->stdout("No reviewer is assigned.");
-                }
+            return ExitCode::OK;
+        }
 
-                $this->stdout("\n");
+        foreach ($expiredEntries as $entry) {
+            $this->stdout("Entry [{$entry['entryId']}] (site: {$entry['siteHandle']}) expired on {$entry['verifiedUntilDate']}. ");
+
+            if ($entry['reviewerId']) {
+                $this->stdout("Sending a notification to User [{$entry['reviewerId']}].");
+            } else {
+                $this->stdout("No reviewer is assigned.");
             }
+
+            $this->stdout("\n");
         }
 
         return ExitCode::OK;
