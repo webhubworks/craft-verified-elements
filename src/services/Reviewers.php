@@ -6,6 +6,7 @@ use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
+use DateTime;
 use webhubworks\verifiedentries\db\Queries;
 use yii\base\Component;
 
@@ -96,6 +97,10 @@ class Reviewers extends Component
         return [$entries, $total];
     }
 
+
+    // HELPERS
+    // =============================================================================================
+
     /**
      * Transform the result of the query to an array of entries.
      *
@@ -105,12 +110,11 @@ class Reviewers extends Component
      */
     private function transformEntries(array $entries): array
     {
-        $formatter = new Formatter();
-
-        return array_map(function ($entry) use ($formatter) {
+        return array_map(static function ($entry) {
+            $formatter = new Formatter();
             $verifiedUntilDate = DateTimeHelper::toDateTime($entry['verifiedUntilDate']);
 
-            $isVerified = $verifiedUntilDate && $verifiedUntilDate > new \DateTime();
+            $isVerified = $verifiedUntilDate && $verifiedUntilDate > new DateTime();
 
             $uri = sprintf("%s/%s/%s-%s",
                 'entries',
