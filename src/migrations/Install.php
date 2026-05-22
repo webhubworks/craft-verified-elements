@@ -11,10 +11,6 @@ use webhubworks\verifiedentries\db\Table as PluginTables;
  */
 class Install extends Migration
 {
-    const ENTRYATTRIBUTES_TABLE = '{{%verifiedentries_entryattributes}}';
-
-    const ENTRYATTRIBUTES_SECTIONS = '{{%verifiedentries_sections}}';
-
     /**
      * @inheritdoc
      */
@@ -36,13 +32,17 @@ class Install extends Migration
 
         $this->createTable(PluginTables::SECTIONS, [
             'id' => $this->primaryKey(),
-            'sectionId' => $this->integer()->notNull()->unique(),
+            'sectionId' => $this->integer()->notNull(),
+            'siteId' => $this->integer()->notNull(),
             'reviewerId' => $this->integer()->null(),
             'enabled' => $this->boolean()->defaultValue(false),
             'defaultPeriod' => $this->string()->null(),
         ]);
 
+        $this->createIndex(null, PluginTables::SECTIONS, ['sectionId', 'siteId'], true);
+
         $this->addForeignKey(null, PluginTables::SECTIONS, ['sectionId'], CraftTable::SECTIONS, ['id'], 'CASCADE');
+        $this->addForeignKey(null, PluginTables::SECTIONS, ['siteId'], CraftTable::SITES, ['id'], 'CASCADE');
         $this->addForeignKey(null, PluginTables::SECTIONS, ['reviewerId'], CraftTable::USERS, ['id'], 'SET NULL');
 
         return true;

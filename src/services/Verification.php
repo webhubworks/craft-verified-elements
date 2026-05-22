@@ -82,7 +82,7 @@ class Verification extends Component
             ->where(['entryId' => $entryId])
             ->one();
 
-        if (!$sourceRow) {
+        if (! $sourceRow) {
             return;
         }
 
@@ -109,15 +109,21 @@ class Verification extends Component
      * @return array The dropdown field's options
      * @see VerificationPeriod enum
      */
-    public function getDateOptionsForEntry(?DateTime $currentUntilDate = null, ?int $sectionId = null): array
+    public function getDateOptionsForEntry(
+        ?DateTime $currentUntilDate = null,
+        ?int      $sectionId = null,
+        ?int      $siteId = null,
+    ): array
     {
         $formatter = new Formatter();
 
         $defaultPeriod = null;
-        if ($sectionId !== null) {
-            [$reviewerId, $defaultPeriod] = VerifiedEntries::getInstance()
+        if ($sectionId !== null && $siteId !== null) {
+            $defaults = VerifiedEntries::getInstance()
                 ->getSectionSettings()
-                ->getDefaultSettingsForSection($sectionId);
+                ->getDefaultSettingsForSection($sectionId, $siteId);
+
+            [$reviewerId, $defaultPeriod] = $defaults ?? [null, null];
         }
 
         $options = [];
@@ -256,16 +262,10 @@ class Verification extends Component
      */
     public function checkExpiredVerifications(): array
     {
-        $enabledSections = Queries::enabledSections()
-            ->select(['sectionId', 'reviewerId'])
-            ->collect();
-
         // Find entries where verification date is in the past
-        $expiredEntries = Queries::expiredVerifiableEntries()
-            ->andWhere(['entries.sectionId' => $enabledSections->pluck('sectionId')])
-            ->all();
+        $expiredEntries = Queries::expiredVerifiableEntries()->all();
 
-        if (!empty($expiredEntries)) {
+        if (! empty($expiredEntries)) {
             // Log the expired entries
             Craft::warning(
                 Craft::t(
@@ -300,7 +300,7 @@ class Verification extends Component
                 ->status('active')
                 ->one();
 
-            if (!$reviewer) {
+            if (! $reviewer) {
                 Craft::warning(
                     "Could not notify reviewer ($reviewerId) about expired entries",
                     __METHOD__

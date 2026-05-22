@@ -60,10 +60,11 @@ class EntryBehavior extends Behavior
         // This prevents a save on one site from overwriting verification
         // settings that were independently set on another site.
         if ($entry->propagating) {
-            if (!$verification->hasVerificationRow($entryId, $entry->siteId)) {
+            if (! $verification->hasVerificationRow($entryId, $entry->siteId)) {
                 try {
                     $verification->seedVerificationRow($entryId, $entry->siteId);
-                } catch (Exception $exception) {
+                }
+                catch (Exception $exception) {
                     Craft::error(sprintf(
                         'Error seeding verification row for entry %s "%s" on site %s: %s',
                         $entryId,
@@ -84,7 +85,8 @@ class EntryBehavior extends Behavior
                 $this->getReviewerId(),
                 $this->getVerifiedUntilDate()
             );
-        } catch (Exception $exception) {
+        }
+        catch (Exception $exception) {
             Craft::error(sprintf(
                 'Error upserting "Verified Entries" details for entry %s "%s" on site %s: %s',
                 $entryId,
@@ -99,11 +101,11 @@ class EntryBehavior extends Behavior
         foreach ($entry->getSupportedSites() as $siteInfo) {
             $siteId = is_array($siteInfo) ? ($siteInfo['siteId'] ?? null) : (int)$siteInfo;
 
-            if (!$siteId || $siteId === $entry->siteId) {
+            if (! $siteId || $siteId === $entry->siteId) {
                 continue;
             }
 
-            if (!$verification->hasVerificationRow($entryId, $siteId)) {
+            if (! $verification->hasVerificationRow($entryId, $siteId)) {
                 try {
                     $verification->upsertEntryDetails(
                         $entryId,
@@ -111,7 +113,8 @@ class EntryBehavior extends Behavior
                         $this->getReviewerId(),
                         $this->getVerifiedUntilDate()
                     );
-                } catch (Exception $exception) {
+                }
+                catch (Exception $exception) {
                     Craft::error(sprintf(
                         'Error seeding verification row for entry %s "%s" on site %s: %s',
                         $entryId,
@@ -185,7 +188,7 @@ class EntryBehavior extends Behavior
      */
     public function getReviewer(): ?User
     {
-        if (!$this->getReviewerId()) {
+        if (! $this->getReviewerId()) {
             return null;
         }
 
@@ -261,6 +264,9 @@ class EntryBehavior extends Behavior
     {
         return VerifiedEntries::getInstance()
             ->sectionSettings
-            ->getIsEnabledForSection($this->owner->sectionId);
+            ->getIsEnabledForSection(
+                $this->owner->sectionId,
+                $this->owner->siteId,
+            );
     }
 }

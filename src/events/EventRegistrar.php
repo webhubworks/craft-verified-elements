@@ -84,7 +84,7 @@ readonly class EventRegistrar
      */
     public static function registerEarlyEvents(VerifiedEntries $plugin, bool $isCpRequest, bool $isConsoleRequest): void
     {
-        if (!$isCpRequest && !$isConsoleRequest) {
+        if (! $isCpRequest && ! $isConsoleRequest) {
             return;
         }
 
@@ -106,7 +106,7 @@ readonly class EventRegistrar
             }
         );
 
-        if (!$isCpRequest) {
+        if (! $isCpRequest) {
             return;
         }
 
@@ -120,6 +120,7 @@ readonly class EventRegistrar
 
                 if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
                     $event->rules[VerifiedEntries::HANDLE . '/settings'] = VerifiedEntries::HANDLE . '/section-settings/index';
+                    $event->rules[VerifiedEntries::HANDLE . '/settings/grouped'] = VerifiedEntries::HANDLE . '/section-settings/grouped';
                 }
 
                 // User edit screen
@@ -160,7 +161,7 @@ readonly class EventRegistrar
      */
     private function registerEntryBehaviors(): void
     {
-        if (!$this->isCpRequest && !$this->isConsoleRequest) {
+        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
             return;
         }
 
@@ -202,7 +203,7 @@ readonly class EventRegistrar
      */
     private function registerEntryEditUi(): void
     {
-        if (!$this->isCpRequest) {
+        if (! $this->isCpRequest) {
             return;
         }
 
@@ -213,15 +214,17 @@ readonly class EventRegistrar
                 /** @var Entry|EntryBehavior $entry */
                 $entry = $event->sender;
 
-                if (!$entry->getHasVerifiedUntilDate()) {
+                if (! $entry->getHasVerifiedUntilDate()) {
                     $status = Cp::statusIndicatorHtml('unverified', [
                             'color' => Color::Gray,
                         ]) . Html::tag('span', Craft::t(VerifiedEntries::HANDLE, 'Unverified'));
-                } elseif ($entry->getIsVerified()) {
+                }
+                elseif ($entry->getIsVerified()) {
                     $status = Cp::statusIndicatorHtml('live', [
                             'color' => Color::Teal,
                         ]) . Html::tag('span', Craft::t(VerifiedEntries::HANDLE, 'Verified'));
-                } else {
+                }
+                else {
                     $status = Cp::statusIndicatorHtml('expired', [
                             'color' => Color::Red,
                         ]) . Html::tag('span', Craft::t(VerifiedEntries::HANDLE, 'Expired'));
@@ -240,13 +243,13 @@ readonly class EventRegistrar
                 $currentUser = Craft::$app->getUser();
 
                 if (
-                    !$entry->getIsSectionEnabledForVerification() ||
-                    (!$currentUser->getIsAdmin() && !$currentUser->checkPermission(Permission::VerifyEntries->value))
+                    ! $entry->getIsSectionEnabledForVerification() ||
+                    (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value))
                 ) {
                     return;
                 }
 
-                if (!$entry->getIsVerified()) {
+                if (! $entry->getIsVerified()) {
                     $event->html .=
                         Html::beginTag('div', ['class' => ['meta', 'warning']]) .
                         Html::tag('p', Craft::t(VerifiedEntries::HANDLE, 'Entry has expired and is due to be verified.')) .
@@ -264,7 +267,8 @@ readonly class EventRegistrar
                         'reviewer' => $entry->getReviewer(),
                         'options' => $verification->getDateOptionsForEntry(
                             $entry->getVerifiedUntilDate(),
-                            $entry->sectionId
+                            $entry->sectionId,
+                            $entry->siteId
                         ),
                     ]
                 );
@@ -293,7 +297,7 @@ readonly class EventRegistrar
                             'status' => 'active',
                             'can' => Permission::VerifyEntries->value,
                         ],
-                        'disabled' => !$canVerifyEntries,
+                        'disabled' => ! $canVerifyEntries,
                     ]);
                     return;
                 }
@@ -308,7 +312,8 @@ readonly class EventRegistrar
                     'name' => 'verifiedUntilDate',
                     'options' => $verification->getDateOptionsForEntry(
                         $entry->getVerifiedUntilDate(),
-                        $entry->sectionId
+                        $entry->sectionId,
+                        $entry->siteId
                     ),
                     'selectizeOptions' => [
                         'allowEmptyOption' => false,
@@ -317,7 +322,7 @@ readonly class EventRegistrar
                     'value' => $entry->getVerifiedUntilDate() ? $entry->getVerifiedUntilDate()->format('Y-m-d') : false,
                     'addOptionLabel' => 'specificDate',
                     'addOptionFn' => $verification->getAddOptionFn(),
-                    'disabled' => !$canVerifyEntries,
+                    'disabled' => ! $canVerifyEntries,
                 ]);
             }
         );
@@ -334,7 +339,7 @@ readonly class EventRegistrar
      */
     private function registerEntryIndexUi(): void
     {
-        if (!$this->isCpRequest) {
+        if (! $this->isCpRequest) {
             return;
         }
 
@@ -395,7 +400,8 @@ readonly class EventRegistrar
                                 'color' => Color::Teal,
                                 'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified')
                             ]);
-                        } else {
+                        }
+                        else {
                             $event->html = Cp::statusLabelHtml([
                                 'color' => Color::Red,
                                 'label' => Craft::t(VerifiedEntries::HANDLE, 'Expired'),
@@ -438,7 +444,7 @@ readonly class EventRegistrar
                 Entry::class,
                 Element::EVENT_BEFORE_SAVE,
                 function (ModelEvent $event) {
-                    if (!$event->isNew) {
+                    if (! $event->isNew) {
                         return;
                     }
 
@@ -449,9 +455,14 @@ readonly class EventRegistrar
                         return;
                     }
 
-                    [$reviewerId, $defaultPeriod] = $this->plugin
+                    $defaults = $this->plugin
                         ->getSectionSettings()
-                        ->getDefaultSettingsForSection($entry->sectionId);
+                        ->getDefaultSettingsForSection(
+                            $entry->sectionId,
+                            $entry->siteId
+                        );
+
+                    [$reviewerId, $defaultPeriod] = $defaults ?? [null, null];
 
                     if ($entry->getReviewerId() === null && $reviewerId) {
                         $entry->setReviewerId($reviewerId);
@@ -466,7 +477,7 @@ readonly class EventRegistrar
             );
         }
 
-        if (!$this->isCpRequest) {
+        if (! $this->isCpRequest) {
             return;
         }
 
@@ -477,16 +488,16 @@ readonly class EventRegistrar
                 /** @var Entry|EntryBehavior $entry */
                 $entry = $event->sender;
 
-                if (!$entry->getHasVerifiedUntilDate() || !$entry->enabled) {
+                if (! $entry->getHasVerifiedUntilDate() || ! $entry->enabled) {
                     return;
                 }
 
-                if (!ElementHelper::isRevision($entry)) {
+                if (! ElementHelper::isRevision($entry)) {
                     return;
                 }
 
                 $reviewer = $entry->getReviewer();
-                if (!$reviewer || !$reviewer->active) {
+                if (! $reviewer || ! $reviewer->active) {
                     Craft::info('Entry has no reviewer to notify', __METHOD__);
                     return;
                 }
@@ -523,7 +534,7 @@ readonly class EventRegistrar
             );
         }
 
-        if (!$this->isCpRequest) {
+        if (! $this->isCpRequest) {
             return;
         }
 
@@ -563,7 +574,7 @@ readonly class EventRegistrar
             UsersController::class,
             UsersController::EVENT_DEFINE_EDIT_SCREENS,
             static function (DefineEditUserScreensEvent $event) {
-                if (!$event->editedUser->can(Permission::VerifyEntries->value)) {
+                if (! $event->editedUser->can(Permission::VerifyEntries->value)) {
                     return;
                 }
 

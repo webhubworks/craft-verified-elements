@@ -26,7 +26,7 @@ abstract class Queries
      */
     public static function sectionsByReviewer(int $userId, ?int $siteId = null): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'ves.id',
                 'ves.sectionId',
@@ -39,6 +39,12 @@ abstract class Queries
             ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.sectionId]]')
             ->where(['ves.enabled' => true])
             ->andWhere(['ves.reviewerId' => $userId]);
+
+        if ($siteId !== null) {
+            $query->andWhere(['ves.siteId' => $siteId]);
+        }
+
+        return $query;
     }
 
     /**
@@ -105,19 +111,6 @@ abstract class Queries
     }
 
     /**
-     * Returns a query for all enabled sections (channels, structures, singles) affected by this plugin.
-     *
-     * @return Query
-     * @see \webhubworks\verifiedentries\services\Verification
-     */
-    public static function enabledSections(): Query
-    {
-        return (new Query())
-            ->from(Table::SECTIONS)
-            ->where(['=', 'enabled', true]);
-    }
-
-    /**
      * Returns a query for all verifiable entries that have verification dates in the past.
      *
      * @return Query
@@ -145,6 +138,10 @@ abstract class Queries
             ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
             ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
             ->innerJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
+            ->innerJoin(
+                Table::SECTIONS . ' ves',
+                '[[ves.sectionId]] = [[entries.sectionId]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1'
+            )
             ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(new DateTime())])
             ->andWhere('elements.canonicalId IS null');
     }
@@ -156,10 +153,11 @@ abstract class Queries
     /**
      * Returns a query for sections (channels, structures, singles) that have settings.
      *
+     * @param int $siteId
      * @return Query
      * @see \webhubworks\verifiedentries\services\SectionSettings::getAllSectionsWithSettings
      */
-    public static function sectionsWithSettings(): Query
+    public static function sectionsWithSettings(int $siteId): Query
     {
         return (new Query())
             ->select([
@@ -173,6 +171,15 @@ abstract class Queries
                 'ves.defaultPeriod'
             ])
             ->from(['s' => '{{%sections}}'])
-            ->leftJoin(Table::SECTIONS. ' ves', '[[ves.sectionId]] = [[s.id]]');
+            ->innerJoin(
+                '{{%sections_sites}} ss',
+                '[[ss.sectionId]] = [[s.id]] AND [[ss.siteId]] = :siteId',
+                [':siteId' => $siteId]
+            )
+            ->leftJoin(
+                Table::SECTIONS . ' ves',
+                '[[ves.sectionId]] = [[s.id]] AND [[ves.siteId]] = :vesSiteId',
+                [':vesSiteId' => $siteId]
+            );
     }
 }
