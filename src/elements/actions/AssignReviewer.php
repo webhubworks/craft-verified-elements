@@ -5,7 +5,7 @@ namespace webhubworks\verifiedentries\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
-use craft\elements\User;
+use webhubworks\verifiedentries\behaviors\EntryBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -62,19 +62,22 @@ class AssignReviewer extends ElementAction
     public function performAction(Craft\elements\db\ElementQueryInterface $query): bool
     {
         $elements = $query->all();
-        $elementsService = \Craft::$app->getElements();
+        $elementsService = Craft::$app->getElements();
 
-        $sucessCount = count(array_filter($elements, function (Entry $entry) use ($elementsService) {
-            try {
-                $entry->setReviewerId($this->reviewerId);
-                $elementsService->saveElement($entry);
-                return true;
-            } catch (\Throwable) {
+        $savedEntries = array_filter(
+            $elements,
+            function (Entry $entry) use ($elementsService) {
+                try {
+                    /** @var Entry|EntryBehavior $entry */
+                    $entry->setReviewerId($this->reviewerId);
+                    $elementsService->saveElement($entry);
+                    return true;
+                } catch (\Throwable) {}
                 return false;
             }
-        }));
+        );
 
-        if ($sucessCount !== count($elements)) {
+        if (count($savedEntries) !== count($elements)) {
             $this->setMessage('Could not assign Reviewer to all entries.');
             return false;
         }

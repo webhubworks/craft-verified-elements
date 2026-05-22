@@ -216,7 +216,7 @@ class VerifiedEntries extends Plugin
                     return;
                 }
 
-                if (!$entry->isVerified) {
+                if (!$entry->getIsVerified()) {
                     $event->html .=
                         Html::beginTag('div', ['class' => ['meta', 'warning']]) .
                         Html::tag('p', Craft::t(self::HANDLE, 'Entry has expired and is due to be verified.')) .
@@ -411,7 +411,7 @@ class VerifiedEntries extends Plugin
                     return;
                 }
 
-                /** @var Entry $entry */
+                /** @var Entry|EntryBehavior $entry */
                 $entry = $event->sender;
 
                 if ($entry->sectionId === null) {

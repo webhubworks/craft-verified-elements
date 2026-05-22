@@ -8,7 +8,6 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\events\ModelEvent;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use DateTime;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -16,20 +15,23 @@ use yii\base\Behavior;
 use yii\db\Exception;
 
 /**
- * EntryQueryBehavior
+ * This behavior provides additional properties and methods for Craft entries that have been
+ * enabled for verification in the plugin's settings.
  *
  * @property Entry $owner
+ * @property-read bool $hasVerifiedUntilDate
+ * @property null|mixed|int $reviewerId
+ * @property-read bool $isVerified
+ * @property-read bool $isSectionEnabledForVerification
+ * @property null|mixed|DateTime $verifiedUntilDate
+ * @property-read User|null $reviewer
  */
 class EntryBehavior extends Behavior
 {
-    private ?DateTime $_verifiedUntilDate = null;
-    private ?int $_reviewerId = null;
-    private ?User $_reviewer = null;
-    private bool $_isVerified = false;
+    // EVENTS
+    // =============================================================================================
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function events(): array
     {
         return [
@@ -38,9 +40,7 @@ class EntryBehavior extends Behavior
     }
 
     /**
-     * Saves additional attributes, in response to the parent User element being saved.
-     *
-     * {@see Db::upsert()} is used to simplify the process of inserting *or* updating a record. Also notice the reference to `$this->owner` when getting the ID! This refers to the Entry element the Behavior is attached to.
+     * Run additional logic after the entry is saved.
      *
      * @param ModelEvent $event
      */
@@ -124,57 +124,125 @@ class EntryBehavior extends Behavior
         }
     }
 
+
+    // REVIEWER (Craft User element)
+    // =============================================================================================
+
+    private ?int $_reviewerId = null;
+
     /**
-     * Sets the verified until date.
+     * Get the Reviewer's ID.
      *
-     * @param mixed $value The property value
+     * The "Reviewer" is a Craft User who has been assigned to review the entry when its
+     * "Verified Until" date expires.
+     *
+     * @return int|null
      */
-    public function setVerifiedUntilDate(mixed $value)
-    {
-        $verifiedUntilDate = DateTimeHelper::toDatetime($value, true);
-
-        if ($verifiedUntilDate) {
-            $this->_verifiedUntilDate = $verifiedUntilDate;
-        } else {
-            $this->_verifiedUntilDate = null;
-        }
-    }
-
-    public function getVerifiedUntilDate(): ?DateTime
-    {
-        return $this->_verifiedUntilDate;
-    }
-
     public function getReviewerId(): ?int
     {
         return $this->_reviewerId;
     }
 
-    public function setReviewerId(mixed $value)
+    /**
+     * Set the Reviewer's user ID.
+     *
+     * The "Reviewer" is a Craft User who has been assigned to review the entry when its
+     * "Verified Until" date expires.
+     *
+     * @param mixed $value
+     * @return void
+     */
+    public function setReviewerId(mixed $value): void
     {
-        if (!$value) {
-            $this->_reviewerId = null;
-        } elseif (is_string($value)) {
-            $this->_reviewerId = (int)$value;
-        } elseif (is_int($value)) {
+        if (is_int($value)) {
             $this->_reviewerId = $value;
+            return;
         }
+
+        if (is_string($value)) {
+            $this->_reviewerId = (int)$value;
+            return;
+        }
+
+        if ($value instanceof User) {
+            $this->_reviewerId = $value->id;
+            return;
+        }
+
+        $this->_reviewerId = null;
     }
 
-    public function getReviewer(): ?\craft\elements\User
+    /**
+     * Get the Reviewer's User object.
+     *
+     * The "Reviewer" is a Craft User who has been assigned to review the entry when its
+     * "Verified Until" date expires.
+     *
+     * NOTE that this method does NOT memorize the User, so repeated calls means a new query to
+     * the database. If you call this, save it to a variable for reuse.
+     *
+     * @return User|null
+     */
+    public function getReviewer(): ?User
     {
-        if (!$this->_reviewerId) {
+        if (!$this->getReviewerId()) {
             return null;
         }
 
-        return Craft::$app->users->getUserById($this->_reviewerId);
+        return Craft::$app->getUsers()->getUserById($this->getReviewerId());
     }
 
+
+    // VERIFICATION DATE ("Verified until" select field)
+    // =============================================================================================
+
+    private ?DateTime $_verifiedUntilDate = null;
+
+    /**
+     * Set the "Verified Until" select field's value.
+     *
+     * @param mixed $value Any value that can be converted to a DateTime object.
+     * @return void
+     */
+    public function setVerifiedUntilDate(mixed $value): void
+    {
+        // TODO handle toDatetime exception
+        $verifiedUntilDate = DateTimeHelper::toDatetime($value, true);
+
+        if ($verifiedUntilDate instanceof DateTime) {
+            $this->_verifiedUntilDate = $verifiedUntilDate;
+            return;
+        }
+
+        $this->_verifiedUntilDate = null;
+    }
+
+    /**
+     * Get the "Verified Until" select field's value.
+     *
+     * @return DateTime|null
+     */
+    public function getVerifiedUntilDate(): ?DateTime
+    {
+        return $this->_verifiedUntilDate;
+    }
+
+    /**
+     * Checks if the "Verified Until" select field has a value other than null.
+     *
+     * @return bool
+     */
     public function getHasVerifiedUntilDate(): bool
     {
         return $this->_verifiedUntilDate !== null;
     }
 
+    /**
+     * Checks if the "Verified until" select field's value is still in the future. If the value is
+     * null, this returns true because the value means "indefinitely".
+     *
+     * @return bool
+     */
     public function getIsVerified(): bool
     {
         if ($this->_verifiedUntilDate === null) {
@@ -184,16 +252,15 @@ class EntryBehavior extends Behavior
         return $this->_verifiedUntilDate > new DateTime();
     }
 
+    /**
+     * Checks if the entry's section has been enabled for verification in the plugin's settings.
+     *
+     * @return bool
+     */
     public function getIsSectionEnabledForVerification(): bool
     {
-        $sectionId = $this->owner->sectionId;
-
-        if ($sectionId === null) {
-            return false; // An entry must not have a section.
-        }
-
         return VerifiedEntries::getInstance()
             ->sectionSettings
-            ->getIsEnabledForSection($sectionId);
+            ->getIsEnabledForSection($this->owner->sectionId);
     }
 }
