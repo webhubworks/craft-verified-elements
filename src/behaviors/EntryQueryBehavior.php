@@ -124,13 +124,13 @@ class EntryQueryBehavior extends Behavior
         if ($value) {
             $query->andWhere(['or',
                 'veea.verifiedUntilDate IS NULL',
-                'veea.verifiedUntilDate >= NOW()',
+                'veea.verifiedUntilDate >= UTC_TIMESTAMP()',
             ]);
         }
         else {
             $query->andWhere(['and',
                 'veea.verifiedUntilDate IS NOT NULL',
-                'veea.verifiedUntilDate < NOW()',
+                'veea.verifiedUntilDate < UTC_TIMESTAMP()',
             ]);
         }
 

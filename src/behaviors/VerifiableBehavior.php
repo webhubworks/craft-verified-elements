@@ -7,6 +7,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use DateTime;
+use DateTimeZone;
 use yii\base\Behavior;
 
 /**
@@ -111,11 +112,29 @@ class VerifiableBehavior extends Behavior
      */
     public function setVerifiedUntilDate(mixed $value): void
     {
-        // TODO handle toDatetime exception
-        $verifiedUntilDate = DateTimeHelper::toDatetime($value, true);
+        // TODO handle DateTimeZone exception
+        $craftTimezone = new DateTimeZone(Craft::$app->getTimeZone());
 
+        if ($value instanceof DateTime) {
+            $this->_verifiedUntilDate = (clone $value)->setTimezone($craftTimezone);
+            return;
+        }
+
+        if (! $value) {
+            $this->_verifiedUntilDate = null;
+            return;
+        }
+
+        if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            // Date-only string from a form post — midnight in Craft's timezone
+            $this->_verifiedUntilDate = new DateTime($value . ' 00:00:00', $craftTimezone);
+            return;
+        }
+
+        // Datetime string from the DB — stored as UTC, convert to Craft's timezone
+        $verifiedUntilDate = DateTimeHelper::toDatetime($value);
         if ($verifiedUntilDate instanceof DateTime) {
-            $this->_verifiedUntilDate = $verifiedUntilDate;
+            $this->_verifiedUntilDate = $verifiedUntilDate->setTimezone($craftTimezone);
             return;
         }
 
@@ -154,6 +173,12 @@ class VerifiableBehavior extends Behavior
             return true;
         }
 
-        return $this->_verifiedUntilDate > new DateTime();
+        // TODO handle DateTime exceptions
+        $now = new DateTime(
+            'now',
+            new DateTimeZone(Craft::$app->getTimeZone())
+        );
+
+        return $this->_verifiedUntilDate > $now;
     }
 }
