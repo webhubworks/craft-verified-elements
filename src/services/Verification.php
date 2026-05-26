@@ -3,7 +3,8 @@
 namespace webhubworks\verifiedentries\services;
 
 use Craft;
-use craft\db\Query;
+use craft\db\Query as CraftQuery;
+use craft\db\Table as CraftTable;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -12,11 +13,13 @@ use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
+use webhubworks\verifiedentries\behaviors\EntryBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
+use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\db\Exception;
@@ -76,7 +79,7 @@ class Verification extends Component
      */
     public function seedVerificationRow(int $entryId, int $siteId): void
     {
-        $sourceRow = (new Query())
+        $sourceRow = (new CraftQuery())
             ->select(['reviewerId', 'verifiedUntilDate'])
             ->from(PluginTable::ENTRIES)
             ->where(['entryId' => $entryId])
@@ -338,5 +341,144 @@ class Verification extends Component
         ];
 
         return UrlHelper::buildQuery($config);
+    }
+
+
+    // EVENTS
+    // =============================================================================================
+
+    /**
+     * On propagation, only seed the row if one doesn't exist yet. This prevents a save on one
+     * site from overwriting verification settings that were independently set on another site.
+     *
+     * @param int $entryId
+     * @param int $siteId
+     * @return void
+     * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
+     */
+    public function handlePropagationSave(int $entryId, int $siteId): void
+    {
+        if ($this->hasVerificationRow($entryId, $siteId)) {
+            return;
+        }
+
+        try {
+            $this->seedVerificationRow($entryId, $siteId);
+        }
+        catch (Exception $exception) {
+            $entryTitle = (new CraftQuery())
+                ->select(['title'])
+                ->from(CraftTable::ELEMENTS_SITES)
+                ->where(['elementId' => $entryId, 'siteId' => $siteId])
+                ->scalar();
+
+            Craft::error(sprintf(
+                'Error seeding verification row for entry %s "%s" on site %s: %s',
+                $entryId,
+                $entryTitle ?: '(No title)',
+                $siteId,
+                $exception->getMessage()
+            ), __METHOD__);
+        }
+    }
+
+    /**
+     * When performing normal save duties for the entry. update the entry's verification fields.
+     *
+     * @param Entry $entry
+     * @return void
+     * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
+     */
+    public function handleCanonicalSave(Entry $entry): void
+    {
+        /** @var Entry|EntryBehavior $entry */
+
+        $entryId = $entry->getCanonicalId();
+
+        try {
+            $this->upsertEntryDetails(
+                $entryId,
+                $entry->siteId,
+                $entry->getReviewerId(),
+                $entry->getVerifiedUntilDate()
+            );
+        }
+        catch (Exception $exception) {
+            Craft::error(sprintf(
+                'Error upserting "Verified Entries" details for entry %s "%s" on site %s: %s',
+                $entryId,
+                $entry->title,
+                $entry->siteId,
+                $exception->getMessage()
+            ), __METHOD__);
+        }
+
+        // Seed rows for any other supported sites that don't have a row yet.
+        // This handles initial entry creation before propagation fires.
+        foreach ($entry->getSupportedSites() as $siteInfo) {
+            $siteId = is_array($siteInfo) ? ($siteInfo['siteId'] ?? null) : (int)$siteInfo;
+
+            if (! $siteId || $siteId === $entry->siteId) {
+                continue;
+            }
+
+            if ($this->hasVerificationRow($entryId, $siteId)) {
+                continue;
+            }
+
+            try {
+                $this->upsertEntryDetails(
+                    $entryId,
+                    $siteId,
+                    $entry->getReviewerId(),
+                    $entry->getVerifiedUntilDate()
+                );
+            }
+            catch (Exception $exception) {
+                Craft::error(sprintf(
+                    'Error seeding verification row for entry %s "%s" on site %s: %s',
+                    $entryId,
+                    $entry->title,
+                    $siteId,
+                    $exception->getMessage()
+                ), __METHOD__);
+            }
+        }
+    }
+
+    /**
+     * After an entry saves and changes to the entry were detected, notify the entry's assigned
+     * Reviewer if the changes were made by someone else.
+     *
+     * @param Entry $entry
+     * @return void
+     * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
+     */
+    public function handleCheckForChanges(Entry $entry): void
+    {
+        /** @var Entry|EntryBehavior $entry */
+
+        if (! $entry->getHasVerifiedUntilDate() || ! $entry->enabled) {
+            return;
+        }
+
+        $reviewer = $entry->getReviewer();
+        if (! $reviewer || ! $reviewer->active) {
+            Craft::info(sprintf(
+                'Entry %s "%s" on site %s "%s" has no Reviewer to notify.',
+                $entry->getCanonicalId(),
+                $entry->title,
+                $entry->siteId,
+                $entry->getSite()->name
+            ), __METHOD__);
+            return;
+        }
+
+        // Notify the Reviewer if someone else edits their assigned entry
+        if ($reviewer->id !== Craft::$app->getUser()->getId()) {
+            VerifiedEntries::getInstance()
+                ->getNotifications()
+                ->sendChangeNotification($entry, $reviewer);
+        }
     }
 }

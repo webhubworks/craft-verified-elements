@@ -178,7 +178,7 @@ readonly class EventRegistrar
             Entry::class,
             Model::EVENT_DEFINE_BEHAVIORS,
             static function ($event) {
-                $event->behaviors[VerifiedEntries::HANDLE . '.entry'] = EntryBehavior::class;
+                $event->behaviors[EntryBehavior::NAME] = EntryBehavior::class;
             }
         );
 
@@ -440,6 +440,9 @@ readonly class EventRegistrar
     private function registerEntryLifecycle(): void
     {
         if ($this->isCpRequest || $this->isConsoleRequest) {
+            /**
+             *
+             */
             Event::on(
                 Entry::class,
                 Element::EVENT_BEFORE_SAVE,
@@ -488,27 +491,33 @@ readonly class EventRegistrar
                 /** @var Entry|EntryBehavior $entry */
                 $entry = $event->sender;
 
-                if (! $entry->getHasVerifiedUntilDate() || ! $entry->enabled) {
+                if (ElementHelper::isDraftOrRevision($entry)) {
                     return;
                 }
 
-                if (! ElementHelper::isRevision($entry)) {
+                if (! $entry->getBehavior(EntryBehavior::NAME)) {
+                    $entry->attachBehavior(EntryBehavior::NAME, EntryBehavior::class);
+                }
+
+                // Don't run the below logic for entries not affected by this plugin.
+                if (! $entry->getIsSectionEnabledForVerification()) {
                     return;
                 }
 
-                $reviewer = $entry->getReviewer();
-                if (! $reviewer || ! $reviewer->active) {
-                    Craft::info('Entry has no reviewer to notify', __METHOD__);
+                // Should this entry's verification fields ba applied to other site-versions of this entry?
+                if ($entry->propagating) {
+                    $this->plugin->getVerification()->handlePropagationSave(
+                        $entry->getCanonicalId(),
+                        $entry->siteId
+                    );
                     return;
                 }
 
-                /** @var RevisionBehavior $revisionBehavior */
-                $revisionBehavior = $entry->getBehavior('revision');
-                if ($reviewer->id === $revisionBehavior->creatorId) {
-                    return;
-                }
+                // If we're not propagating, handle normal save logic.
+                $this->plugin->getVerification()->handleCanonicalSave($entry);
 
-                $this->plugin->getNotifications()->sendChangeNotification($entry, $reviewer);
+                // If the entry was edited, notify the entry's assigned Reviewer.
+                $this->plugin->getVerification()->handleCheckForChanges($entry);
             }
         );
     }
