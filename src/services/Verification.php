@@ -12,6 +12,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
+use DateInterval;
 use DateTime;
 use webhubworks\verifiedentries\behaviors\EntryBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
@@ -346,6 +347,39 @@ class Verification extends Component
 
     // EVENTS
     // =============================================================================================
+
+    /**
+     * Before an entry saves, set the reviewer ID and "Verified until" date in the entry's
+     * behavior class.
+     *
+     * @param Entry $entry
+     * @return void
+     * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_BEFORE_SAVE
+     * @see EntryBehavior::setReviewerId()
+     * @see EntryBehavior::setVerifiedUntilDate()
+     */
+    public function handleSettingOfVerificationFields(Entry $entry): void
+    {
+        /** @var Entry|EntryBehavior $entry */
+
+        $defaults = VerifiedEntries::getInstance()->getSectionSettings()->getDefaultSettingsForSection(
+            $entry->sectionId,
+            $entry->siteId
+        );
+
+        [$reviewerId, $defaultPeriod] = $defaults ?? [null, null];
+
+        if ($entry->getReviewerId() === null && $reviewerId) {
+            $entry->setReviewerId($reviewerId);
+        }
+
+        if ($entry->getVerifiedUntilDate() === null && $defaultPeriod) {
+            // TODO address DateInterval exception
+            $dateInterval = new DateInterval($defaultPeriod);
+            $verifiedUntilDate = DateTimeHelper::now()->add($dateInterval);
+            $entry->setVerifiedUntilDate($verifiedUntilDate);
+        }
+    }
 
     /**
      * On propagation, only seed the row if one doesn't exist yet. This prevents a save on one

@@ -7,7 +7,6 @@ use craft\base\Element;
 use craft\base\Event;
 use craft\base\Model;
 use craft\base\conditions\BaseCondition;
-use craft\behaviors\RevisionBehavior;
 use craft\controllers\UsersController;
 use craft\db\Query;
 use craft\elements\Entry;
@@ -29,7 +28,6 @@ use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\services\Dashboard;
@@ -38,7 +36,6 @@ use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
-use DateInterval;
 use webhubworks\verifiedentries\VerifiedEntries;
 use webhubworks\verifiedentries\behaviors\EntryBehavior;
 use webhubworks\verifiedentries\behaviors\EntryQueryBehavior;
@@ -440,42 +437,22 @@ readonly class EventRegistrar
     private function registerEntryLifecycle(): void
     {
         if ($this->isCpRequest || $this->isConsoleRequest) {
-            /**
-             *
-             */
             Event::on(
                 Entry::class,
                 Element::EVENT_BEFORE_SAVE,
                 function (ModelEvent $event) {
-                    if (! $event->isNew) {
-                        return;
-                    }
-
                     /** @var Entry|EntryBehavior $entry */
                     $entry = $event->sender;
 
-                    if ($entry->sectionId === null) {
+                    if (!$event->isNew) {
                         return;
                     }
 
-                    $defaults = $this->plugin
-                        ->getSectionSettings()
-                        ->getDefaultSettingsForSection(
-                            $entry->sectionId,
-                            $entry->siteId
-                        );
-
-                    [$reviewerId, $defaultPeriod] = $defaults ?? [null, null];
-
-                    if ($entry->getReviewerId() === null && $reviewerId) {
-                        $entry->setReviewerId($reviewerId);
+                    if (! $entry->getBehavior(EntryBehavior::NAME)) {
+                        $entry->attachBehavior(EntryBehavior::NAME, EntryBehavior::class);
                     }
 
-                    if ($entry->getVerifiedUntilDate() === null && $defaultPeriod) {
-                        $dateInterval = new DateInterval($defaultPeriod);
-                        $verifiedUntilDate = DateTimeHelper::now()->add($dateInterval);
-                        $entry->setVerifiedUntilDate($verifiedUntilDate);
-                    }
+                    $this->plugin->getVerification()->handleSettingOfVerificationFields($entry);
                 }
             );
         }
