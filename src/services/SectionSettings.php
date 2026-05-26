@@ -2,7 +2,7 @@
 
 namespace webhubworks\verifiedentries\services;
 
-use craft\db\Query;
+use craft\db\Query as CraftQuery;
 use craft\elements\User;
 use craft\helpers\Db;
 use webhubworks\verifiedentries\db\PluginQuery;
@@ -13,9 +13,79 @@ use yii\db\Exception;
 /**
  * The SectionSettings service represents logic related to Craft Sections (channels, structures, singles) that are
  * enabled for this plugin.
+ *
+ * @property-read int[] $enabledSectionIds
  */
 class SectionSettings extends Component
 {
+    private ?array $_enabledSectionIds = null;
+
+    /**
+     * Returns an array of IDs for sections (channels, structures, singles) that have been
+     * enabled in this plugin's settings.
+     *
+     * The returned array gets memorized, so you can call this as many times as you want in a
+     * request and it won't re-query the database.
+     *
+     * @return int[]
+     */
+    public function getEnabledSectionIds(): array
+    {
+        if ($this->_enabledSectionIds === null) {
+            $this->_enabledSectionIds = array_map(
+                'intval',
+                (new CraftQuery())
+                    ->select(['sectionId'])
+                    ->from(PluginTable::SECTIONS)
+                    ->where(['enabled' => true])
+                    ->distinct()
+                    ->column()
+            );
+        }
+
+        return $this->_enabledSectionIds;
+    }
+
+    /**
+     * Checks if an entry's section has been enabled in this plugin's settings.
+     *
+     * @param int|string|null $sectionId
+     * @return bool
+     */
+    public function isSectionEnabled(int|string|null $sectionId): bool
+    {
+        // Matrix entries aren't applicable to this plugin.
+        if ($sectionId === null) {
+            return false;
+        }
+
+        if (is_string($sectionId)) {
+            $sectionId = (int)$sectionId;
+        }
+
+        // Only entries from sections that are enabled by the plugin should get the behavior.
+        if (! in_array($sectionId, $this->getEnabledSectionIds(), true)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Checks if a section is enabled for this plugin.
+     *
+     * @param int $sectionId
+     * @param int $siteId
+     * @return bool
+     */
+    public function isSectionEnabledForSite(int $sectionId, int $siteId): bool
+    {
+        return (new CraftQuery())
+            ->from(PluginTable::SECTIONS)
+            ->where(['sectionId' => $sectionId, 'siteId' => $siteId, 'enabled' => true])
+            ->exists();
+    }
+
     /**
      * Returns the sections (channels, structures, singles) to list on the plugin's Settings page.
      *
@@ -79,21 +149,6 @@ class SectionSettings extends Component
     }
 
     /**
-     * Checks if a section is enabled for this plugin.
-     *
-     * @param int $sectionId
-     * @param int $siteId
-     * @return bool
-     */
-    public function getIsEnabledForSection(int $sectionId, int $siteId): bool
-    {
-        return (new Query())
-            ->from(PluginTable::SECTIONS)
-            ->where(['sectionId' => $sectionId, 'siteId' => $siteId, 'enabled' => true])
-            ->exists();
-    }
-
-    /**
      * Returns default configuration for a specific section (channels, structures, singles) that
      * this plugin is applied to.
      *
@@ -103,7 +158,7 @@ class SectionSettings extends Component
      */
     public function getDefaultSettingsForSection(int $sectionId, int $siteId): ?array
     {
-        $result = (new Query())
+        $result = (new CraftQuery())
             ->select(['enabled', 'reviewerId', 'defaultPeriod'])
             ->from(PluginTable::SECTIONS)
             ->where(['sectionId' => $sectionId, 'siteId' => $siteId])

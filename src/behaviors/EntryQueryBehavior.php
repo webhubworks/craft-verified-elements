@@ -14,6 +14,7 @@ use yii\base\Behavior;
  */
 class EntryQueryBehavior extends Behavior
 {
+    public const NAME = 'verified-entries.entry-query';
     public ?bool $isVerified = null;
     public ?int $reviewerId = null;
     public ?string $verifiedUntil = null;
@@ -34,19 +35,25 @@ class EntryQueryBehavior extends Behavior
      */
     public function beforePrepare(): void
     {
+        // Skip adding JOIN and SELECT for nested matrix entries
+        // since they aren't applicable to the plugin.
+        if ($this->owner->ownerId !== null) {
+            return;
+        }
+
         /** @var Query $query */
         $query = $this->owner->query;
 
-        // Join our `verifiedentries_entryattributes` table
-        if (!$this->hasJoin($query, 'veea')) {
+        if (! $this->hasJoin($query, 'veea')) {
             $query->leftJoin(
                 ['veea' => PluginTable::ENTRIES],
                 '[[veea.entryId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
             );
         }
 
-        // Select custom columns. Craft will attempt to assign anything defined here to the Entry element when
-        // populating it! Fortunately, your Behavior can also supply properties.
+        // Select custom columns. Craft will attempt to assign anything defined here
+        // to the Entry element when populating it! Fortunately, your Behavior can also supply
+        // properties.
         $query->addSelect([
             'veea.verifiedUntilDate',
             'veea.reviewerId',
@@ -71,11 +78,16 @@ class EntryQueryBehavior extends Behavior
      */
     public function afterPrepare(): void
     {
+        // Skip adding JOIN for nested matrix entries since they aren't applicable to the plugin.
+        if ($this->owner->ownerId !== null) {
+            return;
+        }
+
         /** @var Query $subQuery */
         $subQuery = $this->owner->subQuery;
 
         // Join our `verifiedentries_entryattributes` table
-        if (!$this->hasJoin($subQuery, 'veea')) {
+        if (! $this->hasJoin($subQuery, 'veea')) {
             $subQuery->leftJoin(
                 ['veea' => PluginTable::ENTRIES],
                 '[[veea.entryId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
@@ -85,7 +97,7 @@ class EntryQueryBehavior extends Behavior
 
     private function hasJoin(Query $query, string $alias): bool
     {
-        if (!$query->join) {
+        if (! $query->join) {
             return false;
         }
 
@@ -95,7 +107,8 @@ class EntryQueryBehavior extends Behavior
                 if (in_array($alias, $aliases, true)) {
                     return true;
                 }
-            } else {
+            }
+            else {
                 return $query->isJoined($alias);
             }
         }
@@ -113,7 +126,8 @@ class EntryQueryBehavior extends Behavior
                 'veea.verifiedUntilDate IS NULL',
                 'veea.verifiedUntilDate >= NOW()',
             ]);
-        } else {
+        }
+        else {
             $query->andWhere(['and',
                 'veea.verifiedUntilDate IS NOT NULL',
                 'veea.verifiedUntilDate < NOW()',
@@ -130,7 +144,8 @@ class EntryQueryBehavior extends Behavior
 
         if (is_array($value) || is_int($value)) {
             $query->andWhere(['veea.reviewerId' => $value]);
-        } elseif ($value === null) {
+        }
+        elseif ($value === null) {
             $query->andWhere('veea.reviewerId IS null');
         }
 

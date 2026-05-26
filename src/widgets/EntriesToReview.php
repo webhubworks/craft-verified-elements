@@ -68,12 +68,12 @@ class EntriesToReview extends Widget
     public function getBodyHtml(): ?string
     {
         $userId = Craft::$app->getUser()->getId();
-        $enabledSections = VerifiedEntries::getInstance()->sectionSettings->getEnabledSections();
+        $enabledSectionIds = VerifiedEntries::getInstance()->getSectionSettings()->getEnabledSectionIds();
 
         $entries = Entry::find()
             ->status('live')
             ->site('*')
-            ->sectionId($enabledSections)
+            ->sectionId($enabledSectionIds)
             ->reviewerId($userId)
             ->isVerified(false)
             ->limit($this->limit)

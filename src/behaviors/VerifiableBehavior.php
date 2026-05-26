@@ -7,7 +7,6 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use DateTime;
-use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Behavior;
 
 /**
@@ -18,13 +17,12 @@ use yii\base\Behavior;
  * @property-read bool $hasVerifiedUntilDate
  * @property null|mixed|int $reviewerId
  * @property-read bool $isVerified
- * @property-read bool $isSectionEnabledForVerification
  * @property null|mixed|DateTime $verifiedUntilDate
  * @property-read User|null $reviewer
  */
 class VerifiableBehavior extends Behavior
 {
-    public const NAME = 'verified-entries.entry';
+    public const NAME = 'verified-entries.verifiable';
 
 
     // REVIEWER (Craft User element)
@@ -157,20 +155,5 @@ class VerifiableBehavior extends Behavior
         }
 
         return $this->_verifiedUntilDate > new DateTime();
-    }
-
-    /**
-     * Checks if the entry's section has been enabled for verification in the plugin's settings.
-     *
-     * @return bool
-     */
-    public function getIsSectionEnabledForVerification(): bool
-    {
-        return VerifiedEntries::getInstance()
-            ->getSectionSettings()
-            ->getIsEnabledForSection(
-                $this->owner->sectionId,
-                $this->owner->siteId,
-            );
     }
 }

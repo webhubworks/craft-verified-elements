@@ -40,7 +40,7 @@ class VerifiedEntry extends Entry
     {
         /** @var  $verificationService */
         $plugin = VerifiedEntries::getInstance();
-        $enabledSectionIds = $plugin->sectionSettings->getEnabledSections();
+        $enabledSectionIds = $plugin->getSectionSettings()->getEnabledSectionIds();
 
         $currentUser = Craft::$app->user;
         $reviewers = User::find()
@@ -82,7 +82,7 @@ class VerifiedEntry extends Entry
             ],
             [
                 'key' => 'mine',
-                'label' => $currentUser->getIdentity()->friendlyName,
+                'label' => $currentUser->getIdentity()->getFriendlyName(),
                 'criteria' => [
                     'reviewerId' => $currentUser->id,
                     'status' => 'live',
@@ -95,7 +95,7 @@ class VerifiedEntry extends Entry
             /** @var User $reviewer */
             $sources[] = [
                 'key' => 'reviewer-' . $reviewer->id,
-                'label' => $reviewer->friendlyName,
+                'label' => $reviewer->getFriendlyName(),
                 'criteria' => [
                     'reviewerId' => $reviewer->id,
                     'status' => 'live',

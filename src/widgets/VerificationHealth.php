@@ -35,7 +35,7 @@ class VerificationHealth extends Widget
 
     public function getBodyHtml(): ?string
     {
-        $enabledSectionIds = VerifiedEntries::getInstance()->sectionSettings->getEnabledSections();
+        $enabledSectionIds = VerifiedEntries::getInstance()->getSectionSettings()->getEnabledSectionIds();
 
         $totalEntryCount = Entry::find()
             ->status('live')

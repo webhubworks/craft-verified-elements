@@ -15,6 +15,7 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\db\EntryQuery;
 use craft\enums\Color;
 use craft\events\DefineAttributeHtmlEvent;
+use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineEditUserScreensEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
@@ -141,7 +142,7 @@ readonly class EventRegistrar
     public function registerOnInitEvents(): void
     {
         // the order that these methods run doesn't matter.
-        $this->registerModelLevel();
+        $this->registerEntryBehaviors();
         $this->registerEntryEditUi();
         $this->registerEntryIndexUi();
         $this->registerEntryLifecycle();
@@ -156,7 +157,7 @@ readonly class EventRegistrar
      * @see Model::EVENT_DEFINE_BEHAVIORS
      * @see Query::EVENT_DEFINE_BEHAVIORS
      */
-    private function registerModelLevel(): void
+    private function registerEntryBehaviors(): void
     {
         if (! $this->isCpRequest && ! $this->isConsoleRequest) {
             return;
@@ -174,7 +175,7 @@ readonly class EventRegistrar
         Event::on(
             Entry::class,
             Model::EVENT_DEFINE_BEHAVIORS,
-            static function ($event) {
+            static function (DefineBehaviorsEvent $event) {
                 $event->behaviors[VerifiableBehavior::NAME] = VerifiableBehavior::class;
             }
         );
@@ -182,10 +183,8 @@ readonly class EventRegistrar
         Event::on(
             EntryQuery::class,
             Query::EVENT_DEFINE_BEHAVIORS,
-            static function ($event) {
-                /** @var EntryQuery $query */
-
-                $event->behaviors[] = EntryQueryBehavior::class;
+            static function (DefineBehaviorsEvent$event) {
+                $event->behaviors[EntryQueryBehavior::NAME] = EntryQueryBehavior::class;
             }
         );
     }
@@ -237,12 +236,17 @@ readonly class EventRegistrar
             function (DefineHtmlEvent $event) {
                 /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
-                $currentUser = Craft::$app->getUser();
 
-                if (
-                    ! $entry->getIsSectionEnabledForVerification() ||
-                    (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value))
-                ) {
+                $currentUser = Craft::$app->getUser();
+                if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+                    return;
+                }
+
+                $isSectionEnabled = VerifiedEntries::getInstance()->getSectionSettings()->isSectionEnabledForSite(
+                    $entry->sectionId,
+                    $entry->siteId,
+                );
+                if (! $isSectionEnabled) {
                     return;
                 }
 
@@ -444,12 +448,8 @@ readonly class EventRegistrar
                     /** @var Entry|VerifiableBehavior $entry */
                     $entry = $event->sender;
 
-                    if (!$event->isNew) {
+                    if (! $event->isNew) {
                         return;
-                    }
-
-                    if (! $entry->getBehavior(VerifiableBehavior::NAME)) {
-                        $entry->attachBehavior(VerifiableBehavior::NAME, VerifiableBehavior::class);
                     }
 
                     $this->plugin->getVerification()->handleSettingOfVerificationFields($entry);
@@ -472,21 +472,22 @@ readonly class EventRegistrar
                     return;
                 }
 
-                if (! $entry->getBehavior(VerifiableBehavior::NAME)) {
-                    $entry->attachBehavior(VerifiableBehavior::NAME, VerifiableBehavior::class);
-                }
-
                 // Don't run the below logic for entries not affected by this plugin.
-                if (! $entry->getIsSectionEnabledForVerification()) {
+                $isSectionEnabled = VerifiedEntries::getInstance()->getSectionSettings()->isSectionEnabledForSite(
+                    $entry->sectionId,
+                    $entry->siteId,
+                );
+                if (! $isSectionEnabled) {
                     return;
                 }
 
-                // Should this entry's verification fields ba applied to other site-versions of this entry?
+                // Should this entry's verification fields be applied to other site-versions of this entry?
                 if ($entry->propagating) {
                     $this->plugin->getVerification()->handlePropagationSave(
                         $entry->getCanonicalId(),
                         $entry->siteId
                     );
+
                     return;
                 }
 
