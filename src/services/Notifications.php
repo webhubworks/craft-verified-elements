@@ -9,7 +9,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use craft\i18n\Locale;
 use Illuminate\Support\Collection;
-use webhubworks\verifiedentries\behaviors\EntryBehavior;
+use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\helpers\Markdown;
@@ -106,12 +106,14 @@ class Notifications extends Component
      * Send an entry's Reviewer an email that someone has updated their entry
      * and that they should verify the changes.
      *
-     * @param Entry|EntryBehavior $entry
+     * @param Entry $entry
      * @param User $reviewer
      * @return void
      */
-    public function sendChangeNotification(Entry|EntryBehavior $entry, User $reviewer): void
+    public function sendChangeNotification(Entry $entry, User $reviewer): void
     {
+        /** @var Entry|VerifiableBehavior $entry */
+
         $language = $reviewer->getPreferredLanguage();
         $formatter = $this->getFormatter($language);
 

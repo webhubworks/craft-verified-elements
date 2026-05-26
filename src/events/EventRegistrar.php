@@ -37,7 +37,7 @@ use craft\services\UserPermissions;
 use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use webhubworks\verifiedentries\VerifiedEntries;
-use webhubworks\verifiedentries\behaviors\EntryBehavior;
+use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\EntryQueryBehavior;
 use webhubworks\verifiedentries\elements\VerifiedEntry;
 use webhubworks\verifiedentries\elements\actions\AssignReviewer;
@@ -141,7 +141,7 @@ readonly class EventRegistrar
     public function registerOnInitEvents(): void
     {
         // the order that these methods run doesn't matter.
-        $this->registerEntryBehaviors();
+        $this->registerModelLevel();
         $this->registerEntryEditUi();
         $this->registerEntryIndexUi();
         $this->registerEntryLifecycle();
@@ -156,7 +156,7 @@ readonly class EventRegistrar
      * @see Model::EVENT_DEFINE_BEHAVIORS
      * @see Query::EVENT_DEFINE_BEHAVIORS
      */
-    private function registerEntryBehaviors(): void
+    private function registerModelLevel(): void
     {
         if (! $this->isCpRequest && ! $this->isConsoleRequest) {
             return;
@@ -175,7 +175,7 @@ readonly class EventRegistrar
             Entry::class,
             Model::EVENT_DEFINE_BEHAVIORS,
             static function ($event) {
-                $event->behaviors[EntryBehavior::NAME] = EntryBehavior::class;
+                $event->behaviors[VerifiableBehavior::NAME] = VerifiableBehavior::class;
             }
         );
 
@@ -208,7 +208,7 @@ readonly class EventRegistrar
             Entry::class,
             Element::EVENT_DEFINE_METADATA,
             static function (DefineMetadataEvent $event) {
-                /** @var Entry|EntryBehavior $entry */
+                /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
 
                 if (! $entry->getHasVerifiedUntilDate()) {
@@ -235,7 +235,7 @@ readonly class EventRegistrar
             Entry::class,
             Element::EVENT_DEFINE_SIDEBAR_HTML,
             function (DefineHtmlEvent $event) {
-                /** @var Entry|EntryBehavior $entry */
+                /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
                 $currentUser = Craft::$app->getUser();
 
@@ -276,7 +276,7 @@ readonly class EventRegistrar
             Entry::class,
             Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML,
             function (DefineAttributeHtmlEvent $event) {
-                /** @var Entry|EntryBehavior $entry */
+                /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
                 $currentUser = Craft::$app->getUser();
                 $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
@@ -387,7 +387,7 @@ readonly class EventRegistrar
             Entry::class,
             Element::EVENT_DEFINE_ATTRIBUTE_HTML,
             static function (DefineAttributeHtmlEvent $event) {
-                /** @var Entry|EntryBehavior $entry */
+                /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
 
                 switch ($event->attribute) {
@@ -441,15 +441,15 @@ readonly class EventRegistrar
                 Entry::class,
                 Element::EVENT_BEFORE_SAVE,
                 function (ModelEvent $event) {
-                    /** @var Entry|EntryBehavior $entry */
+                    /** @var Entry|VerifiableBehavior $entry */
                     $entry = $event->sender;
 
                     if (!$event->isNew) {
                         return;
                     }
 
-                    if (! $entry->getBehavior(EntryBehavior::NAME)) {
-                        $entry->attachBehavior(EntryBehavior::NAME, EntryBehavior::class);
+                    if (! $entry->getBehavior(VerifiableBehavior::NAME)) {
+                        $entry->attachBehavior(VerifiableBehavior::NAME, VerifiableBehavior::class);
                     }
 
                     $this->plugin->getVerification()->handleSettingOfVerificationFields($entry);
@@ -465,15 +465,15 @@ readonly class EventRegistrar
             Entry::class,
             Element::EVENT_AFTER_SAVE,
             function (ModelEvent $event) {
-                /** @var Entry|EntryBehavior $entry */
+                /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
 
                 if (ElementHelper::isDraftOrRevision($entry)) {
                     return;
                 }
 
-                if (! $entry->getBehavior(EntryBehavior::NAME)) {
-                    $entry->attachBehavior(EntryBehavior::NAME, EntryBehavior::class);
+                if (! $entry->getBehavior(VerifiableBehavior::NAME)) {
+                    $entry->attachBehavior(VerifiableBehavior::NAME, VerifiableBehavior::class);
                 }
 
                 // Don't run the below logic for entries not affected by this plugin.

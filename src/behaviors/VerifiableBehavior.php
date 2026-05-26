@@ -22,7 +22,7 @@ use yii\base\Behavior;
  * @property null|mixed|DateTime $verifiedUntilDate
  * @property-read User|null $reviewer
  */
-class EntryBehavior extends Behavior
+class VerifiableBehavior extends Behavior
 {
     public const NAME = 'verified-entries.entry';
 

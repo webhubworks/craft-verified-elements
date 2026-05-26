@@ -5,7 +5,7 @@ namespace webhubworks\verifiedentries\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
-use webhubworks\verifiedentries\behaviors\EntryBehavior;
+use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -68,7 +68,7 @@ class AssignReviewer extends ElementAction
             $elements,
             function (Entry $entry) use ($elementsService) {
                 try {
-                    /** @var Entry|EntryBehavior $entry */
+                    /** @var Entry|VerifiableBehavior $entry */
                     $entry->setReviewerId($this->reviewerId);
                     $elementsService->saveElement($entry);
                     return true;

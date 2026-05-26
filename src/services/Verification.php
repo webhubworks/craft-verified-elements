@@ -14,7 +14,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateInterval;
 use DateTime;
-use webhubworks\verifiedentries\behaviors\EntryBehavior;
+use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
@@ -355,12 +355,12 @@ class Verification extends Component
      * @param Entry $entry
      * @return void
      * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_BEFORE_SAVE
-     * @see EntryBehavior::setReviewerId()
-     * @see EntryBehavior::setVerifiedUntilDate()
+     * @see VerifiableBehavior::setReviewerId()
+     * @see VerifiableBehavior::setVerifiedUntilDate()
      */
     public function handleSettingOfVerificationFields(Entry $entry): void
     {
-        /** @var Entry|EntryBehavior $entry */
+        /** @var Entry|VerifiableBehavior $entry */
 
         $defaults = VerifiedEntries::getInstance()->getSectionSettings()->getDefaultSettingsForSection(
             $entry->sectionId,
@@ -425,7 +425,7 @@ class Verification extends Component
      */
     public function handleCanonicalSave(Entry $entry): void
     {
-        /** @var Entry|EntryBehavior $entry */
+        /** @var Entry|VerifiableBehavior $entry */
 
         $entryId = $entry->getCanonicalId();
 
@@ -490,7 +490,7 @@ class Verification extends Component
      */
     public function handleCheckForChanges(Entry $entry): void
     {
-        /** @var Entry|EntryBehavior $entry */
+        /** @var Entry|VerifiableBehavior $entry */
 
         if (! $entry->getHasVerifiedUntilDate() || ! $entry->enabled) {
             return;
