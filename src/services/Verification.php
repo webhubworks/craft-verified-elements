@@ -12,7 +12,7 @@ use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
-use webhubworks\verifiedentries\db\Queries;
+use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
@@ -62,7 +62,7 @@ class Verification extends Component
      */
     public function hasVerificationRow(int $entryId, int $siteId): bool
     {
-        return Queries::verifiableEntry($entryId, $siteId)->exists();
+        return PluginQuery::verifiableEntry($entryId, $siteId)->exists();
     }
 
     /**
@@ -263,7 +263,7 @@ class Verification extends Component
     public function checkExpiredVerifications(): array
     {
         // Find entries where verification date is in the past
-        $expiredEntries = Queries::expiredVerifiableEntries()->all();
+        $expiredEntries = PluginQuery::expiredVerifiableEntries()->all();
 
         if (! empty($expiredEntries)) {
             // Log the expired entries

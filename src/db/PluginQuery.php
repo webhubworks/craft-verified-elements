@@ -7,11 +7,11 @@ use craft\helpers\Db;
 use DateTime;
 
 /**
- * Class for abstracting out the many complicated database queries used throughout the plugin. Queries that belong in
+ * Class for abstracting out the many complicated database queries used throughout the plugin. PluginQuery that belong in
  * this file are those with joins, requiring multiple tables to be queried. Single-table queries can remain as they are
  * throughout the plugin's logic.
  */
-abstract class Queries
+abstract class PluginQuery
 {
     // REVIEWERS (USERS)
     // =================================================================================================================

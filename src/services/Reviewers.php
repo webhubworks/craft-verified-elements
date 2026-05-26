@@ -7,7 +7,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
-use webhubworks\verifiedentries\db\Queries;
+use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
@@ -28,7 +28,7 @@ class Reviewers extends Component
             $userId = Craft::$app->getUser()->getId();
         }
 
-        $sections = Queries::sectionsByReviewer($userId)->all();
+        $sections = PluginQuery::sectionsByReviewer($userId)->all();
         $filters = VerifiedEntries::getInstance()->getVerification()->getFilterParams();
 
         return array_map(static function ($section) use ($filters) {
@@ -59,7 +59,7 @@ class Reviewers extends Component
             $userId = Craft::$app->getUser()->getId();
         }
 
-        $entries = Queries::entriesByReviewer($userId, $siteId)->all();
+        $entries = PluginQuery::entriesByReviewer($userId, $siteId)->all();
 
         return $this->transformEntries($entries);
     }
@@ -90,7 +90,7 @@ class Reviewers extends Component
 
         $offset = ($page - 1) * $limit;
 
-        $query = Queries::entriesByReviewer($userId, $siteId)->orderBy([$orderBy => $sortDir]);
+        $query = PluginQuery::entriesByReviewer($userId, $siteId)->orderBy([$orderBy => $sortDir]);
 
         $total = $query->count();
 

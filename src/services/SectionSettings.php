@@ -5,7 +5,7 @@ namespace webhubworks\verifiedentries\services;
 use craft\db\Query;
 use craft\elements\User;
 use craft\helpers\Db;
-use webhubworks\verifiedentries\db\Queries;
+use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
 use yii\base\Component;
 use yii\db\Exception;
@@ -24,7 +24,7 @@ class SectionSettings extends Component
      */
     public function getAllSectionsWithSettings(int $siteId): array
     {
-        $rows = Queries::sectionsWithSettings($siteId)->all();
+        $rows = PluginQuery::sectionsWithSettings($siteId)->all();
 
         // Collect all unique reviewer IDs
         $reviewerIds = array_unique(array_filter(array_column($rows, 'reviewerId')));
