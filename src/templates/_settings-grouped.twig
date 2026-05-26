@@ -26,7 +26,7 @@
     <div class="ve-settings-grouped">
     {% for section in sections %}
         <div class="ve-section">
-            <h2>{{ section.name }} <span class="light">{{ section.type|ucfirst|t('app') }}</span></h2>
+            <h2>{{ section.name }} <span class="light">{{ section.type|capitalize|t('app') }}</span></h2>
             <div class="ve-table-wrap">
                 <table class="ve-table">
                     <thead>

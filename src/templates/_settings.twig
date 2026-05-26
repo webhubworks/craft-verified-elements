@@ -52,7 +52,7 @@
                     {% namespace ns %}
                         <tr>
                             <th>{{ section.name }}</th>
-                            <td>{{ section.type|ucfirst|t('app') }}</td>
+                            <td>{{ section.type|capitalize|t('app') }}</td>
                             <td>
                                 {{ forms.lightswitch({
                                     name: 'enabled',
