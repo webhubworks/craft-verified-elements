@@ -20,7 +20,7 @@ class UsersController extends Controller
         $response = $this->asEditUserScreen($user, VerifiedEntries::HANDLE);
 
         $response->contentTemplate(VerifiedEntries::HANDLE . '/_user.twig', [
-            'sections' => VerifiedEntries::getInstance()->users->getSections($userId),
+            'sections' => VerifiedEntries::getInstance()->getReviewers()->getSections($userId),
             'userId' => $userId,
         ]);
 

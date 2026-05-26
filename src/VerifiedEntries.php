@@ -22,7 +22,7 @@ use webhubworks\verifiedentries\services\Verification;
  * @property-read null|array $cpNavItem
  * @property-read null $settingsResponse
  * @property-read Notifications $notifications
- * @property-read Reviewers $users
+ * @property-read Reviewers $reviewers
  * @property-read SectionSettings $sectionSettings
  * @property-read Verification $verification
  */
@@ -40,7 +40,7 @@ class VerifiedEntries extends Plugin
             'components' => [
                 'notifications' => Notifications::class,
                 'sectionSettings' => SectionSettings::class,
-                'users' => Reviewers::class,
+                'reviewers' => Reviewers::class,
                 'verification' => Verification::class,
             ],
         ];
@@ -84,9 +84,9 @@ class VerifiedEntries extends Plugin
     {
         return $this->get('sectionSettings');
     }
-    public function getUsers(): Reviewers
+    public function getReviewers(): Reviewers
     {
-        return $this->get('users');
+        return $this->get('reviewers');
     }
     public function getVerification(): Verification
     {

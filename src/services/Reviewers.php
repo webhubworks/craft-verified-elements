@@ -17,7 +17,7 @@ use yii\base\Component;
 class Reviewers extends Component
 {
     /**
-     * Get all sections assigned to a reviewer.
+     * Get all sections where a User is the default Reviewer.
      *
      * @param int|null $userId
      * @return array
@@ -47,7 +47,9 @@ class Reviewers extends Component
     }
 
     /**
-     * Get all entries assigned to a reviewer.
+     * TODO: is this being used anywhere? Could it be deleted?
+     *
+     * Get all entries assigned to a Reviewer.
      *
      * @param int|null $userId
      * @param int|null $siteId
@@ -65,7 +67,7 @@ class Reviewers extends Component
     }
 
     /**
-     * Get all entries assigned to a reviewer, but paginate the results.
+     * Get all entries assigned to a Reviewer, but paginate the results.
      *
      * @param int $page
      * @param int $limit

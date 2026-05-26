@@ -72,7 +72,7 @@ class EntriesController extends Controller
             default => SORT_ASC,
         };
 
-        [$results, $total] = VerifiedEntries::getInstance()->users->getPaginatedEntries(
+        [$results, $total] = VerifiedEntries::getInstance()->getReviewers()->getPaginatedEntries(
             $page,
             $limit,
             $sortDir,
