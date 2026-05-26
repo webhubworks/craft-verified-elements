@@ -78,6 +78,10 @@ class EntryBehavior extends Behavior
             return;
         }
 
+        if (! $this->getIsSectionEnabledForVerification()) {
+            return;
+        }
+
         try {
             $verification->upsertEntryDetails(
                 $entryId,
@@ -172,6 +176,11 @@ class EntryBehavior extends Behavior
             return;
         }
 
+        if (is_array($value)) {
+            $this->_reviewerId = ! empty($value) ? (int) reset($value) : null;
+            return;
+        }
+
         $this->_reviewerId = null;
     }
 
@@ -263,7 +272,7 @@ class EntryBehavior extends Behavior
     public function getIsSectionEnabledForVerification(): bool
     {
         return VerifiedEntries::getInstance()
-            ->sectionSettings
+            ->getSectionSettings()
             ->getIsEnabledForSection(
                 $this->owner->sectionId,
                 $this->owner->siteId,
