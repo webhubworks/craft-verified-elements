@@ -13,7 +13,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
 use webhubworks\verifiedentries\db\Queries;
-use webhubworks\verifiedentries\db\Table;
+use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
@@ -42,7 +42,7 @@ class Verification extends Component
      */
     public function upsertEntryDetails(int $entryId, int $siteId, ?int $reviewerId, ?DateTime $verifiedUntilDate): void
     {
-        Db::upsert(Table::ENTRIES, [
+        Db::upsert(PluginTable::ENTRIES, [
             'entryId' => $entryId,
             'siteId' => $siteId,
             'reviewerId' => $reviewerId,
@@ -78,7 +78,7 @@ class Verification extends Component
     {
         $sourceRow = (new Query())
             ->select(['reviewerId', 'verifiedUntilDate'])
-            ->from(Table::ENTRIES)
+            ->from(PluginTable::ENTRIES)
             ->where(['entryId' => $entryId])
             ->one();
 

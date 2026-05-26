@@ -4,7 +4,7 @@ namespace webhubworks\verifiedentries\migrations;
 
 use craft\db\Migration;
 use craft\db\Table as CraftTable;
-use webhubworks\verifiedentries\db\Table as PluginTables;
+use webhubworks\verifiedentries\db\PluginTable;
 
 /**
  * Install migration.
@@ -16,7 +16,7 @@ class Install extends Migration
      */
     public function safeUp(): bool
     {
-        $this->createTable(PluginTables::ENTRIES, [
+        $this->createTable(PluginTable::ENTRIES, [
             'id' => $this->primaryKey(),
             'entryId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
@@ -24,13 +24,13 @@ class Install extends Migration
             'verifiedUntilDate' => $this->dateTime()->null(),
         ]);
 
-        $this->createIndex(null, PluginTables::ENTRIES, ['entryId', 'siteId'], true);
+        $this->createIndex(null, PluginTable::ENTRIES, ['entryId', 'siteId'], true);
 
-        $this->addForeignKey(null, PluginTables::ENTRIES, ['entryId'], CraftTable::ENTRIES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, PluginTables::ENTRIES, ['siteId'], CraftTable::SITES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, PluginTables::ENTRIES, ['reviewerId'], CraftTable::USERS, ['id'], 'SET NULL');
+        $this->addForeignKey(null, PluginTable::ENTRIES, ['entryId'], CraftTable::ENTRIES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, PluginTable::ENTRIES, ['siteId'], CraftTable::SITES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, PluginTable::ENTRIES, ['reviewerId'], CraftTable::USERS, ['id'], 'SET NULL');
 
-        $this->createTable(PluginTables::SECTIONS, [
+        $this->createTable(PluginTable::SECTIONS, [
             'id' => $this->primaryKey(),
             'sectionId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
@@ -39,11 +39,11 @@ class Install extends Migration
             'defaultPeriod' => $this->string()->null(),
         ]);
 
-        $this->createIndex(null, PluginTables::SECTIONS, ['sectionId', 'siteId'], true);
+        $this->createIndex(null, PluginTable::SECTIONS, ['sectionId', 'siteId'], true);
 
-        $this->addForeignKey(null, PluginTables::SECTIONS, ['sectionId'], CraftTable::SECTIONS, ['id'], 'CASCADE');
-        $this->addForeignKey(null, PluginTables::SECTIONS, ['siteId'], CraftTable::SITES, ['id'], 'CASCADE');
-        $this->addForeignKey(null, PluginTables::SECTIONS, ['reviewerId'], CraftTable::USERS, ['id'], 'SET NULL');
+        $this->addForeignKey(null, PluginTable::SECTIONS, ['sectionId'], CraftTable::SECTIONS, ['id'], 'CASCADE');
+        $this->addForeignKey(null, PluginTable::SECTIONS, ['siteId'], CraftTable::SITES, ['id'], 'CASCADE');
+        $this->addForeignKey(null, PluginTable::SECTIONS, ['reviewerId'], CraftTable::USERS, ['id'], 'SET NULL');
 
         return true;
     }
@@ -53,8 +53,8 @@ class Install extends Migration
      */
     public function safeDown(): bool
     {
-        $this->dropTableIfExists(PluginTables::ENTRIES);
-        $this->dropTableIfExists(PluginTables::SECTIONS);
+        $this->dropTableIfExists(PluginTable::ENTRIES);
+        $this->dropTableIfExists(PluginTable::SECTIONS);
 
         return true;
     }

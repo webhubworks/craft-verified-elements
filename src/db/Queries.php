@@ -35,7 +35,7 @@ abstract class Queries
                 's.type',
                 's.handle',
             ])
-            ->from(['ves' => Table::SECTIONS])
+            ->from(['ves' => PluginTable::SECTIONS])
             ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.sectionId]]')
             ->where(['ves.enabled' => true])
             ->andWhere(['ves.reviewerId' => $userId]);
@@ -72,7 +72,7 @@ abstract class Queries
                 'sections.handle AS sectionHandle',
                 'sites.handle AS siteHandle',
             ])
-            ->from(['veea' => Table::ENTRIES])
+            ->from(['veea' => PluginTable::ENTRIES])
             ->rightJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
             ->leftJoin(
                 '{{%elements_sites}} es',
@@ -106,7 +106,7 @@ abstract class Queries
     public static function verifiableEntry(int $entryId, int $siteId): Query
     {
         return (new Query())
-            ->from(Table::ENTRIES)
+            ->from(PluginTable::ENTRIES)
             ->where(['entryId' => $entryId, 'siteId' => $siteId]);
     }
 
@@ -129,7 +129,7 @@ abstract class Queries
                 'sections.handle AS sectionHandle',
                 'sites.handle AS siteHandle',
             ])
-            ->from(['veea' => Table::ENTRIES])
+            ->from(['veea' => PluginTable::ENTRIES])
             ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
             ->leftJoin(
                 '{{%elements_sites}} es',
@@ -139,7 +139,7 @@ abstract class Queries
             ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
             ->innerJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
             ->innerJoin(
-                Table::SECTIONS . ' ves',
+                PluginTable::SECTIONS . ' ves',
                 '[[ves.sectionId]] = [[entries.sectionId]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1'
             )
             ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(new DateTime())])
@@ -177,7 +177,7 @@ abstract class Queries
                 [':siteId' => $siteId]
             )
             ->leftJoin(
-                Table::SECTIONS . ' ves',
+                PluginTable::SECTIONS . ' ves',
                 '[[ves.sectionId]] = [[s.id]] AND [[ves.siteId]] = :vesSiteId',
                 [':vesSiteId' => $siteId]
             );

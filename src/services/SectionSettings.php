@@ -6,7 +6,7 @@ use craft\db\Query;
 use craft\elements\User;
 use craft\helpers\Db;
 use webhubworks\verifiedentries\db\Queries;
-use webhubworks\verifiedentries\db\Table;
+use webhubworks\verifiedentries\db\PluginTable;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -73,7 +73,7 @@ class SectionSettings extends Component
             $reviewerId = $reviewerId ?: null;
         }
 
-        Db::upsert(Table::SECTIONS,
+        Db::upsert(PluginTable::SECTIONS,
             compact('sectionId', 'siteId', 'reviewerId', 'enabled', 'defaultPeriod'),
             compact('reviewerId', 'enabled', 'defaultPeriod'));
     }
@@ -88,7 +88,7 @@ class SectionSettings extends Component
     public function getIsEnabledForSection(int $sectionId, int $siteId): bool
     {
         return (new Query())
-            ->from(Table::SECTIONS)
+            ->from(PluginTable::SECTIONS)
             ->where(['sectionId' => $sectionId, 'siteId' => $siteId, 'enabled' => true])
             ->exists();
     }
@@ -105,7 +105,7 @@ class SectionSettings extends Component
     {
         $result = (new Query())
             ->select(['enabled', 'reviewerId', 'defaultPeriod'])
-            ->from(Table::SECTIONS)
+            ->from(PluginTable::SECTIONS)
             ->where(['sectionId' => $sectionId, 'siteId' => $siteId])
             ->one();
 
