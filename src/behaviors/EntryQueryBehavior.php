@@ -16,6 +16,7 @@ class EntryQueryBehavior extends Behavior
 {
     public const NAME = 'verified-entries.entry-query';
     public ?bool $isVerified = null;
+    public ?bool $isUnassigned = null;
     public ?int $reviewerId = null;
     public ?string $verifiedUntil = null;
 
@@ -60,6 +61,10 @@ class EntryQueryBehavior extends Behavior
 
         if ($this->isVerified !== null) {
             $this->isVerified($this->isVerified);
+        }
+
+        if ($this->isUnassigned !== null) {
+            $this->isUnassigned($this->isUnassigned);
         }
 
         if ($this->reviewerId !== null) {
@@ -124,6 +129,32 @@ class EntryQueryBehavior extends Behavior
     }
 
     /**
+     * Query param for filtering entries that have a verification date but no Reviewer assigned.
+     *
+     * @param bool $value
+     * @return EntryQuery
+     */
+    public function isUnassigned(bool $value = true): EntryQuery
+    {
+        $query = $this->owner;
+
+        if ($value) {
+            $query->andWhere(['and',
+                'veea.verifiedUntilDate IS NOT NULL',
+                'veea.verifiedUntilDate >= UTC_TIMESTAMP()',
+                'veea.reviewerId IS NULL',
+            ]);
+        }
+        else {
+            $query->andWhere(['or',
+                'veea.verifiedUntilDate IS NULL',
+                'veea.verifiedUntilDate < UTC_TIMESTAMP()',
+                'veea.reviewerId IS NOT NULL',
+            ]);
+        }
+
+        return $query;
+    }
 
     /**
      * Query param for filtering entries by their Reviewer (Craft User) ID.
