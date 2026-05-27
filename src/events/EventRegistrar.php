@@ -150,6 +150,74 @@ readonly class EventRegistrar
     }
 
     /**
+     * Events that run during CRUD operations on entries.
+     *
+     * @return void
+     * @see Element::EVENT_BEFORE_SAVE
+     * @see Element::EVENT_AFTER_SAVE
+     */
+    private function registerEntryLifecycle(): void
+    {
+        if ($this->isCpRequest || $this->isConsoleRequest) {
+            Event::on(
+                Entry::class,
+                Element::EVENT_BEFORE_SAVE,
+                function (ModelEvent $event) {
+                    /** @var Entry|VerifiableBehavior $entry */
+                    $entry = $event->sender;
+
+                    if (! $event->isNew) {
+                        return;
+                    }
+
+                    $this->plugin->getVerification()->handleSettingOfVerificationFields($entry);
+                }
+            );
+        }
+
+        if (! $this->isCpRequest) {
+            return;
+        }
+
+        Event::on(
+            Entry::class,
+            Element::EVENT_AFTER_SAVE,
+            function (ModelEvent $event) {
+                /** @var Entry|VerifiableBehavior $entry */
+                $entry = $event->sender;
+
+                if (ElementHelper::isDraftOrRevision($entry)) {
+                    return;
+                }
+
+                // Don't run the below logic for entries not affected by this plugin.
+                $isSectionEnabled = $this->plugin->getSectionSettings()->isSectionEnabledForSite(
+                    $entry->sectionId,
+                    $entry->siteId,
+                );
+                if (! $isSectionEnabled) {
+                    return;
+                }
+
+                $verification = $this->plugin->getVerification();
+
+                // Should this entry's verification fields be applied to other site-versions of this entry?
+                if ($entry->propagating) {
+                    $verification->handlePropagationSave($entry->getCanonicalId(), $entry->siteId);
+
+                    return;
+                }
+
+                // If we're not propagating, handle normal save logic.
+                $verification->handleCanonicalSave($entry);
+
+                // If the entry was edited, notify the entry's assigned Reviewer.
+                $verification->handleCheckForChanges($entry);
+            }
+        );
+    }
+
+    /**
      * Events that define what an entry is at the Model level.
      *
      * @return void
@@ -427,75 +495,6 @@ readonly class EventRegistrar
                         }
                         break;
                 }
-            }
-        );
-    }
-
-    /**
-     * Events that run during CRUD operations on entries.
-     *
-     * @return void
-     * @see Element::EVENT_BEFORE_SAVE
-     * @see Element::EVENT_AFTER_SAVE
-     */
-    private function registerEntryLifecycle(): void
-    {
-        if ($this->isCpRequest || $this->isConsoleRequest) {
-            Event::on(
-                Entry::class,
-                Element::EVENT_BEFORE_SAVE,
-                function (ModelEvent $event) {
-                    /** @var Entry|VerifiableBehavior $entry */
-                    $entry = $event->sender;
-
-                    if (! $event->isNew) {
-                        return;
-                    }
-
-                    $this->plugin->getVerification()->handleSettingOfVerificationFields($entry);
-                }
-            );
-        }
-
-        if (! $this->isCpRequest) {
-            return;
-        }
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_AFTER_SAVE,
-            function (ModelEvent $event) {
-                /** @var Entry|VerifiableBehavior $entry */
-                $entry = $event->sender;
-
-                if (ElementHelper::isDraftOrRevision($entry)) {
-                    return;
-                }
-
-                // Don't run the below logic for entries not affected by this plugin.
-                $isSectionEnabled = VerifiedEntries::getInstance()->getSectionSettings()->isSectionEnabledForSite(
-                    $entry->sectionId,
-                    $entry->siteId,
-                );
-                if (! $isSectionEnabled) {
-                    return;
-                }
-
-                // Should this entry's verification fields be applied to other site-versions of this entry?
-                if ($entry->propagating) {
-                    $this->plugin->getVerification()->handlePropagationSave(
-                        $entry->getCanonicalId(),
-                        $entry->siteId
-                    );
-
-                    return;
-                }
-
-                // If we're not propagating, handle normal save logic.
-                $this->plugin->getVerification()->handleCanonicalSave($entry);
-
-                // If the entry was edited, notify the entry's assigned Reviewer.
-                $this->plugin->getVerification()->handleCheckForChanges($entry);
             }
         );
     }
