@@ -21,16 +21,6 @@ enum VerificationStatus: string
         return $this->value;
     }
 
-    public function color(): Color
-    {
-        return match ($this) {
-            self::Unverified => Color::Gray,
-            self::Unassigned => Color::Orange,
-            self::Verified => Color::Teal,
-            self::Expired => Color::Red,
-        };
-    }
-
     public function label(): string
     {
         return Craft::t(VerifiedEntries::HANDLE, match ($this) {
@@ -39,5 +29,20 @@ enum VerificationStatus: string
             self::Verified => 'Verified',
             self::Expired => 'Expired',
         });
+    }
+
+    public function color(): Color
+    {
+        return match ($this) {
+            self::Unverified => Color::Gray,
+            self::Unassigned => Color::Yellow,
+            self::Verified => Color::Teal,
+            self::Expired => Color::Red,
+        };
+    }
+
+    public function cssColor(): string
+    {
+        return 'var(--' . $this->color()->value . '-500)';
     }
 }

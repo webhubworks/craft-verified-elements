@@ -5,7 +5,8 @@ namespace webhubworks\verifiedentries\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\elements\Entry;
-use craft\web\assets\d3\D3Asset;
+use craft\helpers\Cp;
+use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -13,26 +14,31 @@ use webhubworks\verifiedentries\VerifiedEntries;
  */
 class VerificationHealth extends Widget
 {
+    /** @inheritDoc */
     public static function displayName(): string
     {
         return Craft::t(VerifiedEntries::HANDLE, 'Verification Health');
     }
 
+    /** @inheritDoc */
     public static function isSelectable(): bool
     {
         return true;
     }
 
+    /** @inheritDoc */
     protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
+    /** @inheritDoc */
     public static function icon(): ?string
     {
         return 'heart';
     }
 
+    /** @inheritDoc */
     public function getBodyHtml(): ?string
     {
         $enabledSectionIds = VerifiedEntries::getInstance()->getSectionSettings()->getEnabledSectionIds();
@@ -48,6 +54,7 @@ class VerificationHealth extends Widget
             ->site('*')
             ->sectionId($enabledSectionIds)
             ->isVerified(true)
+            ->isUnassigned(false)
             ->count();
 
         $expiredEntryCount = Entry::find()
@@ -57,10 +64,54 @@ class VerificationHealth extends Widget
             ->isVerified(false)
             ->count();
 
-        return Craft::$app->getView()->renderTemplate(VerifiedEntries::HANDLE . '/_widgets/health.twig', [
-            'totalCount' => $totalEntryCount,
-            'verifiedCount' => $verifiedEntryCount,
-            'expiredCount' => $expiredEntryCount,
-        ]);
+        $unassignedEntryCount = Entry::find()
+            ->status('live')
+            ->site('*')
+            ->sectionId($enabledSectionIds)
+            ->isUnassigned(true)
+            ->count();
+
+        $statuses = [
+            [
+                'label' => VerificationStatus::Verified->label(),
+                'count' => $verifiedEntryCount,
+                'icon' => Cp::statusIndicatorHtml(
+                    VerificationStatus::Verified->handle(),
+                    ['color' => VerificationStatus::Verified->color()]
+                ),
+            ],
+            [
+                'label' => VerificationStatus::Expired->label(),
+                'count' => $expiredEntryCount,
+                'icon' => Cp::statusIndicatorHtml(
+                    VerificationStatus::Expired->handle(),
+                    ['color' => VerificationStatus::Expired->color()]
+                ),
+            ],
+            [
+                'label' => VerificationStatus::Unassigned->label(),
+                'count' => $unassignedEntryCount,
+                'icon' => Cp::statusIndicatorHtml(
+                    VerificationStatus::Unassigned->handle(),
+                    ['color' => VerificationStatus::Unassigned->color()]
+                ),
+            ],
+        ];
+
+        return Craft::$app->getView()->renderTemplate(
+            VerifiedEntries::HANDLE . '/_widgets/health.twig',
+            [
+                'totalCount' => $totalEntryCount,
+                'verifiedCount' => $verifiedEntryCount,
+                'unassignedCount' => $unassignedEntryCount,
+                'expiredCount' => $expiredEntryCount,
+                'statuses' => $statuses,
+                'statusColors' => [
+                    'verified' => VerificationStatus::Verified->cssColor(),
+                    'unassigned' => VerificationStatus::Unassigned->cssColor(),
+                    'expired' => VerificationStatus::Expired->cssColor(),
+                ],
+            ]
+        );
     }
 }
