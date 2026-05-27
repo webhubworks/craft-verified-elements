@@ -451,6 +451,8 @@ class Verification extends Component
             ), __METHOD__);
         }
 
+        $settings = VerifiedEntries::getInstance()->getSectionSettings();
+
         // Seed rows for any other supported sites that don't have a row yet.
         // This handles initial entry creation before propagation fires.
         foreach ($entry->getSupportedSites() as $siteInfo) {
@@ -464,12 +466,23 @@ class Verification extends Component
                 continue;
             }
 
+            // Apply this site's own section defaults — don't copy the canonical site's values
+            $siteDefaults = $settings->getDefaultSettingsForSection($entry->sectionId, $siteId);
+            [$siteReviewerId, $siteDefaultPeriod] = $siteDefaults ?? [null, null];
+
+            $siteVerifiedUntilDate = null;
+            if ($siteDefaultPeriod) {
+                // TODO handle DateInterval exception
+                $dateInterval = new DateInterval($siteDefaultPeriod);
+                $siteVerifiedUntilDate = DateTimeHelper::now()->add($dateInterval);
+            }
+
             try {
                 $this->upsertEntryDetails(
                     $entryId,
                     $siteId,
-                    $entry->getReviewerId(),
-                    $entry->getVerifiedUntilDate()
+                    $siteReviewerId,
+                    $siteVerifiedUntilDate
                 );
             }
             catch (Exception $exception) {
