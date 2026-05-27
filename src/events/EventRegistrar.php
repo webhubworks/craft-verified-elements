@@ -166,11 +166,23 @@ readonly class EventRegistrar
                     /** @var Entry|VerifiableBehavior $entry */
                     $entry = $event->sender;
 
-                    if (! $event->isNew) {
+                    // Skip for propagation, matrix entries, drafts, and revisions.
+                    if (
+                        $entry->propagating ||
+                        $entry->sectionId === null ||
+                        ElementHelper::isDraftOrRevision($entry)
+                    ) {
                         return;
                     }
 
-                    $this->plugin->getVerification()->handleSettingOfVerificationFields($entry);
+                    $verification = $this->plugin->getVerification();
+
+                    // Determine if this is the entry's first save so we can set the
+                    // verification fields' default values
+                    $entryId = $entry->getCanonicalId();
+                    $isFirstSave = ! $entryId || ! $verification->hasVerificationRow($entryId, $entry->siteId);
+
+                    $verification->handleSettingOfVerificationFields($entry, $isFirstSave);
                 }
             );
         }
@@ -251,7 +263,7 @@ readonly class EventRegistrar
         Event::on(
             EntryQuery::class,
             Query::EVENT_DEFINE_BEHAVIORS,
-            static function (DefineBehaviorsEvent$event) {
+            static function (DefineBehaviorsEvent $event) {
                 $event->behaviors[EntryQueryBehavior::NAME] = EntryQueryBehavior::class;
             }
         );

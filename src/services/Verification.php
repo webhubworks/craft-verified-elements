@@ -110,6 +110,7 @@ class Verification extends Component
      *
      * @param DateTime|null $currentUntilDate The field's currently selected value
      * @param int|null $sectionId
+     * @param int|null $siteId
      * @return array The dropdown field's options
      * @see VerificationPeriod enum
      */
@@ -353,12 +354,13 @@ class Verification extends Component
      * behavior class.
      *
      * @param Entry $entry
+     * @param bool $isFirstSave
      * @return void
      * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_BEFORE_SAVE
      * @see VerifiableBehavior::setReviewerId()
      * @see VerifiableBehavior::setVerifiedUntilDate()
      */
-    public function handleSettingOfVerificationFields(Entry $entry): void
+    public function handleSettingOfVerificationFields(Entry $entry, bool $isFirstSave = false): void
     {
         /** @var Entry|VerifiableBehavior $entry */
 
@@ -369,11 +371,13 @@ class Verification extends Component
 
         [$reviewerId, $defaultPeriod] = $defaults ?? [null, null];
 
+        // Always apply default Reviewer (from section settings) if blank
         if ($entry->getReviewerId() === null && $reviewerId) {
             $entry->setReviewerId($reviewerId);
         }
 
-        if ($entry->getVerifiedUntilDate() === null && $defaultPeriod) {
+        // Only apply default date on first save. "Indefinitely" is a valid choice after that.
+        if ($isFirstSave && $entry->getVerifiedUntilDate() === null && $defaultPeriod) {
             // TODO address DateInterval exception
             $dateInterval = new DateInterval($defaultPeriod);
             $verifiedUntilDate = DateTimeHelper::now()->add($dateInterval);
