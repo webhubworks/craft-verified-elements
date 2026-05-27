@@ -290,23 +290,14 @@ readonly class EventRegistrar
                 /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
 
-                if (! $entry->getHasVerifiedUntilDate()) {
-                    $status = Cp::statusIndicatorHtml('unverified', [
-                            'color' => Color::Gray,
-                        ]) . Html::tag('span', Craft::t(VerifiedEntries::HANDLE, 'Unverified'));
-                }
-                elseif ($entry->getIsVerified()) {
-                    $status = Cp::statusIndicatorHtml('live', [
-                            'color' => Color::Teal,
-                        ]) . Html::tag('span', Craft::t(VerifiedEntries::HANDLE, 'Verified'));
-                }
-                else {
-                    $status = Cp::statusIndicatorHtml('expired', [
-                            'color' => Color::Red,
-                        ]) . Html::tag('span', Craft::t(VerifiedEntries::HANDLE, 'Expired'));
-                }
+                $status = $entry->getVerificationStatus();
+                $statusHtml = Cp::statusIndicatorHtml(
+                    $status->handle(),
+                    ['color' => $status->color()]
+                );
+                $statusHtml .= Html::tag('span', $status->label());
 
-                $event->metadata[Craft::t(VerifiedEntries::HANDLE, 'Verification')] = $status;
+                $event->metadata[Craft::t(VerifiedEntries::HANDLE, 'Verification')] = $statusHtml;
             }
         );
 
@@ -476,19 +467,13 @@ readonly class EventRegistrar
 
                 switch ($event->attribute) {
                     case "isVerified":
-                        if ($entry->getIsVerified()) {
-                            $event->html = Cp::statusLabelHtml([
-                                'color' => Color::Teal,
-                                'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified')
-                            ]);
-                        }
-                        else {
-                            $event->html = Cp::statusLabelHtml([
-                                'color' => Color::Red,
-                                'label' => Craft::t(VerifiedEntries::HANDLE, 'Expired'),
-                            ]);
-                        }
+                        $status = $entry->getVerificationStatus();
+                        $event->html = Cp::statusLabelHtml([
+                            'color' => $status->color(),
+                            'label' => $status->label(),
+                        ]);
                         break;
+
                     case "verifiedUntilDate":
                         if ($entry->getVerifiedUntilDate() === null) {
                             $event->html = Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
@@ -500,6 +485,7 @@ readonly class EventRegistrar
 //                            $event->html = DateTimeHelper::humanDuration($difference, false);
 //                        }
                         break;
+
                     case "reviewer":
                         $reviewer = $entry->getReviewer();
                         if ($reviewer) {

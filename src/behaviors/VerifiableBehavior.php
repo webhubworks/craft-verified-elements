@@ -8,6 +8,7 @@ use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeZone;
+use webhubworks\verifiedentries\enums\VerificationStatus;
 use yii\base\Behavior;
 
 /**
@@ -19,6 +20,7 @@ use yii\base\Behavior;
  * @property null|mixed|int $reviewerId
  * @property-read bool $isVerified
  * @property null|mixed|DateTime $verifiedUntilDate
+ * @property-read VerificationStatus $verificationStatus
  * @property-read User|null $reviewer
  */
 class VerifiableBehavior extends Behavior
@@ -162,6 +164,34 @@ class VerifiableBehavior extends Behavior
     }
 
     /**
+     * Returns the entry's current verification status.
+     *
+     * Note: this returns an enum. You'll need to call "->handle()", "->label()", or "->color()"
+     * for the value you want.
+     *
+     * @return VerificationStatus
+     */
+    public function getVerificationStatus(): VerificationStatus
+    {
+        if ($this->_verifiedUntilDate === null) {
+            return VerificationStatus::Unverified;
+        }
+
+        // TODO handle DateTime exceptions
+        $now = new DateTime('now', new DateTimeZone(Craft::$app->getTimeZone()));
+
+        if ($this->_verifiedUntilDate <= $now) {
+            return VerificationStatus::Expired;
+        }
+
+        if ($this->_reviewerId === null) {
+            return VerificationStatus::Unassigned;
+        }
+
+        return VerificationStatus::Verified;
+    }
+
+    /**
      * Checks if the "Verified until" select field's value is still in the future. If the value is
      * null, this returns true because the value means "indefinitely".
      *
@@ -169,16 +199,6 @@ class VerifiableBehavior extends Behavior
      */
     public function getIsVerified(): bool
     {
-        if ($this->_verifiedUntilDate === null) {
-            return true;
-        }
-
-        // TODO handle DateTime exceptions
-        $now = new DateTime(
-            'now',
-            new DateTimeZone(Craft::$app->getTimeZone())
-        );
-
-        return $this->_verifiedUntilDate > $now;
+        return $this->getVerificationStatus() !== VerificationStatus::Expired;
     }
 }
