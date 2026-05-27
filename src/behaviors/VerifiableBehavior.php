@@ -61,7 +61,7 @@ class VerifiableBehavior extends Behavior
         }
 
         if (is_string($value)) {
-            $this->_reviewerId = (int)$value;
+            $this->_reviewerId = (int)$value ?: null;
             return;
         }
 
