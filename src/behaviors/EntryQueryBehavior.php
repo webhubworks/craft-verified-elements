@@ -19,9 +19,7 @@ class EntryQueryBehavior extends Behavior
     public ?int $reviewerId = null;
     public ?string $verifiedUntil = null;
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function events(): array
     {
         return [
@@ -32,6 +30,7 @@ class EntryQueryBehavior extends Behavior
 
     /**
      * Joins the verification table to the outer query and applies any filter criteria set on the query.
+     * @see ElementQuery::beforePrepare()
      */
     public function beforePrepare(): void
     {
@@ -75,6 +74,8 @@ class EntryQueryBehavior extends Behavior
     /**
      * Joins the verification table to the subQuery; must run after beforePrepare() because
      * elements_sites isn't added to the subQuery until after that event fires.
+     * @noinspection PhpUnused
+     * @see ElementQuery::afterPrepare()
      */
     public function afterPrepare(): void
     {
@@ -95,6 +96,80 @@ class EntryQueryBehavior extends Behavior
         }
     }
 
+    /**
+     * Query param for filtering entries by whether their "Verified until" date field is still in
+     * the future.
+     *
+     * @param bool $value
+     * @return EntryQuery
+     */
+    public function isVerified(bool $value = true): EntryQuery
+    {
+        $query = $this->owner;
+
+        if ($value) {
+            $query->andWhere(['or',
+                'veea.verifiedUntilDate IS NULL',
+                'veea.verifiedUntilDate >= UTC_TIMESTAMP()',
+            ]);
+        }
+        else {
+            $query->andWhere(['and',
+                'veea.verifiedUntilDate IS NOT NULL',
+                'veea.verifiedUntilDate < UTC_TIMESTAMP()',
+            ]);
+        }
+
+        return $query;
+    }
+
+    /**
+
+    /**
+     * Query param for filtering entries by their Reviewer (Craft User) ID.
+     *
+     * @param int|array|null $value
+     * @return EntryQuery
+     */
+    public function reviewerId(int|array|null $value = null): EntryQuery
+    {
+        $query = $this->owner;
+
+        if (is_array($value) || is_int($value)) {
+            $query->andWhere(['veea.reviewerId' => $value]);
+        }
+        elseif ($value === null) {
+            $query->andWhere('veea.reviewerId IS null');
+        }
+
+        return $query;
+    }
+
+    /**
+     * Query param for filtering entries by their "Verified until" date field.
+     *
+     * @param mixed $value
+     * @return EntryQuery
+     */
+    public function verifiedUntilDate(mixed $value): EntryQuery
+    {
+        $query = $this->owner;
+
+        $query->andWhere(Db::parseDateParam('veea.verifiedUntilDate', $value));
+
+        return $query;
+    }
+
+    // PRIVATE HELPERS
+    // =============================================================================================
+
+    /**
+     * Check if a join exists on the table to prevent the query from being executed.
+     *
+     * @param Query $query
+     * @param string $alias
+     * @return bool
+     */
     private function hasJoin(Query $query, string $alias): bool
     {
         if (! $query->join) {
@@ -114,51 +189,5 @@ class EntryQueryBehavior extends Behavior
         }
 
         return false;
-    }
-
-    public function isVerified(bool $value = true): EntryQuery
-    {
-        /** @var EntryQuery $query */
-        $query = $this->owner;
-
-        if ($value) {
-            $query->andWhere(['or',
-                'veea.verifiedUntilDate IS NULL',
-                'veea.verifiedUntilDate >= UTC_TIMESTAMP()',
-            ]);
-        }
-        else {
-            $query->andWhere(['and',
-                'veea.verifiedUntilDate IS NOT NULL',
-                'veea.verifiedUntilDate < UTC_TIMESTAMP()',
-            ]);
-        }
-
-        return $query;
-    }
-
-    public function reviewerId(int|array|null $value = null): EntryQuery
-    {
-        /** @var EntryQuery $query */
-        $query = $this->owner;
-
-        if (is_array($value) || is_int($value)) {
-            $query->andWhere(['veea.reviewerId' => $value]);
-        }
-        elseif ($value === null) {
-            $query->andWhere('veea.reviewerId IS null');
-        }
-
-        return $query;
-    }
-
-    public function verifiedUntilDate(mixed $value): EntryQuery
-    {
-        /** @var EntryQuery $query */
-        $query = $this->owner;
-
-        $query->andWhere(Db::parseDateParam('veea.verifiedUntilDate', $value));
-
-        return $query;
     }
 }
