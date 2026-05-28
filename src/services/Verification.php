@@ -21,6 +21,8 @@ use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\events\EventRegistrar;
+use webhubworks\verifiedentries\mail\ChangeNotification;
+use webhubworks\verifiedentries\mail\ExpiredNotification;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\db\Exception;
@@ -313,7 +315,8 @@ class Verification extends Component
                 continue;
             }
 
-            VerifiedEntries::getInstance()->getNotifications()->sendExpiredNotification($reviewer, $entries);
+            // Send the email
+            (new ExpiredNotification($entries->all(), $reviewer))->send();
         }
     }
 
@@ -525,11 +528,9 @@ class Verification extends Component
             return;
         }
 
-        // Notify the Reviewer if someone else edits their assigned entry
+        // Email the Reviewer if someone else edits their assigned entry
         if ($reviewer->id !== Craft::$app->getUser()->getId()) {
-            VerifiedEntries::getInstance()
-                ->getNotifications()
-                ->sendChangeNotification($entry, $reviewer);
+            (new ChangeNotification($entry, $reviewer))->send();
         }
     }
 }

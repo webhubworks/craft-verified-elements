@@ -7,7 +7,6 @@ use craft\base\Plugin;
 use craft\helpers\UrlHelper;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\events\EventRegistrar;
-use webhubworks\verifiedentries\services\Notifications;
 use webhubworks\verifiedentries\services\SectionSettings;
 use webhubworks\verifiedentries\services\Reviewers;
 use webhubworks\verifiedentries\services\Verification;
@@ -21,7 +20,6 @@ use webhubworks\verifiedentries\services\Verification;
  * @license https://craftcms.github.io/license/ Craft License
  * @property-read null|array $cpNavItem
  * @property-read null $settingsResponse
- * @property-read Notifications $notifications
  * @property-read Reviewers $reviewers
  * @property-read SectionSettings $sectionSettings
  * @property-read Verification $verification
@@ -38,7 +36,6 @@ class VerifiedEntries extends Plugin
     {
         return [
             'components' => [
-                'notifications' => Notifications::class,
                 'sectionSettings' => SectionSettings::class,
                 'reviewers' => Reviewers::class,
                 'verification' => Verification::class,
@@ -76,10 +73,6 @@ class VerifiedEntries extends Plugin
     /**
      * Use these methods to return our service Components and bypass Yii's magic method system.
      */
-    public function getNotifications(): Notifications
-    {
-        return $this->get('notifications');
-    }
     public function getSectionSettings(): SectionSettings
     {
         return $this->get('sectionSettings');

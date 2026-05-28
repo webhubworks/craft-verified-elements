@@ -1,0 +1,67 @@
+<?php
+
+namespace webhubworks\verifiedentries\mail;
+
+use Craft;
+use craft\elements\Entry;
+use craft\elements\User;
+use craft\helpers\Html;
+use craft\i18n\Locale;
+use webhubworks\verifiedentries\base\Notification;
+use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
+
+/**
+ * Sends an entry's Reviewer an email that someone has updated their entry
+ * and that they should verify the changes.
+ */
+class ChangeNotification extends Notification
+{
+    protected Entry|VerifiableBehavior|null $entry = null;
+
+    public function __construct(Entry $entry, User $recipient, ?string $locale = null)
+    {
+        parent::__construct($recipient, $locale);
+
+        $this->entry = $this->ensureBehavior($entry);
+    }
+
+    /** @inheritDoc */
+    public function send(): bool
+    {
+        return Craft::$app->getMailer()->compose()
+            ->setTo($this->recipient->email)
+            ->setSubject($this->subject())
+            ->setHtmlBody($this->body())
+            ->send();
+    }
+
+
+    // PRIVATE HELPERS
+    // =============================================================================================
+
+    private function subject(): string
+    {
+        return $this->t('Entry has been updated');
+    }
+
+    private function body(): string
+    {
+        $verifiedUntilDate = $this->formatter->asDate(
+            $this->entry->getVerifiedUntilDate(),
+            Locale::LENGTH_MEDIUM
+        );
+
+        $recipientName = Html::encode($this->recipient->getFriendlyName());
+        $message = $this->t("An entry you're assigned to review has been updated. Please take a moment to review the latest changes:");
+        $title = Html::tag('strong', Html::encode($this->entry->title));
+        $verifiedUntil = $this->t('Verified until');
+        $link = Html::a($this->t('Show', null, 'app'), $this->entry->getCpEditUrl());
+
+        return <<<HTML
+            <p>Hi $recipientName,</p>
+            <p>$message</p>
+            <p>$title<br>$verifiedUntil $verifiedUntilDate</p>
+            <p>$link</p>
+            HTML;
+    }
+}
