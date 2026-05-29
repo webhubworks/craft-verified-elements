@@ -8,6 +8,7 @@ use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use webhubworks\verifiedentries\base\Notification;
+use webhubworks\verifiedentries\models\ExpiredEntryData;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -15,18 +16,19 @@ use webhubworks\verifiedentries\VerifiedEntries;
  */
 class ExpiredNotification extends Notification
 {
-    protected array $entryData = [];
+    /** @var ExpiredEntryData[] */
+    protected array $entries = [];
 
-    public function __construct(array $entryData, User $recipient, ?string $locale = null)
+    public function __construct(array $entries, User $recipient, ?string $locale = null)
     {
         parent::__construct($recipient, $locale);
-        $this->entryData = $entryData;
+        $this->entries = $entries;
     }
 
     /** @inheritDoc */
     public function send(): bool
     {
-        if (empty($this->entryData)) {
+        if (empty($this->entries)) {
             return false;
         }
 
@@ -45,7 +47,7 @@ class ExpiredNotification extends Notification
     {
         return $this->t(
             '{count, number} {count, plural, =1{entry awaits} other{entries await}} your verification',
-            ['count' => count($this->entryData)]
+            ['count' => count($this->entries)]
         );
     }
 
@@ -54,7 +56,7 @@ class ExpiredNotification extends Notification
         $recipientName = Html::encode($this->recipient->getFriendlyName());
         $intro = $this->t('The following entries have verification dates that have expired:');
         $viewAll = Html::a($this->t('View all'), $this->viewAllUrl());
-        $listItems = implode('', array_map(fn($entry) => $this->listItem($entry), $this->entryData));
+        $listItems = implode('', array_map(fn($entry) => $this->listItem($entry), $this->entries));
 
         return <<<HTML
             <p>Hi $recipientName,</p>
@@ -64,15 +66,12 @@ class ExpiredNotification extends Notification
             HTML;
     }
 
-    private function listItem(array $entryArray): string
+    private function listItem(ExpiredEntryData $entry): string
     {
-        $title = Html::tag('strong', Html::encode($entryArray['title']));
+        $title = Html::tag('strong', Html::encode($entry->title));
         $verifiedUntil = $this->t('Verified until');
-        $verifiedUntilDate = $this->formatter->asDate($entryArray['verifiedUntilDate'], Locale::LENGTH_MEDIUM);
-        $link = Html::a($this->t('Edit', null, 'app'), UrlHelper::cpUrl(
-            "entries/{$entryArray['sectionHandle']}/{$entryArray['entryId']}",
-            ['site' => $entryArray['siteHandle']]
-        ));
+        $verifiedUntilDate = $this->formatter->asDate($entry->verifiedUntilDate, Locale::LENGTH_MEDIUM);
+        $link = Html::a($this->t('Edit', null, 'app'), $entry->getCpEditUrl());
 
         return Html::tag('li', "$title ($verifiedUntil $verifiedUntilDate) $link");
     }

@@ -23,6 +23,7 @@ use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\mail\ChangeNotification;
 use webhubworks\verifiedentries\mail\ExpiredNotification;
+use webhubworks\verifiedentries\models\ExpiredEntryData;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\db\Exception;
@@ -261,63 +262,45 @@ class Verification extends Component
     }
 
     /**
-     * Runs the action of checking for entries whose verification date is in the past
-     * and notifying the entry's Reviewer user via email.
+     * Return an array of ExpiredEntryData objects for entries with a verification date in the past.
      *
-     * @return array The expired verification entries
-     * @see self::notifyAboutExpiredEntries()
+     * @return ExpiredEntryData[]
      */
-    public function checkExpiredVerifications(): array
+    public function getExpiredEntries(): array
     {
-        // Find entries where verification date is in the past
-        $expiredEntries = PluginQuery::expiredVerifiableEntries()->all();
-
-        if (! empty($expiredEntries)) {
-            // Log the expired entries
-            Craft::warning(
-                Craft::t(
-                    VerifiedEntries::HANDLE,
-                    'Found {count} entries with expired verification dates',
-                    ['count' => count($expiredEntries)]
-                ),
-                __METHOD__
-            );
-
-            $this->notifyAboutExpiredEntries($expiredEntries);
-        }
-
-        return $expiredEntries;
+        return array_map(
+            static fn(array $row) => ExpiredEntryData::fromArray($row),
+            PluginQuery::expiredVerifiableEntries()->all()
+        );
     }
 
     /**
-     * Runs the action of notifying Reviewers about expired verification entries.
+     * Return an array of ExpiredEntryData objects for entries with a verification date in the past,
+     * but group the entries by their Reviewer user ID.
      *
-     * @param array $expiredEntries
-     * @return void
+     * @return array<int, ExpiredEntryData[]>
      */
-    public function notifyAboutExpiredEntries(array $expiredEntries): void
+    public function getExpiredEntriesByReviewer(): array
     {
-        $entriesPerReviewer = collect($expiredEntries)
-            ->groupBy('reviewerId');
-
-        foreach ($entriesPerReviewer as $reviewerId => $entries) {
-            /** @var User $reviewer */
-            $reviewer = User::find()
-                ->id($reviewerId)
-                ->status('active')
-                ->one();
-
-            if (! $reviewer) {
-                Craft::warning(
-                    "Could not notify reviewer ($reviewerId) about expired entries",
-                    __METHOD__
-                );
-                continue;
-            }
-
-            // Send the email
-            (new ExpiredNotification($entries->all(), $reviewer))->send();
+        $result = [];
+        foreach ($this->getExpiredEntries() as $entry) {
+            $result[$entry->reviewerId][] = $entry;
         }
+
+        return $result;
+    }
+
+    /**
+     * Sends an email to the entry's Reviewer user about entries assigned to them whose verification
+     * date is in the past.
+     *
+     * @param User $reviewer
+     * @param ExpiredEntryData[] $expiredEntries
+     * @return bool
+     */
+    public function sendExpiredNotification(User $reviewer, array $expiredEntries): bool
+    {
+        return (new ExpiredNotification($expiredEntries, $reviewer))->send();
     }
 
     /**

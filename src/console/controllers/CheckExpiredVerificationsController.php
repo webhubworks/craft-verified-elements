@@ -2,57 +2,82 @@
 
 namespace webhubworks\verifiedentries\console\controllers;
 
-use Craft;
 use craft\console\Controller;
-use craft\errors\SiteNotFoundException;
-use webhubworks\verifiedentries\services\Verification;
+use craft\elements\User;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\console\ExitCode;
+use yii\helpers\BaseConsole;
 
 /**
  * Check Expired Verifications controller
  */
 class CheckExpiredVerificationsController extends Controller
 {
-    public $defaultAction = 'index';
-
-    public function options($actionID): array
-    {
-        $options = parent::options($actionID);
-        switch ($actionID) {
-            case 'index':
-                // $options[] = '...';
-                break;
-        }
-        return $options;
-    }
-
     /**
-     * verified-entries/check-expired-verifications command
-     * @throws SiteNotFoundException
+     * Queries for all entries whose "Verified until" date is in the past, groups them by the
+     * Craft User assigned to review them, and sends each reviewer a digest of those entries,
+     * prompting them to review the expired entries.
+     *
+     * @return int
      */
     public function actionIndex(): int
     {
         $this->stdout("Checking verification dates of all entries in enabled sections...\n");
 
-        $expiredEntries = VerifiedEntries::getInstance()->getVerification()->checkExpiredVerifications();
+        $verification = VerifiedEntries::getInstance()->getVerification();
+        $expiredEntriesByReviewer = $verification->getExpiredEntriesByReviewer();
 
-        if (count($expiredEntries) === 0) {
+        if (count($expiredEntriesByReviewer) === 0) {
             $this->stdout('No expired entries.');
 
             return ExitCode::OK;
         }
 
-        foreach ($expiredEntries as $entry) {
-            $this->stdout("Entry [{$entry['entryId']}] (site: {$entry['siteHandle']}) expired on {$entry['verifiedUntilDate']}. ");
+        $this->stdout('---' . PHP_EOL);
 
-            if ($entry['reviewerId']) {
-                $this->stdout("Sending a notification to User [{$entry['reviewerId']}].");
-            } else {
-                $this->stdout("No reviewer is assigned.");
+        foreach ($expiredEntriesByReviewer as $reviewerId => $expiredEntries) {
+
+            // Get the user who needs to receive the email notification.
+            $reviewer = User::find()->id($reviewerId)->status('active')->one();
+            if (! $reviewer) {
+                $this->stdout(sprintf(
+                    "User %s not found or inactive — skipping.",
+                    $reviewerId
+                ). PHP_EOL, BaseConsole::FG_RED);
+                continue;
             }
 
-            $this->stdout("\n");
+            $this->stdout(sprintf(
+                    'User %s "%s" has %s expired entries to review:',
+                    $reviewer->id,
+                    $reviewer->name,
+                    count($expiredEntries)
+                ) . "\n");
+
+            // List the Reviewer's expired entries in the console.
+            $index = 0;
+            foreach ($expiredEntries as $entry) {
+                $this->stdout(sprintf(
+                    '[%s] Entry %s "%s" on site "%s" expired on %s.',
+                    ++$index,
+                    $entry->id,
+                    $entry->title,
+                    $entry->siteHandle,
+                    $entry->verifiedUntilDate
+                ) . PHP_EOL, BaseConsole::FG_YELLOW);
+            }
+
+            // Send the Reviewer an email about the expired entries.
+            $this->stdout(sprintf('Notifying %s... ', $reviewer->name));
+
+            if ($verification->sendExpiredNotification($reviewer, $expiredEntries)) {
+                $this->stdout('Sent', BaseConsole::FG_GREEN);
+            }
+            else {
+                $this->stdout('Failed', BaseConsole::FG_RED);
+            }
+
+            $this->stdout(PHP_EOL . '---' . PHP_EOL);
         }
 
         return ExitCode::OK;

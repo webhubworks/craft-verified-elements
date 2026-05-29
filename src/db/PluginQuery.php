@@ -5,6 +5,7 @@ namespace webhubworks\verifiedentries\db;
 use craft\db\Query;
 use craft\helpers\Db;
 use DateTime;
+use webhubworks\verifiedentries\models\ExpiredEntryData;
 
 /**
  * Class for abstracting out the many complicated database queries used throughout the plugin. PluginQuery that belong in
@@ -115,6 +116,7 @@ abstract class PluginQuery
      *
      * @return Query
      * @see \webhubworks\verifiedentries\services\Verification::checkExpiredVerifications
+     * @see ExpiredEntryData Populate this object with the results of the query
      */
     public static function expiredVerifiableEntries(): Query
     {

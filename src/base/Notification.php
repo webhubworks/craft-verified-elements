@@ -21,9 +21,9 @@ abstract class Notification implements NotificationInterface
     /**
      * Yii/Craft's object for formatting dates and times by language/locales.
      *
-     * @var Formatter|null
+     * @var Formatter
      */
-    protected ?Formatter $formatter = null;
+    protected Formatter $formatter;
 
     public function __construct(
         protected User $recipient,
@@ -32,6 +32,10 @@ abstract class Notification implements NotificationInterface
     {
         if (!$this->locale) {
             $this->locale = $this->recipient->getPreferredLocale();
+        }
+
+        if (!$this->locale) {
+            $this->locale = Craft::$app->language;
         }
 
         $this->formatter = Craft::$app->getI18n()->getLocaleById($this->locale)->getFormatter();

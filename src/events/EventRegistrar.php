@@ -100,7 +100,30 @@ readonly class EventRegistrar
             Gc::class,
             Gc::EVENT_RUN,
             static function () use ($plugin) {
-                $plugin->getVerification()->checkExpiredVerifications();
+                $verification = $plugin->getVerification();
+
+                // Queries for all entries whose "Verified until" date is in the past,
+                // groups them by the Craft User assigned to review them,
+                // and sends each reviewer a digest of those entries,
+                // prompting them to review the expired entries.
+                foreach ($verification->getExpiredEntriesByReviewer() as $reviewerId => $expiredEntries) {
+                    $reviewer = User::find()->id($reviewerId)->status('active')->one();
+
+                    if (! $reviewer) {
+                        Craft::warning(
+                            "Reviewer $reviewerId not found or inactive — skipping expired notification.",
+                            __METHOD__
+                        );
+                        continue;
+                    }
+
+                    if (! $verification->sendExpiredNotification($reviewer, $expiredEntries)) {
+                        Craft::warning(
+                            "Failed to send expired notification to $reviewer->email.",
+                            __METHOD__
+                        );
+                    }
+                }
             }
         );
 
