@@ -33,6 +33,8 @@ use yii\db\Exception;
  *
  * @property-read array $periodOptionsWithCustomDate
  * @property-read string $addOptionFn
+ * @property-read ExpiredEntryData[][] $expiredEntriesByReviewer
+ * @property-read ExpiredEntryData[] $expiredEntries
  * @property-read array $periodOptions
  */
 class Verification extends Component
@@ -291,19 +293,6 @@ class Verification extends Component
     }
 
     /**
-     * Sends an email to the entry's Reviewer user about entries assigned to them whose verification
-     * date is in the past.
-     *
-     * @param User $reviewer
-     * @param ExpiredEntryData[] $expiredEntries
-     * @return bool
-     */
-    public function sendExpiredNotification(User $reviewer, array $expiredEntries): bool
-    {
-        return (new ExpiredNotification($expiredEntries, $reviewer))->send();
-    }
-
-    /**
      * Returns URL query params for an entry's edit page that corresponds to set values in the
      * plugin's verification fields.
      *
@@ -329,6 +318,37 @@ class Verification extends Component
         ];
 
         return UrlHelper::buildQuery($config);
+    }
+
+
+    // NOTIFICATIONS
+    // =============================================================================================
+
+    /**
+     * Sends an email to an entry's Reviewer user about entries assigned to them whose verification
+     * date is in the past.
+     *
+     * @param User $reviewer
+     * @param ExpiredEntryData[] $expiredEntries
+     * @return bool
+     */
+    public function sendExpiredNotification(User $reviewer, array $expiredEntries): bool
+    {
+        return (new ExpiredNotification($expiredEntries, $reviewer))->send();
+    }
+
+    /**
+     * Sends a Reviewer an email about a verifiable entry that's assigned to them whenever
+     * someone else edits that entry.
+     *
+     * @param Entry $entry
+     * @param User $reviewer
+     * @param string|null $locale
+     * @return bool
+     */
+    public function sendChangeNotification(Entry $entry, User $reviewer, ?string $locale = null): bool
+    {
+        return (new ChangeNotification($entry, $reviewer, $locale))->send();
     }
 
 
@@ -511,9 +531,11 @@ class Verification extends Component
             return;
         }
 
-        // Email the Reviewer if someone else edits their assigned entry
-        if ($reviewer->id !== Craft::$app->getUser()->getId()) {
-            (new ChangeNotification($entry, $reviewer))->send();
+        if ($reviewer->id === Craft::$app->getUser()->getId()) {
+            return;
         }
+
+        // Email the Reviewer if someone else edits their assigned entry
+        $this->sendChangeNotification($entry, $reviewer);
     }
 }
