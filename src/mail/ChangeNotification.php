@@ -56,12 +56,15 @@ class ChangeNotification extends Notification
         $title = Html::tag('strong', Html::encode($this->entry->title));
         $verifiedUntil = $this->t('Verified until');
         $link = Html::a($this->t('Show', null, 'app'), $this->entry->getCpEditUrl());
+        $styles = implode(';', $this->styles());
 
         return <<<HTML
-            <p>Hi $recipientName,</p>
-            <p>$message</p>
-            <p>"$title"<br>$verifiedUntil $verifiedUntilDate</p>
-            <p>$link</p>
+            <div style="$styles">
+                <p>Hi $recipientName,</p>
+                <p>$message</p>
+                <p>"$title"<br>$verifiedUntil $verifiedUntilDate</p>
+                <p>$link</p>
+            </div>
             HTML;
     }
 }

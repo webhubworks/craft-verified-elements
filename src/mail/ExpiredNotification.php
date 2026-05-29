@@ -57,12 +57,15 @@ class ExpiredNotification extends Notification
         $intro = $this->t('The following entries have verification dates that have expired:');
         $viewAll = Html::a($this->t('View all'), $this->viewAllUrl());
         $listItems = implode('', array_map(fn($entry) => $this->listItem($entry), $this->entries));
+        $styles = implode(';', $this->styles());
 
         return <<<HTML
-            <p>Hi $recipientName,</p>
-            <p>$intro</p>
-            <p>$viewAll</p>
-            <ol>$listItems</ol>
+            <div style="$styles">
+                <p>Hi $recipientName,</p>
+                <p>$intro</p>
+                <p>$viewAll</p>
+                <ol>$listItems</ol>
+            </div>
             HTML;
     }
 

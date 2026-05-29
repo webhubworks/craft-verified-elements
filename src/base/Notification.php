@@ -67,4 +67,18 @@ abstract class Notification implements NotificationInterface
 
         return $entry;
     }
+
+    /**
+     * CSS styles that can be inlined in the email's body to style the message.
+     *
+     * @return string[]
+     */
+    protected function styles(): array
+    {
+        return [
+            'font-family:Helvetica, Arial, sans-serif',
+            'font-size:16px',
+            'line-height:1.4;',
+        ];
+    }
 }
