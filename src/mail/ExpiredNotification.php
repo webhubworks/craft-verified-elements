@@ -73,7 +73,13 @@ class ExpiredNotification extends Notification
         $verifiedUntilDate = $this->formatter->asDate($entry->verifiedUntilDate, Locale::LENGTH_MEDIUM);
         $link = Html::a($this->t('Edit', null, 'app'), $entry->getCpEditUrl());
 
-        return Html::tag('li', "$title ($verifiedUntil $verifiedUntilDate) $link");
+        return Html::tag('li', sprintf(
+            '"%s": %s %s. [%s]',
+            $title,
+            $verifiedUntil,
+            $verifiedUntilDate,
+            $link
+        ));
     }
 
     private function viewAllUrl(): string

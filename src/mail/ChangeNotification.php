@@ -60,7 +60,7 @@ class ChangeNotification extends Notification
         return <<<HTML
             <p>Hi $recipientName,</p>
             <p>$message</p>
-            <p>$title<br>$verifiedUntil $verifiedUntilDate</p>
+            <p>"$title"<br>$verifiedUntil $verifiedUntilDate</p>
             <p>$link</p>
             HTML;
     }
