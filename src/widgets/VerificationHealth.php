@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Cp;
+use craft\helpers\StringHelper;
 use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
@@ -105,9 +106,17 @@ class VerificationHealth extends Widget
             ],
         ];
 
+        $siteDisplayed = null;
+        if (Craft::$app->getIsMultiSite()) {
+            $siteDisplayed = $this->siteId
+                ? Craft::$app->getSites()->getSiteById($this->siteId)?->getName()
+                : StringHelper::toLowerCase(Craft::t('app', 'All Sites'));
+        }
+
         return Craft::$app->getView()->renderTemplate(
             VerifiedEntries::HANDLE . '/_widgets/health.twig',
             [
+                'siteDisplayed' => $siteDisplayed,
                 'totalCount' => $totalEntryCount,
                 'verifiedCount' => $verifiedEntryCount,
                 'unassignedCount' => $unassignedEntryCount,

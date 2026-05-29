@@ -2,6 +2,10 @@
 {% set expiredLength    = (expiredCount / totalCount * 100)|round(0, 'ceil') %}
 {% set unassignedLength = (unassignedCount / totalCount * 100)|round(0, 'ceil') %}
 
+{% if siteDisplayed %}
+    <p class="light" style="margin: 0 0 8px;">{{ siteDisplayed }}</p>
+{% endif %}
+
 <div class="verificationhealth-container">
     <svg viewBox="0 0 100 8" preserveAspectRatio="xMidYMid slice" height="8" width="100%" class="widget-heading">
         <rect x="0" y="0" width="100" height="100%" fill="var(--gray-200)" />
