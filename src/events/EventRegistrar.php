@@ -37,6 +37,8 @@ use craft\services\Gc;
 use craft\services\UserPermissions;
 use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
+use webhubworks\verifiedentries\models\SystemRecipient;
+use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\VerifiedEntries;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\EntryQueryBehavior;
@@ -102,11 +104,15 @@ readonly class EventRegistrar
             static function () use ($plugin) {
                 $verification = $plugin->getVerification();
 
-                // Queries for all entries whose "Verified until" date is in the past,
-                // groups them by the Craft User assigned to review them,
-                // and sends each reviewer a digest of those entries,
-                // prompting them to review the expired entries.
+                /**
+                 * The code below finds entries whose "Verified until" date is in the past and
+                 * notifies the relevant Craft users that they've fallen out of date. This only
+                 * applies to sections enabled in the plugin's settings.
+                 */
+
+                // Expired entries with Reviewers assigned to them.
                 foreach ($verification->getExpiredEntriesByReviewer() as $reviewerId => $expiredEntries) {
+                    /** @var User $reviewer */
                     $reviewer = User::find()->id($reviewerId)->status('active')->one();
 
                     if (! $reviewer) {
@@ -117,12 +123,33 @@ readonly class EventRegistrar
                         continue;
                     }
 
-                    if (! $verification->sendExpiredNotification($reviewer, $expiredEntries)) {
+                    $isSent = $verification->sendExpiredNotification(
+                        new UserRecipient($reviewer),
+                        $expiredEntries
+                    );
+
+                    if (! $isSent) {
                         Craft::warning(
-                            "Failed to send expired notification to $reviewer->email.",
+                            "Failed to send expired notification to User $reviewer->id.",
                             __METHOD__
                         );
                     }
+                }
+
+                // Expired entries that have no reviewers assigned to them.
+                $entries = $verification->getUnassignedExpiredEntries();
+                if (empty($entries)) {
+                    return;
+                }
+
+                $recipient = new SystemRecipient();
+                $isSent = $verification->sendExpiredNotification($recipient, $entries);
+
+                if (! $isSent) {
+                    Craft::warning(
+                        "Failed to send expired notification to " . $recipient->getEmail() . '.',
+                        __METHOD__
+                    );
                 }
             }
         );

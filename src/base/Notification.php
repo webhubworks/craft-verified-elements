@@ -4,7 +4,6 @@ namespace webhubworks\verifiedentries\base;
 
 use Craft;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\i18n\Formatter;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\mail\ChangeNotification;
@@ -26,19 +25,18 @@ abstract class Notification implements NotificationInterface
     protected Formatter $formatter;
 
     public function __construct(
-        protected User $recipient,
+        protected NotifiableInterface $recipient,
         protected ?string $locale = null,
     )
     {
         if (!$this->locale) {
-            $this->locale = $this->recipient->getPreferredLocale();
+            $this->locale = $this->recipient->getLocale();
         }
 
-        if (!$this->locale) {
-            $this->locale = Craft::$app->language;
-        }
-
-        $this->formatter = Craft::$app->getI18n()->getLocaleById($this->locale)->getFormatter();
+        $this->formatter = Craft::$app
+            ->getI18n()
+            ->getLocaleById($this->locale)
+            ->getFormatter();
     }
 
     /**

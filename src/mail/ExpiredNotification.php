@@ -7,6 +7,7 @@ use craft\elements\User;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
+use webhubworks\verifiedentries\base\NotifiableInterface;
 use webhubworks\verifiedentries\base\Notification;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -19,7 +20,7 @@ class ExpiredNotification extends Notification
     /** @var ExpiredEntryData[] */
     protected array $entries = [];
 
-    public function __construct(array $entries, User $recipient, ?string $locale = null)
+    public function __construct(array $entries, NotifiableInterface $recipient, ?string $locale = null)
     {
         parent::__construct($recipient, $locale);
         $this->entries = $entries;
@@ -33,7 +34,7 @@ class ExpiredNotification extends Notification
         }
 
         return Craft::$app->getMailer()->compose()
-            ->setTo($this->recipient->email)
+            ->setTo($this->recipient->getEmail())
             ->setSubject($this->subject())
             ->setHtmlBody($this->body())
             ->send();
@@ -91,7 +92,7 @@ class ExpiredNotification extends Notification
             'source' => '*',
             'filters' => VerifiedEntries::getInstance()
                 ->getVerification()
-                ->getFilterParams($this->recipient->id),
+                ->getFilterParams($this->recipient->getId()),
         ]);
     }
 }

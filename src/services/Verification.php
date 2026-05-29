@@ -7,13 +7,13 @@ use craft\db\Query as CraftQuery;
 use craft\db\Table as CraftTable;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateInterval;
 use DateTime;
+use webhubworks\verifiedentries\base\NotifiableInterface;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
@@ -24,6 +24,7 @@ use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\mail\ChangeNotification;
 use webhubworks\verifiedentries\mail\ExpiredNotification;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
+use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\db\Exception;
@@ -286,10 +287,27 @@ class Verification extends Component
     {
         $result = [];
         foreach ($this->getExpiredEntries() as $entry) {
+            if ($entry->reviewerId === null) {
+                continue;
+            }
+
             $result[$entry->reviewerId][] = $entry;
         }
 
         return $result;
+    }
+
+    /**
+     * Return an array of ExpiredEntryData objects for entries without a Reviewer assigned to them.
+     *
+     * @return ExpiredEntryData[]
+     */
+    public function getUnassignedExpiredEntries(): array
+    {
+        return array_values(array_filter(
+            $this->getExpiredEntries(),
+            static fn(ExpiredEntryData $entry) => $entry->reviewerId === null
+        ));
     }
 
     /**
@@ -328,11 +346,11 @@ class Verification extends Component
      * Sends an email to an entry's Reviewer user about entries assigned to them whose verification
      * date is in the past.
      *
-     * @param User $reviewer
+     * @param NotifiableInterface $reviewer
      * @param ExpiredEntryData[] $expiredEntries
      * @return bool
      */
-    public function sendExpiredNotification(User $reviewer, array $expiredEntries): bool
+    public function sendExpiredNotification(NotifiableInterface $reviewer, array $expiredEntries): bool
     {
         return (new ExpiredNotification($expiredEntries, $reviewer))->send();
     }
@@ -342,11 +360,11 @@ class Verification extends Component
      * someone else edits that entry.
      *
      * @param Entry $entry
-     * @param User $reviewer
+     * @param NotifiableInterface $reviewer
      * @param string|null $locale
      * @return bool
      */
-    public function sendChangeNotification(Entry $entry, User $reviewer, ?string $locale = null): bool
+    public function sendChangeNotification(Entry $entry, NotifiableInterface $reviewer, ?string $locale = null): bool
     {
         return (new ChangeNotification($entry, $reviewer, $locale))->send();
     }
@@ -541,6 +559,16 @@ class Verification extends Component
         }
 
         // Email the Reviewer if someone else edits their assigned entry
-        $this->sendChangeNotification($entry, $reviewer);
+        $isSent = $this->sendChangeNotification(
+            $entry,
+            new UserRecipient($reviewer)
+        );
+
+        if (! $isSent) {
+            Craft::warning(
+                "Failed to send 'change' notification to $reviewer->email.",
+                __METHOD__
+            );
+        }
     }
 }

@@ -4,9 +4,9 @@ namespace webhubworks\verifiedentries\mail;
 
 use Craft;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\helpers\Html;
 use craft\i18n\Locale;
+use webhubworks\verifiedentries\base\NotifiableInterface;
 use webhubworks\verifiedentries\base\Notification;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 
@@ -18,7 +18,7 @@ class ChangeNotification extends Notification
 {
     protected Entry|VerifiableBehavior|null $entry = null;
 
-    public function __construct(Entry $entry, User $recipient, ?string $locale = null)
+    public function __construct(Entry $entry, NotifiableInterface $recipient, ?string $locale = null)
     {
         parent::__construct($recipient, $locale);
 
@@ -29,7 +29,7 @@ class ChangeNotification extends Notification
     public function send(): bool
     {
         return Craft::$app->getMailer()->compose()
-            ->setTo($this->recipient->email)
+            ->setTo($this->recipient->getEmail())
             ->setSubject($this->subject())
             ->setHtmlBody($this->body())
             ->send();
