@@ -24,20 +24,20 @@
     <p><a href="{{ url(pluginHandle ~ '/settings') }}">{{ 'Switch to site tab view'|t(pluginHandle) }}</a></p>
 
     <div class="ve-settings-grouped">
-    {% for section in sections %}
-        <div class="ve-section">
-            <h2>{{ section.name }} <span class="light">{{ section.type|capitalize|t('app') }}</span></h2>
-            <div class="ve-table-wrap">
-                <table class="ve-table">
-                    <thead>
+        {% for section in sections %}
+            <div class="ve-section">
+                <h2>{{ section.name }} <span class="light">{{ section.type|capitalize|t('app') }}</span></h2>
+                <div class="ve-table-wrap">
+                    <table class="ve-table">
+                        <thead>
                         <tr>
                             <th>{{ 'Site'|t('app') }}</th>
                             <th>{{ 'Enabled'|t('app') }}</th>
                             <th>{{ 'Default Reviewer'|t(pluginHandle) }}</th>
                             <th>{{ 'Default Period'|t(pluginHandle) }}</th>
                         </tr>
-                    </thead>
-                    <tbody>
+                        </thead>
+                        <tbody>
                         {% for siteSetting in section.sites %}
                             {% set ns = 'sections[' ~ section.id ~ '][' ~ siteSetting.siteId ~ ']' %}
                             {% namespace ns %}
@@ -61,6 +61,10 @@
                                             limit: 1,
                                             hideSidebar: true,
                                         }) }}
+                                        {% if siteSetting.enabled and not siteSetting.reviewerId %}
+                                            {# TODO needs translation #}
+                                            <p class="warning">{{ 'No default reviewer. Expired entries will go unnotified.'|t(pluginHandle) }}</p>
+                                        {% endif %}
                                     </td>
                                     <td>
                                         {{ forms.select({
@@ -72,51 +76,51 @@
                                 </tr>
                             {% endnamespace %}
                         {% endfor %}
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
 
-        {% if not loop.last %}
-            <hr class="m-5">
-        {% endif %}
-    {% endfor %}
+            {% if not loop.last %}
+                <hr class="m-5">
+            {% endif %}
+        {% endfor %}
     </div>
 {% endblock %}
 
 {% css %}
     .ve-section h2 {
-        margin: 0 0 0.6rem;
+    margin: 0 0 0.6rem;
     }
     .ve-table-wrap {
-        border: 1px solid rgba(51, 64, 77, 0.15);
-        border-radius: 5px;
-        overflow: hidden;
+    border: 1px solid rgba(51, 64, 77, 0.15);
+    border-radius: 5px;
+    overflow: hidden;
     }
     .ve-table {
-        width: 100%;
-        border-collapse: collapse;
+    width: 100%;
+    border-collapse: collapse;
     }
     .ve-table thead tr {
-        background: #f7f8f9;
-        border-bottom: 1px solid rgba(51, 64, 77, 0.1);
+    background: #f7f8f9;
+    border-bottom: 1px solid rgba(51, 64, 77, 0.1);
     }
     .ve-table thead th {
-        padding: 8px 14px;
-        text-align: left;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #8f98a3;
+    padding: 8px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8f98a3;
     }
     .ve-table tbody tr + tr {
-        border-top: 1px solid rgba(51, 64, 77, 0.07);
+    border-top: 1px solid rgba(51, 64, 77, 0.07);
     }
     .ve-table tbody td,
     .ve-table tbody th {
-        padding: 10px 14px;
-        vertical-align: middle;
+    padding: 10px 14px;
+    vertical-align: middle;
     }
 {% endcss %}
 
