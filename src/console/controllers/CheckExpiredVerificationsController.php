@@ -9,7 +9,7 @@ use yii\console\ExitCode;
 use yii\helpers\BaseConsole;
 
 /**
- * Check Expired Verifications controller
+ * Check for expired entries and notify their reviewers.
  */
 class CheckExpiredVerificationsController extends Controller
 {
