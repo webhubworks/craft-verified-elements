@@ -46,6 +46,19 @@ class SectionSettings extends Component
         return $this->_enabledSectionIds;
     }
 
+    public function getEnabledSectionIdsForSite(int $siteId): array
+    {
+        return array_map(
+            'intval',
+            (new CraftQuery())
+                ->select(['sectionId'])
+                ->from(PluginTable::SECTIONS)
+                ->where(['enabled' => true, 'siteId' => $siteId])
+                ->distinct()
+                ->column()
+        );
+    }
+
     /**
      * Checks if an entry's section has been enabled in this plugin's settings.
      *
