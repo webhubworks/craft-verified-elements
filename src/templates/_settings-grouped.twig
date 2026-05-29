@@ -18,7 +18,7 @@
 ] %}
 
 {% block content %}
-    {{ actionInput('verified-entries/section-settings/save-grouped') }}
+    {{ actionInput(pluginHandle ~ '/settings/save-grouped') }}
     {{ redirectInput(pluginHandle ~ '/settings/grouped') }}
 
     <p><a href="{{ url(pluginHandle ~ '/settings') }}">{{ 'Switch to site tab view'|t(pluginHandle) }}</a></p>

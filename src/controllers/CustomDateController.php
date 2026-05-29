@@ -1,41 +1,55 @@
-<?php
+<?php /** @noinspection PhpUnused */
 
 namespace webhubworks\verifiedentries\controllers;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\i18n\Formatter;
 use craft\web\Controller;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\web\Response;
 
 /**
- * Custom Date controller
+ * Handles the custom date modal for selecting a specific verification date on an entry's "edit"
+ * page.
  */
 class CustomDateController extends Controller
 {
-    public $defaultAction = 'index';
     protected array|int|bool $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
+    /** @inheritDoc */
+    public function beforeAction($action): bool
+    {
+        $this->requireCpRequest();
+        return parent::beforeAction($action);
+    }
+
     /**
-     * verified-entries/custom-date action
+     * Renders the custom date modal.
+     *
+     * @return Response
      */
     public function actionIndex(): Response
     {
-        $response = $this->asCpModal()
-            ->action(VerifiedEntries::HANDLE . '/custom-date/validate')
+        return $this->asCpModal()
+            ->action(VerifiedEntries::HANDLE . '/custom-date/resolve-date')
             ->contentTemplate(VerifiedEntries::HANDLE . '/_modals/_date.twig');
-
-        return $response;
     }
 
-    public function actionValidate(): Response
+    /**
+     * Receives the POST from the modal, validates that the submitted date is present and in the
+     * future, and returns the formatted date as JSON on success or a failure response with field
+     * errors on failure.
+     *
+     * @return Response
+     * @throws \yii\web\MethodNotAllowedHttpException
+     */
+    public function actionResolveDate(): Response
     {
         $this->requirePostRequest();
 
         $date = DateTimeHelper::toDateTime($this->request->getBodyParam('verifiedUntilDate'));
 
-        if (!$date) {
+        if (! $date) {
             return $this->asFailure(
                 Craft::t(VerifiedEntries::HANDLE, 'No date provided.'),
                 [
@@ -61,7 +75,7 @@ class CustomDateController extends Controller
             );
         }
 
-        $formatter = new Formatter();
+        $formatter = Craft::$app->getFormatter();
 
         return $this->asJson([
             'date' => $date->format('Y-m-d'),

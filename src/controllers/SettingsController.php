@@ -3,6 +3,7 @@
 namespace webhubworks\verifiedentries\controllers;
 
 use Craft;
+use craft\errors\SiteNotFoundException;
 use craft\web\Controller;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -11,13 +12,25 @@ use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
 
-class SectionSettingsController extends Controller
+/**
+ * Handles saving and rendering of the plugin's settings.
+ */
+class SettingsController extends Controller
 {
+    protected array|int|bool $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
+
+    /** @inheritDoc */
+    public function beforeAction($action): bool
+    {
+        $this->requireCpRequest();
+        return parent::beforeAction($action);
+    }
+
     /**
-     * TODO decide if we want sections tabbed by sites (as this action controls).
+     * Renders the plugin's main settings page.
      *
      * @return Response
-     * @throws \craft\errors\SiteNotFoundException
+     * @throws SiteNotFoundException
      */
     public function actionIndex(): Response
     {
@@ -44,8 +57,33 @@ class SectionSettingsController extends Controller
     }
 
     /**
-     * TODO decide if we want sections grouped by sections (as this action controls).
+     * Saves verification settings for all sections on a given site.
      *
+     * @return Response
+     * @throws Exception
+     * @throws BadRequestHttpException
+     * @throws MethodNotAllowedHttpException
+     */
+    public function actionSave(): Response
+    {
+        $this->requirePostRequest();
+
+        $siteId = (int) $this->request->getRequiredBodyParam('siteId');
+        $sections = $this->request->getRequiredBodyParam('sections');
+        $service = VerifiedEntries::getInstance()->getSectionSettings();
+
+        foreach ($sections as $sectionId => $settings) {
+            $service->saveSectionSettings((int) $sectionId, $siteId, $settings);
+        }
+
+        return $this->asSuccess(Craft::t(VerifiedEntries::HANDLE, 'Verification settings saved.'));
+    }
+
+
+    // TODO decide if we want sections grouped by sections (as this action controls).
+    // =============================================================================================
+
+    /**
      * @return Response
      */
     public function actionGrouped(): Response
@@ -89,27 +127,7 @@ class SectionSettingsController extends Controller
     }
 
     /**
-     * @throws Exception
-     * @throws BadRequestHttpException
-     * @throws MethodNotAllowedHttpException
-     */
-    public function actionSave(): Response
-    {
-        $this->requirePostRequest();
-
-        $siteId = (int) $this->request->getRequiredBodyParam('siteId');
-        $sections = $this->request->getRequiredBodyParam('sections');
-        $service = VerifiedEntries::getInstance()->getSectionSettings();
-
-        foreach ($sections as $sectionId => $settings) {
-            $service->saveSectionSettings((int) $sectionId, $siteId, $settings);
-        }
-
-        $this->setSuccessFlash(Craft::t(VerifiedEntries::HANDLE, 'Verification settings saved.'));
-        return $this->asSuccess();
-    }
-
-    /**
+     * @return Response
      * @throws Exception
      * @throws BadRequestHttpException
      * @throws MethodNotAllowedHttpException
@@ -127,7 +145,6 @@ class SectionSettingsController extends Controller
             }
         }
 
-        $this->setSuccessFlash(Craft::t(VerifiedEntries::HANDLE, 'Verification settings saved.'));
-        return $this->asSuccess();
+        return $this->asSuccess(Craft::t(VerifiedEntries::HANDLE, 'Verification settings saved.'));
     }
 }

@@ -167,13 +167,13 @@ readonly class EventRegistrar
                 $event->rules[VerifiedEntries::HANDLE] = VerifiedEntries::HANDLE . '/entries/index';
 
                 if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
-                    $event->rules[VerifiedEntries::HANDLE . '/settings'] = VerifiedEntries::HANDLE . '/section-settings/index';
-                    $event->rules[VerifiedEntries::HANDLE . '/settings/grouped'] = VerifiedEntries::HANDLE . '/section-settings/grouped';
+                    $event->rules[VerifiedEntries::HANDLE . '/settings'] = VerifiedEntries::HANDLE . '/settings/index';
+                    $event->rules[VerifiedEntries::HANDLE . '/settings/grouped'] = VerifiedEntries::HANDLE . '/settings/grouped';
                 }
 
                 // User edit screen
-                $event->rules['myaccount/' . VerifiedEntries::HANDLE] = VerifiedEntries::HANDLE . '/users/index';
-                $event->rules['users/<userId:\d+>/' . VerifiedEntries::HANDLE] = VerifiedEntries::HANDLE . '/users/index';
+                $event->rules['myaccount/' . VerifiedEntries::HANDLE] = VerifiedEntries::HANDLE . '/reviewers/index';
+                $event->rules['users/<userId:\d+>/' . VerifiedEntries::HANDLE] = VerifiedEntries::HANDLE . '/reviewers/index';
             }
         );
     }

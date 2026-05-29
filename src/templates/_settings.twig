@@ -29,7 +29,7 @@
 ] %}
 
 {% block content %}
-    {{ actionInput('verified-entries/section-settings/save') }}
+    {{ actionInput(pluginHandle ~ '/settings/save') }}
     {{ redirectInput(pluginHandle ~ '/settings?site=' ~ currentSite.handle) }}
     {{ hiddenInput('siteId', currentSite.id) }}
 
