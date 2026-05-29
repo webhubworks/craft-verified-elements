@@ -377,8 +377,13 @@ class Verification extends Component
 
         [$reviewerId, $defaultPeriod] = $defaults ?? [null, null];
 
-        // Always apply default Reviewer (from section settings) if blank
-        if ($entry->getReviewerId() === null && $reviewerId) {
+        // Apply default Reviewer only when a verification date is set.
+        // (An Indefinitely entry with no reviewer is harmless)
+        if (
+            $reviewerId &&
+            $entry->getReviewerId() === null &&
+            $entry->getVerifiedUntilDate() !== null
+        ) {
             $entry->setReviewerId($reviewerId);
         }
 
