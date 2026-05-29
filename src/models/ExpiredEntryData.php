@@ -15,7 +15,7 @@ readonly class ExpiredEntryData
     public function __construct(
         public int     $id, // entry id
         public int     $siteId,
-        public int     $reviewerId,
+        public ?int     $reviewerId,
         public string  $verifiedUntilDate,
         public int     $sectionId,
         public ?string $title,
@@ -36,7 +36,7 @@ readonly class ExpiredEntryData
         return new self(
             id: (int)$row['entryId'],
             siteId: (int)$row['siteId'],
-            reviewerId: (int)$row['reviewerId'],
+            reviewerId: isset($row['reviewerId']) ? (int)$row['reviewerId'] : null,
             verifiedUntilDate: $row['verifiedUntilDate'],
             sectionId: (int)$row['sectionId'],
             title: $row['title'] ?? null,
