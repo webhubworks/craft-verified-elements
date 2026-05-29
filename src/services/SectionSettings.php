@@ -46,6 +46,13 @@ class SectionSettings extends Component
         return $this->_enabledSectionIds;
     }
 
+    /**
+     * Returns an array of IDs for sections (channels, structures, singles) that have been
+     * enabled in this plugin's settings, filtered by a specific site.
+     *
+     * @param int $siteId
+     * @return array
+     */
     public function getEnabledSectionIdsForSite(int $siteId): array
     {
         return array_map(

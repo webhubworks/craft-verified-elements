@@ -10,6 +10,7 @@ use craft\helpers\Html;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
+use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Exception;
 
@@ -80,14 +81,20 @@ class EntriesToReview extends Widget
             ->all();
 
         if (empty($entries)) {
-            return Html::tag('div', Craft::t(VerifiedEntries::HANDLE, 'There are no entries up for review.'), [
-                'class' => ['zilch', 'small'],
-            ]);
+            return Html::tag(
+                'div',
+                Craft::t(VerifiedEntries::HANDLE, 'There are no entries up for review.'),
+                ['class' => ['zilch', 'small']]
+            );
         }
 
         return Craft::$app->getView()->renderTemplate(VerifiedEntries::HANDLE . '/_widgets/review.twig',
             [
                 'entries' => $entries,
+                'statusIndicator' => Cp::statusIndicatorHtml(
+                    VerificationStatus::Expired->handle(),
+                    ['color' => VerificationStatus::Expired->color()]
+                ),
             ]);
     }
 }
