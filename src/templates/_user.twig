@@ -6,26 +6,32 @@
     'Date Updated',
 ]) %}
 
+{% set isMultiSite = craft.app.sites.allSites|filter(s => s.enabled)|length > 1 %}
+
 <h2>{{ 'Sections'|t('app') }}</h2>
 
 {% if sections|length %}
+    {# TODO translate #}
+    <p>{{ "You're the default reviewer for entries in these sections"|t(pluginHandle) }}:</p>
     <table id="sections" class="data fullwidth">
         <thead>
-            <th scope="col">{{ 'Name'|t('app') }}</th>
-            <th scope="col">{{ 'Default Period'|t(pluginHandle) }}</th>
+        <th scope="col">{{ 'Name'|t('app') }}</th>
+        {% if isMultiSite %}<th scope="col">{{ 'Site'|t('app') }}</th>{% endif %}
+        <th scope="col">{{ 'Default Period'|t(pluginHandle) }}</th>
         </thead>
         <tbody>
-            {% for section in sections %}
-                <tr>
-                    <th scope="row" data-title="{{ 'Name'|t('app') }}">
-                        <a href="{{ cpUrl('entries/' ~ section.handle) }}">{{ section.name }}</a>
-                    </th>
-                    <td>
-                        {{ section.defaultPeriod }}
-                    </td>
-                </tr>
+        {% for section in sections %}
+            <tr>
+                <th scope="row" data-title="{{ 'Name'|t('app') }}">
+                    <a href="{{ cpUrl('entries/' ~ section.handle) }}">{{ section.name }}</a>
+                </th>
+                {% if isMultiSite %}<td>{{ section.siteName }}</td>{% endif %}
+                <td>
+                    {{ section.defaultPeriod }}
+                </td>
+            </tr>
 
-            {% endfor %}
+        {% endfor %}
         </tbody>
     </table>
 {% else %}
@@ -33,31 +39,45 @@
         <p>{{ 'No sections are available.'|t('app') }}</p>
     </div>
 {% endif %}
-<hr/>
+<hr />
 
 <h2>{{ 'Entries'|t('app') }}</h2>
+<p>{{ 'These entries are assigned to you for review'|t(pluginHandle) }}:</p>
 <div class="tableview" style="overflow-x: auto; overflow-y: hidden; ">
     <div id="entries-vue-admin-table"></div>
 </div>
 
 {% js %}
     (() => {
-        const columns = [
-            { name: '__slot:title', title: Craft.t('app', 'Name'), sortField: true },
-            { name: 'isVerified', title: 'Verification', sortField: true },
-            { name: 'sectionName', title: Craft.t('app', 'Section'), sortField: true },
-            { name: 'verifiedUntilDate', title: 'Verified until', sortField: true },
-            { name: 'dateUpdated', title: Craft.t('app', 'Date Updated'), sortField: true },
-        ];
+    const columns = [
+    {
+    name: 'isVerified',
+    title: '',
+    sortField: true,
+    callback: function(value) {
+    const color = value === 'Verified' ? 'var(--teal-500)' : 'var(--red-500)';
+    return '<span title="' + value + '" style="display:flex;align-items:center;justify-content:center;">' +
+        '<span style="width:10px;height:10px;border-radius:50%;flex-shrink:0;background:' + color + ';"></span>' +
+        '</span>';
+    }
+    },
+    { name: '__slot:title', title: Craft.t('app', 'Name'), sortField: true },
+    {% if isMultiSite %}
+        { name: 'siteName', title: 'Site', sortField: true },
+    {% endif %}
+    { name: 'sectionName', title: Craft.t('app', 'Section'), sortField: true },
+    { name: 'verifiedUntilDate', title: 'Verified until', sortField: true },
+    { name: 'dateUpdated', title: Craft.t('app', 'Date Updated'), sortField: true },
+    ];
 
-        let config = {
-            columns,
-            container: '#entries-vue-admin-table',
-            emptyMessage: Craft.t('app', 'No sections exist yet.'),
-            tableDataEndpoint: 'verified-entries/entries/table-data&userId={{userId }}',
-            fullPane: false,
-        };
+    let config = {
+    columns,
+    container: '#entries-vue-admin-table',
+    emptyMessage: Craft.t('app', 'No sections exist yet.'),
+    tableDataEndpoint: 'verified-entries/entries/table-data&userId={{ userId }}',
+    fullPane: false,
+    };
 
-        new Craft.VueAdminTable(config);
+    new Craft.VueAdminTable(config);
     })();
 {% endjs %}

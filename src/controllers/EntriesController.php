@@ -40,9 +40,11 @@ class EntriesController extends Controller
         if ($verificationPeriod === VerificationPeriod::SpecificDate->value) {
             $inputDate = $this->request->getRequiredBodyParam('specificDate');
             $date = DateTimeHelper::toDateTime($inputDate);
-        } elseif ($verificationPeriod === VerificationPeriod::Indefinitely->value) {
+        }
+        elseif ($verificationPeriod === VerificationPeriod::Indefinitely->value) {
             $date = null;
-        } else {
+        }
+        else {
             $interval = new \DateInterval($verificationPeriod);
             $date = DateTimeHelper::now()->add($interval);
         }
@@ -64,6 +66,8 @@ class EntriesController extends Controller
         $limit = (int)$this->request->getParam('per_page', 100);
         $orderBy = match ($this->request->getParam('sort.0.field')) {
             '__slot:handle' => 'sectionHandle',
+            'isVerified' => 'verifiedUntilDate',
+            'siteName' => 'siteName',
             default => 'sectionName',
         };
 

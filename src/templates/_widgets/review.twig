@@ -1,9 +1,12 @@
+{% set isMultiSite = craft.app.sites.allSites|filter(s => s.enabled)|length > 1 %}
 <div class="entriestoreview-container">
     <table class="ve-widget-table fullwidth">
         <thead>
         <tr>
             <th>{{ 'Title'|t('app') }}</th>
-            <th>{{ 'Site'|t('app') }}</th>
+            {% if isMultiSite %}
+                <th>{{ 'Site'|t('app') }}</th>
+            {% endif %}
             <th>{{ 'Expires'|t('app') }}</th>
         </tr>
         </thead>
@@ -14,7 +17,9 @@
                     {{ statusIndicator|raw }}
                     <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
                 </td>
-                <td class="light">{{ entry.site.name }}</td>
+                {% if isMultiSite %}
+                    <td class="light">{{ entry.site.name }}</td>
+                {% endif %}
                 <td class="light">{{ entry.verifiedUntilDate|timestamp('short') }}</td>
             </tr>
         {% endfor %}

@@ -35,9 +35,11 @@ abstract class PluginQuery
                 's.name',
                 's.type',
                 's.handle',
+                'sites.name AS siteName',
             ])
             ->from(['ves' => PluginTable::SECTIONS])
             ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.sectionId]]')
+            ->leftJoin('{{%sites}}', '[[sites.id]] = [[ves.siteId]]')
             ->where(['ves.enabled' => true])
             ->andWhere(['ves.reviewerId' => $userId]);
 
@@ -72,6 +74,7 @@ abstract class PluginQuery
                 'sections.name AS sectionName',
                 'sections.handle AS sectionHandle',
                 'sites.handle AS siteHandle',
+                'sites.name AS siteName',
             ])
             ->from(['veea' => PluginTable::ENTRIES])
             ->rightJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
