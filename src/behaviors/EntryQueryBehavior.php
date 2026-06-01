@@ -80,7 +80,7 @@ class EntryQueryBehavior extends Behavior
      * Joins the verification table to the subQuery; must run after beforePrepare() because
      * elements_sites isn't added to the subQuery until after that event fires.
      * @noinspection PhpUnused
-     * @see ElementQuery::afterPrepare()
+     * @see          ElementQuery::afterPrepare()
      */
     public function afterPrepare(): void
     {
@@ -139,18 +139,10 @@ class EntryQueryBehavior extends Behavior
         $query = $this->owner;
 
         if ($value) {
-            $query->andWhere(['and',
-                'veea.verifiedUntilDate IS NOT NULL',
-                'veea.verifiedUntilDate >= UTC_TIMESTAMP()',
-                'veea.reviewerId IS NULL',
-            ]);
+            $query->andWhere('veea.reviewerId IS NULL');
         }
         else {
-            $query->andWhere(['or',
-                'veea.verifiedUntilDate IS NULL',
-                'veea.verifiedUntilDate < UTC_TIMESTAMP()',
-                'veea.reviewerId IS NOT NULL',
-            ]);
+            $query->andWhere('veea.reviewerId IS NOT NULL');
         }
 
         return $query;
@@ -190,6 +182,7 @@ class EntryQueryBehavior extends Behavior
 
         return $query;
     }
+
 
     // PRIVATE HELPERS
     // =============================================================================================
