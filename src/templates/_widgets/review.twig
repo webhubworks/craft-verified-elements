@@ -4,6 +4,7 @@
         <thead>
         <tr>
             <th>{{ 'Title'|t('app') }}</th>
+            <th>{{ 'Section'|t('app') }}</th>
             {% if isMultiSite %}
                 <th>{{ 'Site'|t('app') }}</th>
             {% endif %}
@@ -17,6 +18,7 @@
                     {{ statusIndicator|raw }}
                     <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
                 </td>
+                <td>{{ entry.section.name }}</td>
                 {% if isMultiSite %}
                     <td class="light">{{ entry.site.name }}</td>
                 {% endif %}

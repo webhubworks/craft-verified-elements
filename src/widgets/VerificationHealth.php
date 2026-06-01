@@ -110,7 +110,7 @@ class VerificationHealth extends Widget
         if (Craft::$app->getIsMultiSite()) {
             $siteDisplayed = $this->siteId
                 ? Craft::$app->getSites()->getSiteById($this->siteId)?->getName()
-                : StringHelper::toLowerCase(Craft::t('app', 'All Sites'));
+                : Craft::t('app', 'All Sites');
         }
 
         return Craft::$app->getView()->renderTemplate(
