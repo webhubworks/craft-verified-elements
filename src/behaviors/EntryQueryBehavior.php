@@ -16,7 +16,7 @@ class EntryQueryBehavior extends Behavior
 {
     public const NAME = 'verified-entries.entry-query';
     public ?bool $isVerified = null;
-    public ?bool $isUnassigned = null;
+    public ?bool $isAssigned = null;
     public ?int $reviewerId = null;
     public ?string $verifiedUntil = null;
 
@@ -63,8 +63,8 @@ class EntryQueryBehavior extends Behavior
             $this->isVerified($this->isVerified);
         }
 
-        if ($this->isUnassigned !== null) {
-            $this->isUnassigned($this->isUnassigned);
+        if ($this->isAssigned !== null) {
+            $this->isAssigned($this->isAssigned);
         }
 
         if ($this->reviewerId !== null) {
@@ -129,20 +129,20 @@ class EntryQueryBehavior extends Behavior
     }
 
     /**
-     * Query param for filtering entries that have a verification date but no Reviewer assigned.
+     * Query param for filtering entries that have or haven't been assigned to a reviewer
      *
      * @param bool $value
      * @return EntryQuery
      */
-    public function isUnassigned(bool $value = true): EntryQuery
+    public function isAssigned(bool $value = true): EntryQuery
     {
         $query = $this->owner;
 
         if ($value) {
-            $query->andWhere('veea.reviewerId IS NULL');
+            $query->andWhere('veea.reviewerId IS NOT NULL');
         }
         else {
-            $query->andWhere('veea.reviewerId IS NOT NULL');
+            $query->andWhere('veea.reviewerId IS NULL');
         }
 
         return $query;

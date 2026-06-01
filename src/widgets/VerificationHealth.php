@@ -62,7 +62,7 @@ class VerificationHealth extends Widget
             ->siteId($site)
             ->sectionId($enabledSectionIds)
             ->isVerified(true)
-            ->isUnassigned(false)
+            ->isAssigned(true)
             ->count();
 
         $expiredEntryCount = Entry::find()
@@ -76,7 +76,7 @@ class VerificationHealth extends Widget
             ->status('live')
             ->siteId($site)
             ->sectionId($enabledSectionIds)
-            ->isUnassigned(true)
+            ->isAssigned(false)
             ->count();
 
         $statuses = [

@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use webhubworks\verifiedentries\behaviors\EntryQueryBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -24,15 +25,15 @@ class VerifiedConditionRule extends BaseSelectConditionRule implements ElementCo
     /** @inheritDoc */
     public function getExclusiveQueryParams(): array
     {
-        return ['isVerified', 'isUnassigned', 'verifiedUntilDate'];
+        return ['isVerified', 'isAssigned', 'verifiedUntilDate'];
     }
 
     /** @inheritDoc */
     protected function options(): array
     {
         return [
-            ['value' => VerificationStatus::Verified->handle(),   'label' => VerificationStatus::Verified->label()],
-            ['value' => VerificationStatus::Expired->handle(),    'label' => VerificationStatus::Expired->label()],
+            ['value' => VerificationStatus::Verified->handle(), 'label' => VerificationStatus::Verified->label()],
+            ['value' => VerificationStatus::Expired->handle(), 'label' => VerificationStatus::Expired->label()],
             ['value' => VerificationStatus::Unassigned->handle(), 'label' => VerificationStatus::Unassigned->label()],
             ['value' => VerificationStatus::Indefinite->handle(), 'label' => VerificationStatus::Indefinite->label()],
         ];
@@ -41,15 +42,14 @@ class VerifiedConditionRule extends BaseSelectConditionRule implements ElementCo
     /** @inheritDoc */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
-        match($this->value) {
+        /** @var EntryQuery|EntryQueryBehavior $query */
+        match ($this->value) {
             VerificationStatus::Verified->handle() => $query->andWhere(['and',
                 'veea.verifiedUntilDate IS NOT NULL',
                 'veea.verifiedUntilDate >= UTC_TIMESTAMP()',
-                'veea.reviewerId IS NOT NULL',
-            ]),
-            VerificationStatus::Expired->handle()    => $query->isVerified(false),
-            VerificationStatus::Unassigned->handle() => $query->isUnassigned(true),
+            ])->isAssigned(true),
+            VerificationStatus::Expired->handle() => $query->isVerified(false),
+            VerificationStatus::Unassigned->handle() => $query->isAssigned(false),
             VerificationStatus::Indefinite->handle() => $query->andWhere('veea.verifiedUntilDate IS NULL'),
             default => null,
         };

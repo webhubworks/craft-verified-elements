@@ -60,7 +60,7 @@ class VerifiedEntry extends Entry
                     'sectionId' => $enabledSectionIds,
                     'status' => 'live',
                     'verifiedUntil' => '< ' . (DateTimeHelper::nextMonth())->format('Y-m-d'),
-                ]
+                ],
             ],
             [
                 'key' => VerificationStatus::Verified->handle(),
@@ -75,7 +75,7 @@ class VerifiedEntry extends Entry
                 'key' => VerificationStatus::Unassigned->handle(),
                 'label' => VerificationStatus::Unassigned->label(),
                 'criteria' => [
-                    'isUnassigned' => true,
+                    'isAssigned' => false,
                     'sectionId' => $enabledSectionIds,
                     'status' => 'live',
                 ]
