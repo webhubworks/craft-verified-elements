@@ -22,6 +22,7 @@ return [
     'Not a valid date.' => 'Kein gültiges Datum.',
     'Specific Date' => 'Bestimmtes Datum',
     'The following entries have verification dates that have expired:' => 'bei den folgeden Einträgen ist das Verifizierungsdatum abgelaufen:',
+    'Unassigned' => 'Unbestimmt',
     'Verification Status' => 'Verifizierungsstatus',
     'Verification settings saved.' => 'Einstellungen zur Verifizierung gespeichert.',
     'Verification' => 'Verifizierung',
@@ -33,4 +34,6 @@ return [
     'Verify for' => 'Verfizieren für',
     'View all' => 'Alle anzeigen',
     '{count, number} {count, plural, =1{entry awaits} other{entries await}} your verification' => '{count, number} {count, plural, =1{Eintrag benötigt} other{Einträge benötigen}} Ihre Verifizierung',
+    '{n} days remaining' => '{n, plural, =1{Noch 1 Tag} other{Noch # Tage}}',
+    '{n} days ago' => '{n, plural, =1{Vor 1 Tag} other{Vor # Tagen}}',
 ];
