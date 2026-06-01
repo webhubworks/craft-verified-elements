@@ -13,6 +13,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateInterval;
 use DateTime;
+use DateTimeZone;
 use webhubworks\verifiedentries\base\NotifiableInterface;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
@@ -336,6 +337,38 @@ class Verification extends Component
         ];
 
         return UrlHelper::buildQuery($config);
+    }
+
+    /**
+     * Format a "Verified until" dropdown date to a human-readable value for convenience to the user.
+     *
+     * @param DateTime|null $verifiedUntilDate
+     * @return string
+     * @throws \DateInvalidTimeZoneException
+     * @throws \DateMalformedStringException
+     */
+    public function makeVerificationDateReadable(?DateTime $verifiedUntilDate): string
+    {
+        if ($verifiedUntilDate === null) {
+            return Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
+        }
+
+        $timezone = new DateTimeZone(Craft::$app->getTimeZone());
+        $now = new DateTime('today', $timezone);
+        $dateOnly = new DateTime($verifiedUntilDate->format('Y-m-d'), $timezone);
+        $diff = $now->diff($dateOnly);
+
+        if ($diff->days === 0) {
+            return Craft::t(VerifiedEntries::HANDLE, 'Today');
+        }
+
+        if ($diff->days < 31) {
+            return $diff->invert
+                ? Craft::t(VerifiedEntries::HANDLE, '{n} days ago', ['n' => $diff->days])
+                : Craft::t(VerifiedEntries::HANDLE, '{n} days remaining', ['n' => $diff->days]);
+        }
+
+        return Craft::$app->getFormatter()->asDate($verifiedUntilDate, 'short');
     }
 
 

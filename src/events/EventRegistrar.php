@@ -37,7 +37,7 @@ use craft\services\UserPermissions;
 use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use DateTime;
-use DateTimeZone;
+use Twig\TwigFilter;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -198,6 +198,28 @@ readonly class EventRegistrar
         $this->registerEntryIndexUi();
         $this->registerEntryLifecycle();
         $this->registerCraftComponents();
+        $this->extendTwig();
+    }
+
+    /**
+     * Extend Twig for the plugin's needs.
+     *
+     * @return void
+     */
+    public function extendTwig(): void
+    {
+        // define Twig constants
+        Craft::$app->getView()->getTwig()->addGlobal('pluginHandle', VerifiedEntries::HANDLE);
+
+        // define custom Twig functions
+        Craft::$app->getView()->getTwig()->addFilter(
+            new TwigFilter(
+                'readableVerificationDate',
+                fn (?DateTime $date): string => VerifiedEntries::getInstance()
+                    ->getVerification()
+                    ->makeVerificationDateReadable($date)
+            )
+        );
     }
 
     /**
@@ -526,35 +548,9 @@ readonly class EventRegistrar
                         break;
 
                     case "verifiedUntilDate":
-                        $date = $entry->getVerifiedUntilDate();
-
-                        // If no date was selected, indicate the date is "indefinite".
-                        if ($date === null) {
-                            $event->html = Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
-                            break;
-                        }
-
-                        $timezone = new DateTimeZone(Craft::$app->getTimeZone());
-                        $now = new DateTime('today', $timezone);
-                        $dateOnly = new DateTime($date->format('Y-m-d'), $timezone);
-                        $diff = $now->diff($dateOnly);
-
-                        // If the entry expired or will expire today:
-                        if ($diff->days === 0) {
-                            $event->html = Craft::t('app', 'Today');
-                            break;
-                        }
-
-                        // If the entry expired or will expire in less than a month:
-                        if ($diff->days < 31) {
-                            $event->html = $diff->invert
-                                ? Craft::t(VerifiedEntries::HANDLE, '{n} days ago', ['n' => $diff->days])
-                                : Craft::t(VerifiedEntries::HANDLE, '{n} days remaining', ['n' => $diff->days]);
-                            break;
-                        }
-
-                        // Show the proper DD/MM/YYYY date (formatted to the current user's locale.
-                        $event->html = Craft::$app->getFormatter()->asDate($date, 'short');
+                        $event->html = VerifiedEntries::getInstance()
+                            ->getVerification()
+                            ->makeVerificationDateReadable($entry->getVerifiedUntilDate());
                         break;
 
                     case "reviewer":

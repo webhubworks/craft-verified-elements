@@ -133,7 +133,9 @@ class Reviewers extends Component
             return [
                 ...$entry,
                 'isVerified' => $isVerified ? 'Verified' : 'Expired',
-                'verifiedUntilDate' => $verifiedUntilDate ? $formatter->asDate($verifiedUntilDate) : 'Indefinitely',
+                'verifiedUntilDate' => VerifiedEntries::getInstance()
+                    ->getVerification()
+                    ->makeVerificationDateReadable($verifiedUntilDate),
                 'dateUpdated' => $formatter->asDate(DateTimeHelper::toDateTime($entry['dateUpdated'])),
                 'url' => UrlHelper::cpUrl($uri, ['site' => $entry['siteHandle']]),
             ];

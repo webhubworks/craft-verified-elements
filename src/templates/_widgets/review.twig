@@ -22,7 +22,7 @@
                 {% if isMultiSite %}
                     <td class="light">{{ entry.site.name }}</td>
                 {% endif %}
-                <td class="light">{{ entry.verifiedUntilDate|timestamp('short') }}</td>
+                <td class="light">{{ entry.verifiedUntilDate|readableVerificationDate }}</td>
             </tr>
         {% endfor %}
         </tbody>

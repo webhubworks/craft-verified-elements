@@ -64,9 +64,6 @@ class VerifiedEntries extends Plugin
                 $isCpRequest,
                 $isConsoleRequest,
             ))->registerOnInitEvents();
-
-            // define Twig constants
-            Craft::$app->getView()->getTwig()->addGlobal('pluginHandle', self::HANDLE);
         });
     }
 
