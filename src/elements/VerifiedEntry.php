@@ -53,8 +53,8 @@ class VerifiedEntry extends Entry
                 ]
             ],
             [
-                'key' => 'upcoming',
-                'label' => Craft::t('app', 'Pending'),
+                'key' => 'imminent',
+                'label' => Craft::t(VerifiedEntries::HANDLE, 'Imminent'),
                 'criteria' => [
                     'isVerified' => true,
                     'sectionId' => $enabledSectionIds,

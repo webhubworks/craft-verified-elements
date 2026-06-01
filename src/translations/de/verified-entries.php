@@ -14,6 +14,7 @@ return [
     'Entry has been updated' => 'Ein Eintrag wurde aktualisiert',
     'Entry has expired and is due to be verified.' => 'Der Eintrag ist abgelaufen und muss überprüft werden.',
     'Expired' => 'Abgelaufen',
+    'Imminent' => 'Bevorstehend',
     'Indefinite' => 'Unbegrenzt',
     'Indefinitely' => 'Unbegrenzt',
     'Manage Verification Settings' => 'Verifizierungseinstellungen verwalten',
