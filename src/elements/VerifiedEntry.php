@@ -3,7 +3,6 @@
 namespace webhubworks\verifiedentries\elements;
 
 use Craft;
-use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
@@ -19,11 +18,6 @@ class VerifiedEntry extends Entry
     public static function refHandle(): ?string
     {
         return 'verifiedEntry';
-    }
-
-    public static function find(): EntryQuery
-    {
-        return new EntryQuery(Entry::class);
     }
 
     protected static function defineDefaultTableAttributes(string $source): array
