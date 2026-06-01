@@ -34,7 +34,7 @@ class VerifiedConditionRule extends BaseSelectConditionRule implements ElementCo
             ['value' => VerificationStatus::Verified->handle(),   'label' => VerificationStatus::Verified->label()],
             ['value' => VerificationStatus::Expired->handle(),    'label' => VerificationStatus::Expired->label()],
             ['value' => VerificationStatus::Unassigned->handle(), 'label' => VerificationStatus::Unassigned->label()],
-            ['value' => VerificationStatus::Unverified->handle(), 'label' => VerificationStatus::Unverified->label()],
+            ['value' => VerificationStatus::Indefinite->handle(), 'label' => VerificationStatus::Indefinite->label()],
         ];
     }
 
@@ -50,7 +50,7 @@ class VerifiedConditionRule extends BaseSelectConditionRule implements ElementCo
             ]),
             VerificationStatus::Expired->handle()    => $query->isVerified(false),
             VerificationStatus::Unassigned->handle() => $query->isUnassigned(true),
-            VerificationStatus::Unverified->handle() => $query->andWhere('veea.verifiedUntilDate IS NULL'),
+            VerificationStatus::Indefinite->handle() => $query->andWhere('veea.verifiedUntilDate IS NULL'),
             default => null,
         };
     }

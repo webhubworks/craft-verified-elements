@@ -174,7 +174,7 @@ class VerifiableBehavior extends Behavior
     public function getVerificationStatus(): VerificationStatus
     {
         if ($this->_verifiedUntilDate === null) {
-            return VerificationStatus::Unverified;
+            return VerificationStatus::Indefinite;
         }
 
         // TODO handle DateTime exceptions

@@ -11,10 +11,10 @@ use webhubworks\verifiedentries\VerifiedEntries;
  */
 enum VerificationStatus: string
 {
-    case Unverified = 'unverified';
+    case Expired = 'expired';
+    case Indefinite = 'indefinite';
     case Unassigned = 'unassigned';
     case Verified = 'verified';
-    case Expired = 'expired';
 
     public function handle(): string
     {
@@ -24,20 +24,20 @@ enum VerificationStatus: string
     public function label(): string
     {
         return Craft::t(VerifiedEntries::HANDLE, match ($this) {
-            self::Unverified => 'Unverified',
+            self::Expired => 'Expired',
+            self::Indefinite => 'Indefinite',
             self::Unassigned => 'Unassigned',
             self::Verified => 'Verified',
-            self::Expired => 'Expired',
         });
     }
 
     public function color(): Color
     {
         return match ($this) {
-            self::Unverified => Color::Gray,
+            self::Expired => Color::Red,
+            self::Indefinite => Color::Gray,
             self::Unassigned => Color::Yellow,
             self::Verified => Color::Teal,
-            self::Expired => Color::Red,
         };
     }
 

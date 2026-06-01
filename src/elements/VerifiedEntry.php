@@ -8,6 +8,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use webhubworks\verifiedentries\enums\Permission;
+use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -38,20 +39,13 @@ class VerifiedEntry extends Entry
 
     protected static function defineSources(string $context = null): array
     {
-        /** @var  $verificationService */
-        $plugin = VerifiedEntries::getInstance();
-        $enabledSectionIds = $plugin->getSectionSettings()->getEnabledSectionIds();
-
-        $currentUser = Craft::$app->user;
-        $reviewers = User::find()
-            ->can(Permission::VerifyEntries->value)
-            ->id(['not', $currentUser->id])
-            ->all();
+        $enabledSectionIds = VerifiedEntries::getInstance()->getSectionSettings()->getEnabledSectionIds();
+        $currentUser = Craft::$app->getUser();
 
         $sources = [
             [
-                'key' => 'expired',
-                'label' => Craft::t(VerifiedEntries::HANDLE, 'Expired'),
+                'key' => VerificationStatus::Expired->handle(),
+                'label' => VerificationStatus::Expired->label(),
                 'criteria' => [
                     'isVerified' => false,
                     'sectionId' => $enabledSectionIds,
@@ -69,8 +63,8 @@ class VerifiedEntry extends Entry
                 ]
             ],
             [
-                'key' => 'verified',
-                'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified'),
+                'key' => VerificationStatus::Verified->handle(),
+                'label' => VerificationStatus::Verified->label(),
                 'criteria' => [
                     'isVerified' => true,
                     'sectionId' => $enabledSectionIds,
@@ -78,8 +72,8 @@ class VerifiedEntry extends Entry
                 ]
             ],
             [
-                'key' => 'unassigned',
-                'label' => Craft::t(VerifiedEntries::HANDLE, 'Unassigned'),
+                'key' => VerificationStatus::Unassigned->handle(),
+                'label' => VerificationStatus::Unassigned->label(),
                 'criteria' => [
                     'isUnassigned' => true,
                     'sectionId' => $enabledSectionIds,
@@ -99,6 +93,11 @@ class VerifiedEntry extends Entry
                 ]
             ]
         ];
+
+        $reviewers = User::find()
+            ->can(Permission::VerifyEntries->value)
+            ->id(['not', $currentUser->id])
+            ->all();
 
         foreach ($reviewers as $reviewer) {
             /** @var User $reviewer */
