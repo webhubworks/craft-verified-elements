@@ -47,26 +47,6 @@ class Reviewers extends Component
     }
 
     /**
-     * TODO: is this being used anywhere? Could it be deleted?
-     *
-     * Get all entries assigned to a Reviewer.
-     *
-     * @param int|null $userId
-     * @param int|null $siteId
-     * @return array
-     */
-    public function getEntries(?int $userId = null, ?int $siteId = null): array
-    {
-        if ($userId === null) {
-            $userId = Craft::$app->getUser()->getId();
-        }
-
-        $entries = PluginQuery::entriesByReviewer($userId, $siteId)->all();
-
-        return $this->transformEntries($entries);
-    }
-
-    /**
      * Get all entries assigned to a Reviewer, but paginate the results.
      *
      * @param int $page
