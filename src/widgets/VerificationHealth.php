@@ -62,7 +62,6 @@ class VerificationHealth extends Widget
             ->siteId($site)
             ->sectionId($enabledSectionIds)
             ->isVerified(true)
-            ->isAssigned(true)
             ->count();
 
         $expiredEntryCount = Entry::find()
@@ -70,13 +69,6 @@ class VerificationHealth extends Widget
             ->siteId($site)
             ->sectionId($enabledSectionIds)
             ->isVerified(false)
-            ->count();
-
-        $unassignedEntryCount = Entry::find()
-            ->status('live')
-            ->siteId($site)
-            ->sectionId($enabledSectionIds)
-            ->isAssigned(false)
             ->count();
 
         $statuses = [
@@ -96,14 +88,6 @@ class VerificationHealth extends Widget
                     ['color' => VerificationStatus::Expired->color()]
                 ),
             ],
-            [
-                'label' => VerificationStatus::Unassigned->label(),
-                'count' => $unassignedEntryCount,
-                'icon' => Cp::statusIndicatorHtml(
-                    VerificationStatus::Unassigned->handle(),
-                    ['color' => VerificationStatus::Unassigned->color()]
-                ),
-            ],
         ];
 
         $siteDisplayed = null;
@@ -119,12 +103,10 @@ class VerificationHealth extends Widget
                 'siteDisplayed' => $siteDisplayed,
                 'totalCount' => $totalEntryCount,
                 'verifiedCount' => $verifiedEntryCount,
-                'unassignedCount' => $unassignedEntryCount,
                 'expiredCount' => $expiredEntryCount,
                 'statuses' => $statuses,
                 'statusColors' => [
                     'verified' => VerificationStatus::Verified->cssColor(),
-                    'unassigned' => VerificationStatus::Unassigned->cssColor(),
                     'expired' => VerificationStatus::Expired->cssColor(),
                 ],
             ]

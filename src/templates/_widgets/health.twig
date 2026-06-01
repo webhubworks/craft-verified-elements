@@ -1,6 +1,5 @@
 {% set verifiedLength = (verifiedCount / totalCount * 100)|round(0, 'ceil') %}
 {% set expiredLength    = (expiredCount / totalCount * 100)|round(0, 'ceil') %}
-{% set unassignedLength = (unassignedCount / totalCount * 100)|round(0, 'ceil') %}
 
 {% if siteDisplayed %}
     <p class="light" style="margin: 0 0 8px;">{{ siteDisplayed }}</p>
@@ -11,7 +10,6 @@
         <rect x="0" y="0" width="100" height="100%" fill="var(--gray-200)" />
         <rect x="0" y="0" width="{{ verifiedLength }}" height="100%" fill="{{ statusColors.verified }}" />
         <rect x="{{ verifiedLength }}" y="0" width="{{ expiredLength }}" height="100%" fill="{{ statusColors.expired }}" />
-        <rect x="{{ verifiedLength + expiredLength }}" y="0" width="{{ unassignedLength }}" height="100%" fill="{{ statusColors.unassigned }}" />
     </svg>
 
     <div class="mt-4">
