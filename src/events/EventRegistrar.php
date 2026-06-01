@@ -42,7 +42,7 @@ use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\VerifiedEntries;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\behaviors\EntryQueryBehavior;
+use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedentries\elements\VerifiedEntry;
 use webhubworks\verifiedentries\elements\actions\AssignReviewer;
 use webhubworks\verifiedentries\elements\actions\VerifyEntry;
@@ -337,7 +337,7 @@ readonly class EventRegistrar
             EntryQuery::class,
             Query::EVENT_DEFINE_BEHAVIORS,
             static function (DefineBehaviorsEvent $event) {
-                $event->behaviors[EntryQueryBehavior::NAME] = EntryQueryBehavior::class;
+                $event->behaviors[VerifiableQueryBehavior::NAME] = VerifiableQueryBehavior::class;
             }
         );
     }

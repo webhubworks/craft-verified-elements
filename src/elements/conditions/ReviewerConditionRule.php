@@ -9,6 +9,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
+use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 
 class ReviewerConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
@@ -49,7 +50,7 @@ class ReviewerConditionRule extends BaseElementSelectConditionRule implements El
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
+        /** @var EntryQuery|VerifiableQueryBehavior $query */
         $query->reviewerId($this->getElementIds());
     }
 

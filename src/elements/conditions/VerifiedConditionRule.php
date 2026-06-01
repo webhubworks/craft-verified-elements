@@ -9,7 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use webhubworks\verifiedentries\behaviors\EntryQueryBehavior;
+use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -42,7 +42,7 @@ class VerifiedConditionRule extends BaseSelectConditionRule implements ElementCo
     /** @inheritDoc */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery|EntryQueryBehavior $query */
+        /** @var EntryQuery|VerifiableQueryBehavior $query */
         match ($this->value) {
             VerificationStatus::Verified->handle() => $query->andWhere(['and',
                 'veea.verifiedUntilDate IS NOT NULL',

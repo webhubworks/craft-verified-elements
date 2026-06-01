@@ -12,9 +12,9 @@ use yii\base\Behavior;
 /**
  * @property EntryQuery $owner
  */
-class EntryQueryBehavior extends Behavior
+class VerifiableQueryBehavior extends Behavior
 {
-    public const NAME = 'verified-entries.entry-query';
+    public const NAME = 'verified-entries.verifiable-query';
     public ?bool $isVerified = null;
     public ?bool $isAssigned = null;
     public ?int $reviewerId = null;

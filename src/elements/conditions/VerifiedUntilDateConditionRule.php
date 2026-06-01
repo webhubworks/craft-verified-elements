@@ -9,6 +9,7 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
@@ -34,7 +35,7 @@ class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implemen
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $entry */
+        /** @var EntryQuery|VerifiableQueryBehavior $query */
         $query->verifiedUntilDate($this->queryParamValue());
     }
 
