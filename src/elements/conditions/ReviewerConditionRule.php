@@ -9,57 +9,49 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
+use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 
+/**
+ * Condition rule that filters entries by their assigned Reviewer.
+ */
 class ReviewerConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     protected function elementType(): string
     {
         return User::class;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function getLabel(): string
     {
         return 'Reviewer';
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     protected  function allowMultiple(): bool
     {
         return true;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function getExclusiveQueryParams(): array
     {
         return ['reviewer', 'reviewerId'];
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery|VerifiableQueryBehavior $query */
         $query->reviewerId($this->getElementIds());
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Entry $element */
-        return $this->matchValue($element->reviewerId);
+        /** @var Entry|VerifiableBehavior $element */
+        return $this->matchValue($element->getReviewerId());
     }
 }

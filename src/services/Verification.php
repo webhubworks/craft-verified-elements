@@ -99,7 +99,7 @@ class Verification extends Component
 
         $verifiedUntilDate = null;
         if (isset($sourceRow['verifiedUntilDate'])) {
-            // TODO handle toDateTime exception
+            // TODO handle date exception
             $verifiedUntilDate = DateTimeHelper::toDateTime($sourceRow['verifiedUntilDate']);
         }
 
@@ -440,7 +440,7 @@ class Verification extends Component
 
         // Only apply default date on first save. "Indefinitely" is a valid choice after that.
         if ($isFirstSave && $entry->getVerifiedUntilDate() === null && $defaultPeriod) {
-            // TODO address DateInterval exception
+            // TODO handle date exception
             $dateInterval = new DateInterval($defaultPeriod);
             $verifiedUntilDate = DateTimeHelper::now()->add($dateInterval);
             $entry->setVerifiedUntilDate($verifiedUntilDate);
@@ -534,7 +534,7 @@ class Verification extends Component
 
             $siteVerifiedUntilDate = null;
             if ($siteDefaultPeriod) {
-                // TODO handle DateInterval exception
+                // TODO handle date exception
                 $dateInterval = new DateInterval($siteDefaultPeriod);
                 $siteVerifiedUntilDate = DateTimeHelper::now()->add($dateInterval);
             }

@@ -14,6 +14,11 @@ use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
+/**
+ * Condition rule that filters entries by verification status or field state
+ * (Verified, Expired, Unassigned, or Indefinite).
+ * @see VerificationStatus
+ */
 class VerifiedConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface
 {
     /** @inheritDoc */
@@ -43,6 +48,7 @@ class VerifiedConditionRule extends BaseSelectConditionRule implements ElementCo
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery|VerifiableQueryBehavior $query */
+        /** @noinspection PhpUndefinedMethodInspection */
         match ($this->value) {
             VerificationStatus::Verified->handle() => $query->andWhere(['and',
                 'veea.verifiedUntilDate IS NOT NULL',

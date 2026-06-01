@@ -114,7 +114,7 @@ class VerifiableBehavior extends Behavior
      */
     public function setVerifiedUntilDate(mixed $value): void
     {
-        // TODO handle DateTimeZone exception
+        // TODO handle date exception
         $craftTimezone = new DateTimeZone(Craft::$app->getTimeZone());
 
         if ($value instanceof DateTime) {
@@ -177,7 +177,7 @@ class VerifiableBehavior extends Behavior
             return VerificationStatus::Indefinite;
         }
 
-        // TODO handle DateTime exceptions
+        // TODO handle date exception
         $now = new DateTime('now', new DateTimeZone(Craft::$app->getTimeZone()));
 
         if ($this->_verifiedUntilDate <= $now) {

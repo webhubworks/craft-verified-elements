@@ -9,42 +9,46 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
+use Throwable;
+use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 
+/**
+ * Condition rule that filters entries by their "Verified until" date.
+ */
 class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function getLabel(): string
     {
         return Craft::t(VerifiedEntries::HANDLE, 'Verified until');
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function getExclusiveQueryParams(): array
     {
         return ['verifiedUntilDate'];
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery|VerifiableQueryBehavior $query */
         $query->verifiedUntilDate($this->queryParamValue());
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Entry $element */
-        return $this->matchValue($element->verifiedUntilDate);
+        /** @var Entry|VerifiableBehavior $element */
+        try {
+            return $this->matchValue($element->getVerifiedUntilDate());
+        }
+        catch (Throwable $exception) {
+            Craft::error($exception->getMessage(), __METHOD__);
+        }
+
+        return false;
     }
 }

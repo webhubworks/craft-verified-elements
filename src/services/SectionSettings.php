@@ -67,31 +67,6 @@ class SectionSettings extends Component
     }
 
     /**
-     * Checks if an entry's section has been enabled in this plugin's settings.
-     *
-     * @param int|string|null $sectionId
-     * @return bool
-     */
-    public function isSectionEnabled(int|string|null $sectionId): bool
-    {
-        // Matrix entries aren't applicable to this plugin.
-        if ($sectionId === null) {
-            return false;
-        }
-
-        if (is_string($sectionId)) {
-            $sectionId = (int)$sectionId;
-        }
-
-        // Only entries from sections that are enabled by the plugin should get the behavior.
-        if (! in_array($sectionId, $this->getEnabledSectionIds(), true)) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
      * Checks if a section is enabled for this plugin.
      *
      * @param int $sectionId
@@ -181,7 +156,7 @@ class SectionSettings extends Component
         $result = (new CraftQuery())
             ->select(['enabled', 'reviewerId', 'defaultPeriod'])
             ->from(PluginTable::SECTIONS)
-            ->where(['sectionId' => $sectionId, 'siteId' => $siteId])
+            ->where(compact('sectionId', 'siteId'))
             ->one();
 
         if (! $result || ! $result['enabled']) {

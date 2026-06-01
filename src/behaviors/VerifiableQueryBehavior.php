@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpSameParameterValueInspection */
 
 namespace webhubworks\verifiedentries\behaviors;
 

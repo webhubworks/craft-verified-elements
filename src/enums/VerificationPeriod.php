@@ -2,6 +2,8 @@
 
 namespace webhubworks\verifiedentries\enums;
 
+use DateInterval;
+
 /**
  * Enum representing the options an admin can choose in the CP for when an entry needs verification (e.g. the
  * "Verified until" dropdown field).
@@ -21,8 +23,9 @@ enum VerificationPeriod: string
         return [self::SevenDays, self::ThirtyDays, self::NinetyDays, self::OneYear];
     }
 
-    public function toDateInterval(): \DateInterval
+    public function toDateInterval(): DateInterval
     {
-        return new \DateInterval($this->value);
+        // TODO handle date exception
+        return new DateInterval($this->value);
     }
 }

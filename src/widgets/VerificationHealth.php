@@ -6,12 +6,15 @@ use Craft;
 use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Cp;
-use craft\helpers\StringHelper;
+use Throwable;
 use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
  * Verification Health widget type
+ *
+ * @property-read null|string $bodyHtml
+ * @property-read null|string $settingsHtml
  */
 class VerificationHealth extends Widget
 {
@@ -41,7 +44,10 @@ class VerificationHealth extends Widget
         return 'heart';
     }
 
-    /** @inheritDoc */
+    /**
+     * @inheritDoc
+     * @noinspection PhpUndefinedMethodInspection
+     */
     public function getBodyHtml(): ?string
     {
         $sectionSettings = VerifiedEntries::getInstance()->getSectionSettings();
@@ -97,20 +103,32 @@ class VerificationHealth extends Widget
                 : Craft::t('app', 'All Sites');
         }
 
-        return Craft::$app->getView()->renderTemplate(
-            VerifiedEntries::HANDLE . '/_widgets/health.twig',
-            [
-                'siteDisplayed' => $siteDisplayed,
-                'totalCount' => $totalEntryCount,
-                'verifiedCount' => $verifiedEntryCount,
-                'expiredCount' => $expiredEntryCount,
-                'statuses' => $statuses,
-                'statusColors' => [
-                    'verified' => VerificationStatus::Verified->cssColor(),
-                    'expired' => VerificationStatus::Expired->cssColor(),
-                ],
-            ]
-        );
+        $templateVariables = [
+            'siteDisplayed' => $siteDisplayed,
+            'totalCount' => $totalEntryCount,
+            'verifiedCount' => $verifiedEntryCount,
+            'expiredCount' => $expiredEntryCount,
+            'statuses' => $statuses,
+            'statusColors' => [
+                'verified' => VerificationStatus::Verified->cssColor(),
+                'expired' => VerificationStatus::Expired->cssColor(),
+            ],
+        ];
+
+        try {
+            return Craft::$app->getView()->renderTemplate(
+                VerifiedEntries::HANDLE . '/_widgets/health.twig',
+                $templateVariables
+            );
+        }
+        catch (Throwable $exception) {
+            Craft::error(
+                'Error loading "Verification Health" widget: ' . $exception->getMessage(),
+                __METHOD__
+            );
+        }
+
+        return null;
     }
 
     /** @inheritDoc */
@@ -125,11 +143,26 @@ class VerificationHealth extends Widget
             $options[] = ['label' => $site->name, 'value' => $site->id];
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/select.twig', [
+        $templateVariables = [
             'label' => Craft::t(VerifiedEntries::HANDLE, 'Site'),
             'name' => 'siteId',
             'options' => $options,
             'value' => $this->siteId ? (string)$this->siteId : '',
-        ]);
+        ];
+
+        try {
+            return Craft::$app->getView()->renderTemplate(
+                '_includes/forms/select.twig',
+                $templateVariables
+            );
+        }
+        catch (Throwable $exception) {
+            Craft::error(
+                'Error loading "Verification Health" widget settings: ' . $exception->getMessage(),
+                __METHOD__
+            );
+        }
+
+        return null;
     }
 }

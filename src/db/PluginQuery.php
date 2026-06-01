@@ -8,14 +8,14 @@ use DateTime;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
 
 /**
- * Class for abstracting out the many complicated database queries used throughout the plugin. PluginQuery that belong in
- * this file are those with joins, requiring multiple tables to be queried. Single-table queries can remain as they are
- * throughout the plugin's logic.
+ * Class for abstracting out the many complicated database queries used throughout the plugin.
+ * Queries that belong in this file are those with joins, requiring multiple tables to be queried.
+ * Single-table queries can remain as they are throughout the plugin's logic.
  */
 abstract class PluginQuery
 {
     // REVIEWERS (USERS)
-    // =================================================================================================================
+    // =============================================================================================
 
     /**
      * Returns a query for all sections (channels, structures, singles) assigned to a reviewer.
@@ -97,7 +97,7 @@ abstract class PluginQuery
 
 
     // VERIFICATION
-    // =================================================================================================================
+    // =============================================================================================
 
     /**
      * Returns a query for a verifiable entry record.
@@ -153,7 +153,7 @@ abstract class PluginQuery
 
 
     // SETTINGS
-    // =================================================================================================================
+    // =============================================================================================
 
     /**
      * Returns a query for sections (channels, structures, singles) that have settings.

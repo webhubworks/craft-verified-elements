@@ -7,40 +7,45 @@ use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\helpers\Html;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use Throwable;
 use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
-use yii\base\Exception;
 
 /**
  * Expired Entries Widget widget type
+ *
+ * @property-read null|string $bodyHtml
+ * @property-read null|string $settingsHtml
  */
 class EntriesToReview extends Widget
 {
+    public int $limit = 10;
+
+    /** @inheritDoc */
     public static function displayName(): string
     {
         return Craft::t(VerifiedEntries::HANDLE, 'Entries to Review');
     }
 
+    /** @inheritDoc */
     protected static function allowMultipleInstances(): bool
     {
         return false;
     }
 
+    /** @inheritDoc */
     public static function isSelectable(): bool
     {
         return true;
     }
 
-    public int $limit = 10;
-
+    /** @inheritDoc */
     public static function icon(): ?string
     {
         return 'badge-check';
     }
 
+    /** @inheritDoc */
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
@@ -48,6 +53,7 @@ class EntriesToReview extends Widget
         return $rules;
     }
 
+    /** @inheritDoc */
     public function getSettingsHtml(): ?string
     {
         return Cp::textFieldHtml([
@@ -60,17 +66,13 @@ class EntriesToReview extends Widget
         ]);
     }
 
-    /**
-     * @throws SyntaxError
-     * @throws RuntimeError
-     * @throws Exception
-     * @throws LoaderError
-     */
+    /** @inheritDoc */
     public function getBodyHtml(): ?string
     {
         $userId = Craft::$app->getUser()->getId();
         $enabledSectionIds = VerifiedEntries::getInstance()->getSectionSettings()->getEnabledSectionIds();
 
+        /** @noinspection PhpUndefinedMethodInspection */
         $entries = Entry::find()
             ->status('live')
             ->site('*')
@@ -88,13 +90,27 @@ class EntriesToReview extends Widget
             );
         }
 
-        return Craft::$app->getView()->renderTemplate(VerifiedEntries::HANDLE . '/_widgets/review.twig',
-            [
-                'entries' => $entries,
-                'statusIndicator' => Cp::statusIndicatorHtml(
-                    VerificationStatus::Expired->handle(),
-                    ['color' => VerificationStatus::Expired->color()]
-                ),
-            ]);
+        $templateVariables = [
+            'entries' => $entries,
+            'statusIndicator' => Cp::statusIndicatorHtml(
+                VerificationStatus::Expired->handle(),
+                ['color' => VerificationStatus::Expired->color()]
+            ),
+        ];
+
+        try {
+            return Craft::$app->getView()->renderTemplate(
+                VerifiedEntries::HANDLE . '/_widgets/review.twig',
+                $templateVariables
+            );
+        }
+        catch (Throwable $exception) {
+            Craft::error(
+                'Error loading "Entries to Review" widget: ' . $exception->getMessage(),
+                __METHOD__
+            );
+        }
+
+        return null;
     }
 }

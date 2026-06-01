@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection PhpUnhandledExceptionInspection */
 
 namespace webhubworks\verifiedentries\elements;
 
@@ -11,15 +11,18 @@ use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
- * Verified Entry element type
+ * Entry subtype that powers the plugin's dashboard element index, defining its sidebar sources
+ * and default table columns.
  */
 class VerifiedEntry extends Entry
 {
+    /** @inheritDoc */
     public static function refHandle(): ?string
     {
         return 'verifiedEntry';
     }
 
+    /** @inheritDoc */
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
@@ -31,6 +34,7 @@ class VerifiedEntry extends Entry
         ];
     }
 
+    /** @inheritDoc */
     protected static function defineSources(string $context = null): array
     {
         $enabledSectionIds = VerifiedEntries::getInstance()->getSectionSettings()->getEnabledSectionIds();
@@ -85,7 +89,7 @@ class VerifiedEntry extends Entry
                     'status' => 'live',
                     'sectionId' => $enabledSectionIds,
                 ]
-            ]
+            ],
         ];
 
         $reviewers = User::find()

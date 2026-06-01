@@ -1,24 +1,32 @@
-<?php
+<?php /** @noinspection JSUnresolvedReference */
 
 namespace webhubworks\verifiedentries\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
+use DateTime;
+use Throwable;
+use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
- * Verify Entry element action
+ * Bulk action that sets a new "Verified until" date on one or more entries from the element index
+ * in the CP.
+ *
+ * @property-read null|string $triggerHtml
  */
 class VerifyEntry extends ElementAction
 {
-    public string|\DateTime|null $date = null;
+    public string|DateTime|null $date = null;
 
+    /** @inheritDoc */
     public static function displayName(): string
     {
         return Craft::t(VerifiedEntries::HANDLE, 'Verify Entry');
     }
 
+    /** @inheritDoc */
     public function getTriggerHtml(): ?string
     {
         Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
@@ -55,23 +63,27 @@ class VerifyEntry extends ElementAction
         return null;
     }
 
-    /**
-     * @throws \Exception
-     */
+    /** @inheritDoc */
     public function performAction(Craft\elements\db\ElementQueryInterface $query): bool
     {
         $elements = $query->all();
-        $elementsService = \Craft::$app->getElements();
+        $elementsService = Craft::$app->getElements();
 
-        $successCount = count(array_filter($elements, function (Entry $entry) use ($elementsService) {
-            try {
-                $entry->setVerifiedUntilDate($this->date);
-                $elementsService->saveElement($entry);
-                return true;
-            } catch (\Throwable) {
-                return false;
-            }
-        }));
+        $successCount = count(
+            array_filter(
+                $elements,
+                function (Entry $entry) use ($elementsService) {
+                    /** @var Entry|VerifiableBehavior $entry */
+                    try {
+                        $entry->setVerifiedUntilDate($this->date);
+                        $elementsService->saveElement($entry);
+                        return true;
+                    } catch (Throwable) {
+                        return false;
+                    }
+                }
+            )
+        );
 
         if ($successCount !== count($elements)) {
             $this->setMessage(Craft::t(VerifiedEntries::HANDLE, 'Could not verify all entries.'));
@@ -79,6 +91,7 @@ class VerifyEntry extends ElementAction
         }
 
         $this->setMessage(Craft::t(VerifiedEntries::HANDLE, 'Entries verified.'));
+
         return true;
     }
 }

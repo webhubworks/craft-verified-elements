@@ -3,7 +3,6 @@
 namespace webhubworks\verifiedentries\mail;
 
 use Craft;
-use craft\elements\User;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;

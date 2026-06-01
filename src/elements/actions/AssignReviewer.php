@@ -1,25 +1,30 @@
-<?php
+<?php /** @noinspection JSUnresolvedReference */
 
 namespace webhubworks\verifiedentries\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
+use Throwable;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
- * Assign Reviewer element action
+ * Bulk action that assigns a Reviewer to one or more entries from the element index in the CP.
+ *
+ * @property-read null|string $triggerHtml
  */
 class AssignReviewer extends ElementAction
 {
     public ?int $reviewerId = null;
 
+    /** @inheritDoc */
     public static function displayName(): string
     {
         return Craft::t(VerifiedEntries::HANDLE, 'Assign Reviewer');
     }
 
+    /** @inheritDoc */
     public function getTriggerHtml(): ?string
     {
         Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
@@ -59,6 +64,7 @@ class AssignReviewer extends ElementAction
         return null;
     }
 
+    /** @inheritDoc */
     public function performAction(Craft\elements\db\ElementQueryInterface $query): bool
     {
         $elements = $query->all();
@@ -72,8 +78,9 @@ class AssignReviewer extends ElementAction
                     $entry->setReviewerId($this->reviewerId);
                     $elementsService->saveElement($entry);
                     return true;
-                } catch (\Throwable) {}
-                return false;
+                } catch (Throwable) {
+                    return false;
+                }
             }
         );
 

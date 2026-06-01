@@ -53,7 +53,7 @@ readonly class ExpiredEntryData
     public function getCpEditUrl(): string
     {
         return UrlHelper::cpUrl(
-            "entries/{$this->sectionHandle}/{$this->id}",
+            "entries/$this->sectionHandle/$this->id",
             ['site' => $this->siteHandle]
         );
     }

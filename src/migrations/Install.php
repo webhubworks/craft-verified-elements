@@ -26,8 +26,8 @@ class Install extends Migration
 
         $this->createIndex(null, PluginTable::ENTRIES, ['entryId', 'siteId'], true);
 
-        $this->addForeignKey(null, PluginTable::ENTRIES, ['entryId'], CraftTable::ENTRIES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, PluginTable::ENTRIES, ['siteId'], CraftTable::SITES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, PluginTable::ENTRIES, ['entryId'], CraftTable::ENTRIES, ['id'], 'CASCADE');
+        $this->addForeignKey(null, PluginTable::ENTRIES, ['siteId'], CraftTable::SITES, ['id'], 'CASCADE');
         $this->addForeignKey(null, PluginTable::ENTRIES, ['reviewerId'], CraftTable::USERS, ['id'], 'SET NULL');
 
         $this->createTable(PluginTable::SECTIONS, [

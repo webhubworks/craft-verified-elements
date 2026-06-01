@@ -93,12 +93,12 @@ class Reviewers extends Component
      *
      * @param array $entries
      * @return array
-     * TODO address the toDateTime exception that could be thrown
      */
     private function transformEntries(array $entries): array
     {
         return array_map(static function ($entry) {
             $formatter = new Formatter();
+            // TODO handle date exception
             $verifiedUntilDate = DateTimeHelper::toDateTime($entry['verifiedUntilDate']);
 
             $isVerified = $verifiedUntilDate && $verifiedUntilDate > new DateTime();
