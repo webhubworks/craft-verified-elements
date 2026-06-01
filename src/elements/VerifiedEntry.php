@@ -78,6 +78,15 @@ class VerifiedEntry extends Entry
                 ]
             ],
             [
+                'key' => 'unassigned',
+                'label' => Craft::t(VerifiedEntries::HANDLE, 'Unassigned'),
+                'criteria' => [
+                    'isUnassigned' => true,
+                    'sectionId' => $enabledSectionIds,
+                    'status' => 'live',
+                ]
+            ],
+            [
                 'heading' => Craft::t(VerifiedEntries::HANDLE, 'Reviewer'),
             ],
             [
