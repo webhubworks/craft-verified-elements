@@ -40,6 +40,7 @@ use DateTime;
 use Twig\TwigFilter;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
+use webhubworks\verifiedentries\services\VerificationFieldsSetter;
 use webhubworks\verifiedentries\VerifiedEntries;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
@@ -215,7 +216,7 @@ readonly class EventRegistrar
         Craft::$app->getView()->getTwig()->addFilter(
             new TwigFilter(
                 'readableVerificationDate',
-                fn (?DateTime $date): string => VerifiedEntries::getInstance()
+                fn(?DateTime $date): string => VerifiedEntries::getInstance()
                     ->getVerification()
                     ->makeVerificationDateReadable($date)
             )
@@ -248,14 +249,14 @@ readonly class EventRegistrar
                         return;
                     }
 
-                    $verification = $this->plugin->getVerification();
+                    // Before an entry saves, set the Reviewer ID and "Verified until" date in
+                    // the entry's behavior class.
+                    $service = VerificationFieldsSetter::fromEntry(
+                        $entry,
+                        $this->plugin->getSectionSettings()
+                    );
 
-                    // Determine if this is the entry's first save so we can set the
-                    // verification fields' default values
-                    $entryId = $entry->getCanonicalId();
-                    $isFirstSave = ! $entryId || ! $verification->hasVerificationRow($entryId, $entry->siteId);
-
-                    $verification->handleSettingOfVerificationFields($entry, $isFirstSave);
+                    $service->updateEntryFields($entry);
                 }
             );
         }

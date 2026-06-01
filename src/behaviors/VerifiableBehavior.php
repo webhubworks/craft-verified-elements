@@ -27,7 +27,6 @@ class VerifiableBehavior extends Behavior
 {
     public const NAME = 'verified-entries.verifiable';
 
-
     // REVIEWER (Craft User element)
     // =============================================================================================
 

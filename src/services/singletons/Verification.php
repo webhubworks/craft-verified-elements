@@ -77,6 +77,26 @@ class Verification extends Component
     }
 
     /**
+     * Returns if the entry has been saved yet.
+     *
+     * @param int|null $entryId
+     * @param int $siteId
+     * @return bool
+     */
+    public function isFirstSave(?int $entryId, int $siteId): bool
+    {
+        if (! $entryId) {
+            return true;
+        }
+
+        if (! $this->hasVerificationRow($entryId, $siteId)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Seeds a verification row for a propagated site by copying values from an
      * existing row for the same entry. Does nothing if no source row can be found.
      *
@@ -405,47 +425,6 @@ class Verification extends Component
 
     // EVENTS
     // =============================================================================================
-
-    /**
-     * Before an entry saves, set the reviewer ID and "Verified until" date in the entry's
-     * behavior class.
-     *
-     * @param Entry $entry
-     * @param bool $isFirstSave
-     * @return void
-     * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_BEFORE_SAVE
-     * @see VerifiableBehavior::setReviewerId()
-     * @see VerifiableBehavior::setVerifiedUntilDate()
-     */
-    public function handleSettingOfVerificationFields(Entry $entry, bool $isFirstSave = false): void
-    {
-        /** @var Entry|VerifiableBehavior $entry */
-
-        $defaults = VerifiedEntries::getInstance()->getSectionSettings()->getDefaultSettingsForSection(
-            $entry->sectionId,
-            $entry->siteId
-        );
-
-        [$reviewerId, $defaultPeriod] = $defaults ?? [null, null];
-
-        // Apply default Reviewer only when a verification date is set.
-        // (An Indefinitely entry with no reviewer is harmless)
-        if (
-            $reviewerId &&
-            $entry->getReviewerId() === null &&
-            $entry->getVerifiedUntilDate() !== null
-        ) {
-            $entry->setReviewerId($reviewerId);
-        }
-
-        // Only apply default date on first save. "Indefinitely" is a valid choice after that.
-        if ($isFirstSave && $entry->getVerifiedUntilDate() === null && $defaultPeriod) {
-            // TODO handle date exception
-            $dateInterval = new DateInterval($defaultPeriod);
-            $verifiedUntilDate = DateTimeHelper::now()->add($dateInterval);
-            $entry->setVerifiedUntilDate($verifiedUntilDate);
-        }
-    }
 
     /**
      * On propagation, only seed the row if one doesn't exist yet. This prevents a save on one
