@@ -7,7 +7,7 @@ use craft\elements\User;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
-use webhubworks\verifiedentries\services\Verification;
+use webhubworks\verifiedentries\services\singletons\Verification;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\console\ExitCode;
 use yii\helpers\BaseConsole;

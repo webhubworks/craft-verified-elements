@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\services;
+namespace webhubworks\verifiedentries\services\singletons;
 
 use Craft;
 use craft\helpers\DateTimeHelper;

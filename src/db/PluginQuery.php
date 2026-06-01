@@ -23,7 +23,7 @@ abstract class PluginQuery
      * @param int $userId The Reviewer
      * @param int|null $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\Reviewers
+     * @see \webhubworks\verifiedentries\services\singletons\Reviewers
      */
     public static function sectionsByReviewer(int $userId, ?int $siteId = null): Query
     {
@@ -56,7 +56,7 @@ abstract class PluginQuery
      * @param int $userId The Reviewer
      * @param int|null $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\Reviewers
+     * @see \webhubworks\verifiedentries\services\singletons\Reviewers
      */
     public static function entriesByReviewer(int $userId, ?int $siteId = null): Query
     {
@@ -105,7 +105,7 @@ abstract class PluginQuery
      * @param int $entryId
      * @param int $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\Verification
+     * @see \webhubworks\verifiedentries\services\singletons\Verification
      */
     public static function verifiableEntry(int $entryId, int $siteId): Query
     {
@@ -118,7 +118,7 @@ abstract class PluginQuery
      * Returns a query for all verifiable entries that have verification dates in the past.
      *
      * @return Query
-     * @see \webhubworks\verifiedentries\services\Verification::checkExpiredVerifications
+     * @see \webhubworks\verifiedentries\services\singletons\Verification::checkExpiredVerifications
      * @see ExpiredEntryData Populate this object with the results of the query
      */
     public static function expiredVerifiableEntries(): Query
@@ -160,7 +160,7 @@ abstract class PluginQuery
      *
      * @param int $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\SectionSettings::getAllSectionsWithSettings
+     * @see \webhubworks\verifiedentries\services\singletons\SectionSettings::getAllSectionsWithSettings
      */
     public static function sectionsWithSettings(int $siteId): Query
     {

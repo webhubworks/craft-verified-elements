@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\services;
+namespace webhubworks\verifiedentries\services\singletons;
 
 use craft\db\Query as CraftQuery;
 use craft\elements\User;

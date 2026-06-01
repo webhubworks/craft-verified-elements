@@ -7,9 +7,9 @@ use craft\base\Plugin;
 use craft\helpers\UrlHelper;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\events\EventRegistrar;
-use webhubworks\verifiedentries\services\SectionSettings;
-use webhubworks\verifiedentries\services\Reviewers;
-use webhubworks\verifiedentries\services\Verification;
+use webhubworks\verifiedentries\services\singletons\SectionSettings;
+use webhubworks\verifiedentries\services\singletons\Reviewers;
+use webhubworks\verifiedentries\services\singletons\Verification;
 
 /**
  * Verified Entries plugin
