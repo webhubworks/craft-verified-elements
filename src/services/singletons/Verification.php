@@ -3,24 +3,18 @@
 namespace webhubworks\verifiedentries\services\singletons;
 
 use Craft;
-use craft\db\Query;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use DateInterval;
 use DateTime;
 use DateTimeZone;
-use webhubworks\verifiedentries\db\PluginQuery;
-use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
-use yii\db\Exception;
 
 /**
  * The Verification service represents logic related to verifiable entries and their verification status.
@@ -31,41 +25,6 @@ use yii\db\Exception;
  */
 class Verification extends Component
 {
-    /**
-     * Adds or updates an entry's verification details ("Verified until" date and "Reviewer" user)
-     * in the database.
-     *
-     * @param int $entryId
-     * @param int $siteId
-     * @param int|null $reviewerId A Craft User ID
-     * @param DateTime|null $verifiedUntilDate
-     * @throws Exception
-     */
-    public function upsertEntryDetails(int $entryId, int $siteId, ?int $reviewerId, ?DateTime $verifiedUntilDate): void
-    {
-        Db::upsert(PluginTable::ENTRIES, [
-            'entryId' => $entryId,
-            'siteId' => $siteId,
-            'reviewerId' => $reviewerId,
-            'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
-        ], [
-            'reviewerId' => $reviewerId,
-            'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
-        ]);
-    }
-
-    /**
-     * Returns true if a verification row already exists for the given entry and site.
-     *
-     * @param int $entryId
-     * @param int $siteId
-     * @return bool
-     */
-    public function hasVerificationRow(int $entryId, int $siteId): bool
-    {
-        return PluginQuery::verifiableEntry($entryId, $siteId)->exists();
-    }
-
     /**
      * Returns if the entry has been saved yet.
      *
@@ -84,41 +43,6 @@ class Verification extends Component
         }
 
         return false;
-    }
-
-    /**
-     * Seeds a verification row for a propagated site by copying values from an
-     * existing row for the same entry. Does nothing if no source row can be found.
-     *
-     * @param int $entryId
-     * @param int $siteId
-     * @return void
-     * @throws Exception
-     */
-    public function seedVerificationRow(int $entryId, int $siteId): void
-    {
-        $sourceRow = (new Query())
-            ->select(['reviewerId', 'verifiedUntilDate'])
-            ->from(PluginTable::ENTRIES)
-            ->where(['entryId' => $entryId])
-            ->one();
-
-        if (! $sourceRow) {
-            return;
-        }
-
-        $verifiedUntilDate = null;
-        if (isset($sourceRow['verifiedUntilDate'])) {
-            // TODO handle date exception
-            $verifiedUntilDate = DateTimeHelper::toDateTime($sourceRow['verifiedUntilDate']);
-        }
-
-        $this->upsertEntryDetails(
-            $entryId,
-            $siteId,
-            $sourceRow['reviewerId'],
-            $verifiedUntilDate
-        );
     }
 
     /**
@@ -333,24 +257,5 @@ class Verification extends Component
         }
 
         return Craft::$app->getFormatter()->asDate($verifiedUntilDate, 'short');
-    }
-
-    /**
-     * Return a DateTime object (or null) for a given period value.
-     *
-     * @param string|null $period
-     * @return DateTime|null
-     * @see VerificationPeriod
-     */
-    public function convertPeriodToDateTime(?string $period): ?DateTime
-    {
-        if (! $period) {
-            return null;
-        }
-
-        // TODO handle date exception
-        $dateInterval = new DateInterval($period);
-
-        return DateTimeHelper::now()->add($dateInterval);
     }
 }

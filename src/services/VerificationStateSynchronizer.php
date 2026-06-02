@@ -3,13 +3,19 @@
 namespace webhubworks\verifiedentries\services;
 
 use Craft;
+use craft\db\Query;
 use craft\elements\Entry;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use DateInterval;
+use DateTime;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
+use webhubworks\verifiedentries\db\PluginQuery;
+use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\mail\ChangeNotification;
 use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\services\singletons\SectionSettings;
-use webhubworks\verifiedentries\services\singletons\Verification;
 use yii\db\Exception;
 
 /**
@@ -27,7 +33,6 @@ readonly class VerificationStateSynchronizer
 
     public function __construct(
         private Entry           $entry,
-        private Verification    $verification,
         private SectionSettings $settings,
         private ?int            $currentUserId,
     ) {}
@@ -56,17 +61,17 @@ readonly class VerificationStateSynchronizer
      */
     public function ensurePropagatedRecord(): bool
     {
-        $entryHasRowInDb = $this->verification->hasVerificationRow(
+        $recordAlreadyExists = PluginQuery::verifiableEntry(
             $this->entry->getCanonicalId(),
             $this->entry->siteId
-        );
+        )->exists();
 
-        if ($entryHasRowInDb) {
+        if ($recordAlreadyExists) {
             return true;
         }
 
         try {
-            $this->verification->seedVerificationRow(
+            $this->copyRecordToSite(
                 $this->entry->getCanonicalId(),
                 $this->entry->siteId
             );
@@ -89,17 +94,20 @@ readonly class VerificationStateSynchronizer
     /**
      * Saves the entry's current verification state to the database.
      *
-     * @return bool If the record for this entry was upserted successfully.
+     * @return bool If the record was saved successfully.
      */
     public function saveVerificationRecord(): bool
     {
         try {
-            $this->verification->upsertEntryDetails(
-                $this->entry->getCanonicalId(),
-                $this->entry->siteId,
-                $this->entry->getReviewerId(),
-                $this->entry->getVerifiedUntilDate()
-            );
+            Db::upsert(PluginTable::ENTRIES, [
+                'entryId' => $this->entry->getCanonicalId(),
+                'siteId' => $this->entry->siteId,
+                'reviewerId' => $this->entry->getReviewerId(),
+                'verifiedUntilDate' => Db::prepareDateForDb($this->entry->getVerifiedUntilDate()),
+            ], [
+                'reviewerId' => $this->entry->getReviewerId(),
+                'verifiedUntilDate' => Db::prepareDateForDb($this->entry->getVerifiedUntilDate()),
+            ]);
         }
         catch (Exception $exception) {
             Craft::error(sprintf(
@@ -203,7 +211,12 @@ readonly class VerificationStateSynchronizer
      */
     private function ensureSiteRecord(int $siteId): bool
     {
-        if ($this->verification->hasVerificationRow($this->entry->getCanonicalId(), $siteId)) {
+        $recordAlreadyExists = PluginQuery::verifiableEntry(
+            $this->entry->getCanonicalId(),
+            $siteId
+        )->exists();
+
+        if ($recordAlreadyExists) {
             return true;
         }
 
@@ -212,15 +225,20 @@ readonly class VerificationStateSynchronizer
             $siteId
         );
 
+        $verifiedUntilDate = $this->convertPeriodToDateTime(
+            $sectionDefaults?->period
+        );
+
         try {
-            $this->verification->upsertEntryDetails(
-                $this->entry->getCanonicalId(),
-                $siteId,
-                $sectionDefaults?->reviewerId,
-                $this->verification->convertPeriodToDateTime(
-                    $sectionDefaults?->period
-                )
-            );
+            Db::upsert(PluginTable::ENTRIES, [
+                'entryId' => $this->entry->getCanonicalId(),
+                'siteId' => $siteId,
+                'reviewerId' => $sectionDefaults?->reviewerId,
+                'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
+            ], [
+                'reviewerId' => $sectionDefaults?->reviewerId,
+                'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
+            ]);
         }
         catch (Exception $exception) {
             Craft::error(sprintf(
@@ -235,5 +253,62 @@ readonly class VerificationStateSynchronizer
         }
 
         return true;
+    }
+
+    /**
+     * Returns a DateTime offset from now by the given verification period interval, or null if
+     * no period is given.
+     *
+     * @param string|null $period
+     * @return DateTime|null
+     * @see VerificationPeriod
+     */
+    private function convertPeriodToDateTime(?string $period): ?DateTime
+    {
+        if (! $period) {
+            return null;
+        }
+
+        // TODO handle date exception
+        $dateInterval = new DateInterval($period);
+
+        return DateTimeHelper::now()->add($dateInterval);
+    }
+
+    /**
+     * Copies an existing verification record to a new site. Does nothing if no source record
+     * exists for the entry.
+     *
+     * @param int $entryId
+     * @param int $siteId
+     * @return void
+     */
+    private function copyRecordToSite(int $entryId, int $siteId): void
+    {
+        $sourceRow = (new Query())
+            ->select(['reviewerId', 'verifiedUntilDate'])
+            ->from(PluginTable::ENTRIES)
+            ->where(['entryId' => $entryId])
+            ->one();
+
+        if (! $sourceRow) {
+            return;
+        }
+
+        $verifiedUntilDate = null;
+        if (isset($sourceRow['verifiedUntilDate'])) {
+            // TODO handle date exception
+            $verifiedUntilDate = DateTimeHelper::toDateTime($sourceRow['verifiedUntilDate']);
+        }
+
+        Db::upsert(PluginTable::ENTRIES, [
+            'entryId' => $entryId,
+            'siteId' => $siteId,
+            'reviewerId' => $sourceRow['reviewerId'],
+            'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
+        ], [
+            'reviewerId' => $sourceRow['reviewerId'],
+            'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
+        ]);
     }
 }

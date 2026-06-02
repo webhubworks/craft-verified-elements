@@ -275,7 +275,6 @@ readonly class EventRegistrar
 
                 $service = new VerificationStateSynchronizer(
                     $entry,
-                    $this->plugin->getVerification(),
                     $this->plugin->getSectionSettings(),
                     Craft::$app->getUser()->getId()
                 );
