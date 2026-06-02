@@ -40,6 +40,7 @@ use DateTime;
 use Twig\TwigFilter;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
+use webhubworks\verifiedentries\services\EntrySidebarRenderer;
 use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
 use webhubworks\verifiedentries\services\VerificationFieldsSetter;
 use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
@@ -379,37 +380,15 @@ readonly class EventRegistrar
                     return;
                 }
 
-                $isSectionEnabled = VerifiedEntries::getInstance()->getSectionSettings()->isSectionEnabledForSite(
+                $isSectionEnabled = $this->plugin->getSectionSettings()->isSectionEnabledForSite(
                     $entry->sectionId,
-                    $entry->siteId,
+                    $entry->siteId
                 );
-                if (! $isSectionEnabled) {
+                if (!$isSectionEnabled) {
                     return;
                 }
 
-                if (! $entry->getIsVerified()) {
-                    $event->html .=
-                        Html::beginTag('div', ['class' => ['meta', 'warning']]) .
-                        Html::tag('p', Craft::t(VerifiedEntries::HANDLE, 'Entry has expired and is due to be verified.')) .
-                        Html::endTag('div');
-                }
-
-                $verification = $this->plugin->getVerification();
-
-                $event->html .= Craft::$app->getView()->renderTemplate(
-                    VerifiedEntries::HANDLE . '/_sidebar.twig',
-                    [
-                        'addOptionFn' => $verification->getAddOptionFn(),
-                        'verifiedUntilDate' => $entry->getVerifiedUntilDate(),
-                        'isVerified' => $entry->getIsVerified(),
-                        'reviewer' => $entry->getReviewer(),
-                        'options' => $verification->getDateOptionsForEntry(
-                            $entry->getVerifiedUntilDate(),
-                            $entry->sectionId,
-                            $entry->siteId
-                        ),
-                    ]
-                );
+                $event->html .= (new EntrySidebarRenderer($entry))->buildHtml();
             }
         );
 
