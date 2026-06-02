@@ -7,6 +7,7 @@ use craft\elements\Entry;
 use craft\helpers\Html;
 use Throwable;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
+use webhubworks\verifiedentries\services\singletons\SectionSettings;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -19,7 +20,10 @@ readonly class EntrySidebarRenderer
 {
     /** @var Entry|VerifiableBehavior $entry */
 
-    public function __construct(private Entry $entry) {}
+    public function __construct(
+        private Entry $entry,
+        private SectionSettings $settings
+    ) {}
 
     /**
      * @return string The HTML to inject into Craft's sidebar.
@@ -64,18 +68,19 @@ readonly class EntrySidebarRenderer
      */
     private function buildSidebarHtml(): string
     {
-        $verification = VerifiedEntries::getInstance()->getVerification();
+        $dropdownFieldOptions = VerificationFieldsRenderer::getDateOptionsForEntry(
+            $this->settings,
+            $this->entry->getVerifiedUntilDate(),
+            $this->entry->sectionId,
+            $this->entry->siteId
+        );
 
         $templateVariables = [
-            'addOptionFn' => $verification->getAddOptionFn(),
+            'addOptionFn' => VerificationFieldsRenderer::addOptionJsFunction(),
             'verifiedUntilDate' => $this->entry->getVerifiedUntilDate(),
             'isVerified' => $this->entry->getIsVerified(),
             'reviewer' => $this->entry->getReviewer(),
-            'options' => $verification->getDateOptionsForEntry(
-                $this->entry->getVerifiedUntilDate(),
-                $this->entry->sectionId,
-                $this->entry->siteId
-            ),
+            'options' => $dropdownFieldOptions,
         ];
 
         try {

@@ -4,7 +4,6 @@ namespace webhubworks\verifiedentries\services\singletons;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
-use craft\i18n\Formatter;
 use DateTime;
 use DateTimeZone;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
@@ -15,76 +14,10 @@ use yii\base\Component;
  * The Verification service represents logic related to verifiable entries and their verification status.
  *
  * @property-read array $periodOptionsWithCustomDate
- * @property-read string $addOptionFn
  * @property-read array $periodOptions
  */
 class Verification extends Component
 {
-    /**
-     * Returns the options for the "Verified until" select field located in the sidebar of an
-     * entry's edit page.
-     *
-     * @param DateTime|null $currentUntilDate The field's currently selected value
-     * @param int|null $sectionId
-     * @param int|null $siteId
-     * @return array The dropdown field's options
-     * @see VerificationPeriod enum
-     */
-    public function getDateOptionsForEntry(
-        ?DateTime $currentUntilDate = null,
-        ?int      $sectionId = null,
-        ?int      $siteId = null,
-    ): array
-    {
-        $formatter = new Formatter();
-
-        $defaultPeriod = null;
-        if ($sectionId !== null && $siteId !== null) {
-            $sectionDefaults = VerifiedEntries::getInstance()
-                ->getSectionSettings()
-                ->getDefaultSettingsForSection($sectionId, $siteId);
-
-            $defaultPeriod = $sectionDefaults?->period;
-        }
-
-        $options = [];
-
-        if ($currentUntilDate) {
-            $options[] = [
-                'label' => $formatter->asDate($currentUntilDate),
-                'value' => $currentUntilDate->format('Y-m-d'),
-            ];
-        }
-
-        foreach (VerificationPeriod::intervals() as $period) {
-            $dateInterval = $period->toDateInterval();
-
-            $date = DateTimeHelper::now()->add($dateInterval);
-
-            if ($currentUntilDate && $date->format('Y-m-d') === $currentUntilDate->format('Y-m-d')) {
-                continue;
-            }
-
-            $options[] = [
-                'label' => $formatter->asDate($date),
-                'value' => $date->format('Y-m-d'),
-                'data' => [
-                    'hint' => implode(' ', [
-                        DateTimeHelper::humanDuration($dateInterval),
-                        $period->value === $defaultPeriod ? Craft::t(VerifiedEntries::HANDLE, '(Standard)') : ''
-                    ])
-                ],
-            ];
-        }
-
-        $options[] = [
-            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
-            'value' => false,
-        ];
-
-        return $options;
-    }
-
     /**
      * Returns verification period intervals as options for a select field.
      *
@@ -138,49 +71,10 @@ class Verification extends Component
     }
 
     /**
-     * Returns JavaScript code to manage Craft's custom-date modal for selecting a specific
-     * verification date.
-     *
-     * @return string JS code to be executed by Craft
-     * @noinspection JSUnresolvedReference
-     */
-    public function getAddOptionFn(): string
-    {
-        return <<<JS
-            (createOption, selectize) => {
-                const modal = new Craft.CpModal('verified-entries/custom-date');
-        
-                modal.on('submit', ({response}) => {
-                    const {date, label} = response.data;
-        
-                    createOption({
-                        text: label,
-                        value: date,
-                    });
-        
-                    setTimeout(() => {
-                        selectize.setValue(date);
-                    }, 10);
-                });
-        
-                modal.on('close', () => {
-                    if (selectize.lastValidValue === '__add__') {
-                        selectize.lastValidValue = '';
-                    }
-                    selectize.focus();
-                    Garnish.uiLayerManager.removeLayerAtIndex(1)
-                });
-            }
-        JS;
-    }
-
-    /**
      * Format a "Verified until" dropdown date to a human-readable value for convenience to the user.
      *
      * @param DateTime|null $verifiedUntilDate
      * @return string
-     * @throws \DateInvalidTimeZoneException
-     * @throws \DateMalformedStringException
      */
     public function makeVerificationDateReadable(?DateTime $verifiedUntilDate): string
     {

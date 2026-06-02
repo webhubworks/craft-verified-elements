@@ -42,6 +42,7 @@ use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\services\EntrySidebarRenderer;
 use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
+use webhubworks\verifiedentries\services\VerificationFieldsRenderer;
 use webhubworks\verifiedentries\services\VerificationFieldsSetter;
 use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -380,7 +381,8 @@ readonly class EventRegistrar
                     return;
                 }
 
-                $isSectionEnabled = $this->plugin->getSectionSettings()->isSectionEnabledForSite(
+                $settings = $this->plugin->getSectionSettings();
+                $isSectionEnabled = $settings->isSectionEnabledForSite(
                     $entry->sectionId,
                     $entry->siteId
                 );
@@ -388,7 +390,7 @@ readonly class EventRegistrar
                     return;
                 }
 
-                $event->html .= (new EntrySidebarRenderer($entry))->buildHtml();
+                $event->html .= (new EntrySidebarRenderer($entry, $settings))->buildHtml();
             }
         );
 
@@ -401,46 +403,18 @@ readonly class EventRegistrar
                 $currentUser = Craft::$app->getUser();
                 $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
 
+                $service = new VerificationFieldsRenderer(
+                    $entry,
+                    $canVerifyEntries,
+                    $this->plugin->getSectionSettings()
+                );
+
                 if ($event->attribute === 'reviewer') {
-                    $reviewer = $entry->getReviewer();
-                    $event->html = Cp::elementSelectHtml([
-                        'id' => 'reviewerId',
-                        'name' => 'reviewerId',
-                        'label' => Craft::t(VerifiedEntries::HANDLE, 'Reviewer'),
-                        'single' => true,
-                        'elementType' => User::class,
-                        'elements' => $reviewer ? [$reviewer] : null,
-                        'criteria' => [
-                            'status' => 'active',
-                            'can' => Permission::VerifyEntries->value,
-                        ],
-                        'disabled' => ! $canVerifyEntries,
-                    ]);
-                    return;
+                    $event->html = $service->buildReviewerFieldHtml();
                 }
-
-                if ($event->attribute !== 'verifiedUntilDate') {
-                    return;
+                elseif ($event->attribute === 'verifiedUntilDate') {
+                    $event->html = $service->buildVerifiedUntilDateFieldHtml();
                 }
-
-                $verification = $this->plugin->getVerification();
-                $event->html = Cp::selectizeFieldHtml([
-                    'id' => 'verifiedUntilDate',
-                    'name' => 'verifiedUntilDate',
-                    'options' => $verification->getDateOptionsForEntry(
-                        $entry->getVerifiedUntilDate(),
-                        $entry->sectionId,
-                        $entry->siteId
-                    ),
-                    'selectizeOptions' => [
-                        'allowEmptyOption' => false,
-                        'autocomplete' => false,
-                    ],
-                    'value' => $entry->getVerifiedUntilDate() ? $entry->getVerifiedUntilDate()->format('Y-m-d') : false,
-                    'addOptionLabel' => 'specificDate',
-                    'addOptionFn' => $verification->getAddOptionFn(),
-                    'disabled' => ! $canVerifyEntries,
-                ]);
             }
         );
     }
