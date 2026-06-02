@@ -6,11 +6,10 @@ use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use DateInterval;
 use DateTime;
-use webhubworks\verifiedentries\base\VerificationFieldsSetterInterface;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
+use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\services\singletons\SectionSettings;
-use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
  * Resolves the default Reviewer ID and "Verified until" date that should be applied to an entry's
@@ -20,7 +19,7 @@ use webhubworks\verifiedentries\VerifiedEntries;
  * @see VerifiableBehavior::setReviewerId()
  * @see VerifiableBehavior::setVerifiedUntilDate()
  */
-class VerificationFieldsSetter implements VerificationFieldsSetterInterface
+class VerificationFieldsSetter
 {
     private ?int $defaultReviewerId;
     private ?string $defaultPeriod;
@@ -49,24 +48,31 @@ class VerificationFieldsSetter implements VerificationFieldsSetterInterface
     public static function fromEntry(Entry $entry, SectionSettings $settings): self
     {
         /** @var Entry|VerifiableBehavior $entry */
-        $isFirstSave = VerifiedEntries::getInstance()
-            ->getVerification()
-            ->isFirstSave(
-                $entry->getCanonicalId(),
-                $entry->siteId
-            );
+
+        $recordAlreadyExists = PluginQuery::verifiableEntry(
+            $entry->getCanonicalId(),
+            $entry->siteId
+        )->exists();
 
         return new self(
             sectionId: $entry->sectionId,
             siteId: $entry->siteId,
             currentReviewerId: $entry->getReviewerId(),
             currentVerifiedUntilDate: $entry->getVerifiedUntilDate(),
-            isFirstSave: $isFirstSave,
+            isFirstSave: ! $recordAlreadyExists,
             settings: $settings,
         );
     }
 
-    /** @inheritDoc */
+    /**
+     * Returns the section's default Reviewer ID to apply to the entry (via the VerifiableBehavior
+     * class), or null if none should be applied.
+     *
+     * Note: A default Reviewer is only applied when a verification date is set. An entry with an
+     * "Indefinite" verification date that has no Reviewer set on it is acceptable.
+     *
+     * @return int|null
+     */
     public function resolveReviewerId(): ?int
     {
         if (! $this->defaultReviewerId) {
@@ -84,7 +90,15 @@ class VerificationFieldsSetter implements VerificationFieldsSetterInterface
         return $this->defaultReviewerId;
     }
 
-    /** @inheritDoc */
+    /**
+     * Returns the section's default "Verified until" date value to apply to the entry (via the
+     * VerifiableBehavior class), or null if none should be applied.
+     *
+     * Note: A default date is only applied on the entry's first save. "Indefinitely" is a valid
+     * date-choice after that and should never be overwritten.
+     *
+     * @return DateTime|null
+     */
     public function resolveVerificationDate(): ?DateTime
     {
         if (! $this->isFirstSave) {
@@ -105,7 +119,13 @@ class VerificationFieldsSetter implements VerificationFieldsSetterInterface
         return DateTimeHelper::now()->add($dateInterval);
     }
 
-    /** @inheritDoc */
+    /**
+     * Update an entry's "Reviewer" and "Verified until" fields before saving it.
+     *
+     * @param Entry $entry
+     * @return Entry
+     * @see VerifiableBehavior
+     */
     public function updateEntryFields(Entry $entry): Entry
     {
         /** @var Entry|VerifiableBehavior $entry */

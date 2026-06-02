@@ -26,26 +26,6 @@ use yii\base\Component;
 class Verification extends Component
 {
     /**
-     * Returns if the entry has been saved yet.
-     *
-     * @param int|null $entryId
-     * @param int $siteId
-     * @return bool
-     */
-    public function isFirstSave(?int $entryId, int $siteId): bool
-    {
-        if (! $entryId) {
-            return true;
-        }
-
-        if (! $this->hasVerificationRow($entryId, $siteId)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Returns the options for the "Verified until" select field located in the sidebar of an
      * entry's edit page.
      *
