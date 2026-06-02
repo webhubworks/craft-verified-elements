@@ -3,11 +3,15 @@
 namespace webhubworks\verifiedentries\services\singletons;
 
 use Craft;
+use craft\elements\conditions\entries\EntryCondition;
+use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
 use webhubworks\verifiedentries\db\PluginQuery;
+use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
+use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
@@ -29,7 +33,7 @@ class Reviewers extends Component
         }
 
         $sections = PluginQuery::sectionsByReviewer($userId)->all();
-        $filters = VerifiedEntries::getInstance()->getVerification()->getFilterParams();
+        $filters = $this->getFilterParams();
 
         return array_map(static function ($section) use ($filters) {
             return [
@@ -82,6 +86,33 @@ class Reviewers extends Component
         $entries = $this->transformEntries($query->all());
 
         return [$entries, $total];
+    }
+
+    /**
+     * Returns URL query params that filter the entry index to show a reviewer's expired entries.
+     *
+     * @param int|null $reviewerId
+     * @return string The URL query params
+     */
+    public function getFilterParams(?int $reviewerId = null): string
+    {
+        $condition = new EntryCondition(Entry::class);
+
+        $verifiedRule = new VerifiedConditionRule();
+        $verifiedRule->value = false;
+        $condition->addConditionRule($verifiedRule);
+
+        if ($reviewerId !== null) {
+            $reviewerRule = new ReviewerConditionRule();
+            $reviewerRule->setElementIds([$reviewerId]);
+            $condition->addConditionRule($reviewerRule);
+        }
+
+        $config = [
+            'condition' => $condition->getConfig()
+        ];
+
+        return UrlHelper::buildQuery($config);
     }
 
 

@@ -90,7 +90,7 @@ class ExpiredNotification extends Notification
         return UrlHelper::cpUrl('entries', [
             'source' => '*',
             'filters' => VerifiedEntries::getInstance()
-                ->getVerification()
+                ->getReviewers()
                 ->getFilterParams($this->recipient->getId()),
         ]);
     }

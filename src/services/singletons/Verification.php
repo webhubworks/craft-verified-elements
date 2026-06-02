@@ -3,15 +3,10 @@
 namespace webhubworks\verifiedentries\services\singletons;
 
 use Craft;
-use craft\elements\conditions\entries\EntryCondition;
-use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
 use DateTimeZone;
-use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
-use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
@@ -180,34 +175,6 @@ class Verification extends Component
     }
 
     /**
-     * Returns URL query params for an entry's edit page that corresponds to set values in the
-     * plugin's verification fields.
-     *
-     * @param int|null $reviewerId
-     * @return string The URL query params
-     */
-    public function getFilterParams(?int $reviewerId = null): string
-    {
-        $condition = new EntryCondition(Entry::class);
-
-        $verifiedRule = new VerifiedConditionRule();
-        $verifiedRule->value = false;
-        $condition->addConditionRule($verifiedRule);
-
-        if ($reviewerId !== null) {
-            $reviewerRule = new ReviewerConditionRule();
-            $reviewerRule->setElementIds([$reviewerId]);
-            $condition->addConditionRule($reviewerRule);
-        }
-
-        $config = [
-            'condition' => $condition->getConfig()
-        ];
-
-        return UrlHelper::buildQuery($config);
-    }
-
-    /**
      * Format a "Verified until" dropdown date to a human-readable value for convenience to the user.
      *
      * @param DateTime|null $verifiedUntilDate
@@ -221,6 +188,7 @@ class Verification extends Component
             return Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
         }
 
+        // TODO handle date exception
         $timezone = new DateTimeZone(Craft::$app->getTimeZone());
         $now = new DateTime('today', $timezone);
         $dateOnly = new DateTime($verifiedUntilDate->format('Y-m-d'), $timezone);
