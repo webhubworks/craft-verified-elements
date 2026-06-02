@@ -40,6 +40,7 @@ use DateTime;
 use Twig\TwigFilter;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
+use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
 use webhubworks\verifiedentries\services\VerificationFieldsSetter;
 use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -65,9 +66,7 @@ readonly class EventRegistrar
         private VerifiedEntries $plugin,
         private bool            $isCpRequest,
         private bool            $isConsoleRequest,
-    )
-    {
-    }
+    ) {}
 
 
     // PRE-INIT EVENTS
@@ -104,29 +103,24 @@ readonly class EventRegistrar
         Event::on(
             Gc::class,
             Gc::EVENT_RUN,
-            static function () use ($plugin) {
-                $verification = $plugin->getVerification();
+            static function () {
 
-                /**
-                 * The code below finds entries whose "Verified until" date is in the past and
-                 * notifies the relevant Craft users that they've fallen out of date. This only
-                 * applies to sections enabled in the plugin's settings.
-                 */
+                $service = new ExpiredVerificationNotifier();
 
-                // Expired entries with Reviewers assigned to them.
-                foreach ($verification->getExpiredEntriesByReviewer() as $reviewerId => $expiredEntries) {
-                    /** @var User $reviewer */
-                    $reviewer = User::find()->id($reviewerId)->status('active')->one();
+                foreach ($service->getExpiredEntriesByReviewer() as $reviewerId => $expiredEntries) {
 
-                    if (! $reviewer) {
+                    // 1. Find the Reviewer
+                    if (! $reviewer = $service->getReviewer($reviewerId)) {
                         Craft::warning(
                             "Reviewer $reviewerId not found or inactive — skipping expired notification.",
                             __METHOD__
                         );
+                        $service->reassignEntriesToUnassigned($reviewerId);
                         continue;
                     }
 
-                    $isSent = $verification->sendExpiredNotification(
+                    // 2. Notify the Reviewer
+                    $isSent = $service->notifyRecipient(
                         new UserRecipient($reviewer),
                         $expiredEntries
                     );
@@ -139,14 +133,16 @@ readonly class EventRegistrar
                     }
                 }
 
-                // Expired entries that have no reviewers assigned to them.
-                $entries = $verification->getUnassignedExpiredEntries();
-                if (empty($entries)) {
+                if (! $service->hasUnassignedExpiredEntries()) {
                     return;
                 }
 
+                // 1. Notify the system admin
                 $recipient = new SystemRecipient();
-                $isSent = $verification->sendExpiredNotification($recipient, $entries);
+                $isSent = $service->notifyRecipient(
+                    $recipient,
+                    $service->getUnassignedExpiredEntries()
+                );
 
                 if (! $isSent) {
                     Craft::warning(
@@ -284,7 +280,7 @@ readonly class EventRegistrar
                     Craft::$app->getUser()->getId()
                 );
 
-                if (!$service->isSectionEnabled()) {
+                if (! $service->isSectionEnabled()) {
                     return;
                 }
 

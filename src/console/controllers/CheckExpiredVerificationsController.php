@@ -3,12 +3,10 @@
 namespace webhubworks\verifiedentries\console\controllers;
 
 use craft\console\Controller;
-use craft\elements\User;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
-use webhubworks\verifiedentries\services\singletons\Verification;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
 use yii\console\ExitCode;
 use yii\helpers\BaseConsole;
 
@@ -17,12 +15,12 @@ use yii\helpers\BaseConsole;
  */
 class CheckExpiredVerificationsController extends Controller
 {
-    private ?Verification $verification = null;
+    private ?ExpiredVerificationNotifier $service = null;
 
     /** @inheritDoc */
     public function beforeAction($action): bool
     {
-        $this->verification = VerifiedEntries::getInstance()->getVerification();
+        $this->service = new ExpiredVerificationNotifier();
         return parent::beforeAction($action);
     }
 
@@ -51,8 +49,7 @@ class CheckExpiredVerificationsController extends Controller
     {
         $this->stdout("Checking verification dates of entries with assigned reviewers..." . PHP_EOL, BaseConsole::FG_BLUE);
 
-        $expiredEntriesByReviewer = $this->verification->getExpiredEntriesByReviewer();
-        if (count($expiredEntriesByReviewer) === 0) {
+        if (! $this->service->hasExpiredEntriesByReviewer()) {
             $this->stdout('No expired entries.' . PHP_EOL, BaseConsole::FG_GREEN);
 
             return ExitCode::OK;
@@ -60,16 +57,16 @@ class CheckExpiredVerificationsController extends Controller
 
         $this->stdout('---' . PHP_EOL);
 
-        foreach ($expiredEntriesByReviewer as $reviewerId => $expiredEntries) {
+        foreach ($this->service->getExpiredEntriesByReviewer() as $reviewerId => $expiredEntries) {
 
-            // Get the user who needs to receive the email notification.
-            /** @var User $reviewer */
-            $reviewer = User::find()->id($reviewerId)->status('active')->one();
+            // 1. Find the Reviewer
+            $reviewer = $this->service->getReviewer($reviewerId);
             if (! $reviewer) {
                 $this->stdout(sprintf(
                         "User %s not found or inactive — skipping.",
                         $reviewerId
                     ) . PHP_EOL, BaseConsole::FG_RED);
+                $this->service->reassignEntriesToUnassigned($reviewerId);
                 continue;
             }
 
@@ -80,16 +77,13 @@ class CheckExpiredVerificationsController extends Controller
                     count($expiredEntries)
                 ) . PHP_EOL);
 
-            // List the Reviewer's expired entries in the console.
-            $index = 0;
-            foreach ($expiredEntries as $entry) {
-                $this->printEntryData(++$index, $entry);
-            }
+            $this->listEntriesInConsole($expiredEntries);
 
-            // Send the Reviewer an email about the expired entries.
+
+            // 2. Notify the Reviewer
             $this->stdout(sprintf('Notifying %s... ', $reviewer->name));
 
-            $isSent = $this->verification->sendExpiredNotification(
+            $isSent = $this->service->notifyRecipient(
                 new UserRecipient($reviewer),
                 $expiredEntries
             );
@@ -117,32 +111,27 @@ class CheckExpiredVerificationsController extends Controller
     {
         $this->stdout("Checking verification dates of unassigned entries..." . PHP_EOL, BaseConsole::FG_BLUE);
 
-        $expiredEntries = $this->verification->getUnassignedExpiredEntries();
-        if (count($expiredEntries) === 0) {
+        if (! $this->service->hasUnassignedExpiredEntries()) {
             $this->stdout('No expired unassigned entries.' . PHP_EOL, BaseConsole::FG_GREEN);
 
             return ExitCode::OK;
         }
 
         $this->stdout('---' . PHP_EOL);
-
         $this->stdout(sprintf(
                 'There are %s expired entries without assigned reviewers that need to be reviewed:',
-                count($expiredEntries)
+                count($this->service->getUnassignedExpiredEntries())
             ) . PHP_EOL);
 
-        // List the expired entries in the console
-        $index = 0;
-        foreach ($expiredEntries as $entry) {
-            $this->printEntryData(++$index, $entry);
-        }
+        $this->listEntriesInConsole($this->service->getUnassignedExpiredEntries());
 
-        // Send an email about the expired entries to the system's default email.
+
+        // 1. Notify the system admin
         $this->stdout("Notifying the system's default email recipient... ");
 
-        $isSent = $this->verification->sendExpiredNotification(
+        $isSent = $this->service->notifyRecipient(
             new SystemRecipient(),
-            $expiredEntries
+            $this->service->getUnassignedExpiredEntries()
         );
 
         if ($isSent) {
@@ -162,19 +151,21 @@ class CheckExpiredVerificationsController extends Controller
     // =============================================================================================
 
     /**
-     * @param int $index
-     * @param ExpiredEntryData $entry
+     * @param ExpiredEntryData[] $entries
      * @return void
      */
-    private function printEntryData(int $index, ExpiredEntryData $entry): void
+    private function listEntriesInConsole(array $entries): void
     {
-        $this->stdout(sprintf(
-                '[%s] Entry %s "%s" on site "%s" expired on %s.',
-                $index,
-                $entry->id,
-                $entry->title,
-                $entry->siteHandle,
-                $entry->verifiedUntilDate
-            ) . PHP_EOL, BaseConsole::FG_YELLOW);
+        $index = 0;
+        foreach ($entries as $entry) {
+            $this->stdout(sprintf(
+                    '[%s] Entry %s "%s" on site "%s" expired on %s.',
+                    ++$index,
+                    $entry->id,
+                    $entry->title,
+                    $entry->siteHandle,
+                    $entry->verifiedUntilDate
+                ) . PHP_EOL, BaseConsole::FG_YELLOW);
+        }
     }
 }

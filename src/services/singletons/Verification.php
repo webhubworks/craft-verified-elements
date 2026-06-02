@@ -3,8 +3,7 @@
 namespace webhubworks\verifiedentries\services\singletons;
 
 use Craft;
-use craft\db\Query as CraftQuery;
-use craft\db\Table as CraftTable;
+use craft\db\Query;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
@@ -14,18 +13,11 @@ use craft\i18n\Formatter;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
-use webhubworks\verifiedentries\base\NotifiableInterface;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
-use webhubworks\verifiedentries\events\EventRegistrar;
-use webhubworks\verifiedentries\mail\ChangeNotification;
-use webhubworks\verifiedentries\mail\ExpiredNotification;
-use webhubworks\verifiedentries\models\ExpiredEntryData;
-use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 use yii\db\Exception;
@@ -35,8 +27,6 @@ use yii\db\Exception;
  *
  * @property-read array $periodOptionsWithCustomDate
  * @property-read string $addOptionFn
- * @property-read ExpiredEntryData[][] $expiredEntriesByReviewer
- * @property-read ExpiredEntryData[] $expiredEntries
  * @property-read array $periodOptions
  */
 class Verification extends Component
@@ -107,7 +97,7 @@ class Verification extends Component
      */
     public function seedVerificationRow(int $entryId, int $siteId): void
     {
-        $sourceRow = (new CraftQuery())
+        $sourceRow = (new Query())
             ->select(['reviewerId', 'verifiedUntilDate'])
             ->from(PluginTable::ENTRIES)
             ->where(['entryId' => $entryId])
@@ -286,52 +276,6 @@ class Verification extends Component
     }
 
     /**
-     * Return an array of ExpiredEntryData objects for entries with a verification date in the past.
-     *
-     * @return ExpiredEntryData[]
-     */
-    public function getExpiredEntries(): array
-    {
-        return array_map(
-            static fn(array $row) => ExpiredEntryData::fromArray($row),
-            PluginQuery::expiredVerifiableEntries()->all()
-        );
-    }
-
-    /**
-     * Return an array of ExpiredEntryData objects for entries with a verification date in the past,
-     * but group the entries by their Reviewer user ID.
-     *
-     * @return array<int, ExpiredEntryData[]>
-     */
-    public function getExpiredEntriesByReviewer(): array
-    {
-        $result = [];
-        foreach ($this->getExpiredEntries() as $entry) {
-            if ($entry->reviewerId === null) {
-                continue;
-            }
-
-            $result[$entry->reviewerId][] = $entry;
-        }
-
-        return $result;
-    }
-
-    /**
-     * Return an array of ExpiredEntryData objects for entries without a Reviewer assigned to them.
-     *
-     * @return ExpiredEntryData[]
-     */
-    public function getUnassignedExpiredEntries(): array
-    {
-        return array_values(array_filter(
-            $this->getExpiredEntries(),
-            static fn(ExpiredEntryData $entry) => $entry->reviewerId === null
-        ));
-    }
-
-    /**
      * Returns URL query params for an entry's edit page that corresponds to set values in the
      * plugin's verification fields.
      *
@@ -408,36 +352,5 @@ class Verification extends Component
         $dateInterval = new DateInterval($period);
 
         return DateTimeHelper::now()->add($dateInterval);
-    }
-
-
-    // NOTIFICATIONS
-    // =============================================================================================
-
-    /**
-     * Sends an email to an entry's Reviewer user about entries assigned to them whose verification
-     * date is in the past.
-     *
-     * @param NotifiableInterface $reviewer
-     * @param ExpiredEntryData[] $expiredEntries
-     * @return bool
-     */
-    public function sendExpiredNotification(NotifiableInterface $reviewer, array $expiredEntries): bool
-    {
-        return (new ExpiredNotification($expiredEntries, $reviewer))->send();
-    }
-
-    /**
-     * Sends a Reviewer an email about a verifiable entry that's assigned to them whenever
-     * someone else edits that entry.
-     *
-     * @param Entry $entry
-     * @param NotifiableInterface $reviewer
-     * @param string|null $locale
-     * @return bool
-     */
-    public function sendChangeNotification(Entry $entry, NotifiableInterface $reviewer, ?string $locale = null): bool
-    {
-        return (new ChangeNotification($entry, $reviewer, $locale))->send();
     }
 }

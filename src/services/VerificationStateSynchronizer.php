@@ -6,6 +6,7 @@ use Craft;
 use craft\elements\Entry;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\events\EventRegistrar;
+use webhubworks\verifiedentries\mail\ChangeNotification;
 use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\services\singletons\SectionSettings;
 use webhubworks\verifiedentries\services\singletons\Verification;
@@ -173,10 +174,10 @@ readonly class VerificationStateSynchronizer
         }
 
         // Email the Reviewer if someone else edits their assigned entry
-        $isSent = $this->verification->sendChangeNotification(
+        $isSent = (new ChangeNotification(
             $this->entry,
             new UserRecipient($reviewer)
-        );
+        ))->send();
 
         if (! $isSent) {
             Craft::warning(
