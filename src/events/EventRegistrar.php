@@ -41,6 +41,7 @@ use Twig\TwigFilter;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\services\VerificationFieldsSetter;
+use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
 use webhubworks\verifiedentries\VerifiedEntries;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
@@ -276,29 +277,25 @@ readonly class EventRegistrar
                     return;
                 }
 
-                // Don't run the below logic for entries not affected by this plugin.
-                $isSectionEnabled = $this->plugin->getSectionSettings()->isSectionEnabledForSite(
-                    $entry->sectionId,
-                    $entry->siteId,
+                $service = new VerificationStateSynchronizer(
+                    $entry,
+                    $this->plugin->getVerification(),
+                    $this->plugin->getSectionSettings(),
+                    Craft::$app->getUser()->getId()
                 );
-                if (! $isSectionEnabled) {
+
+                if (!$service->isSectionEnabled()) {
                     return;
                 }
 
-                $verification = $this->plugin->getVerification();
-
-                // Should this entry's verification fields be applied to other site-versions of this entry?
                 if ($entry->propagating) {
-                    $verification->handlePropagationSave($entry->getCanonicalId(), $entry->siteId);
-
+                    $service->ensurePropagatedRecord();
                     return;
                 }
 
-                // If we're not propagating, handle normal save logic.
-                $verification->handleCanonicalSave($entry);
-
-                // If the entry was edited, notify the entry's assigned Reviewer.
-                $verification->handleCheckForChanges($entry);
+                $service->saveVerificationRecord();
+                $service->ensureOtherSiteRecords();
+                $service->notifyReviewerOnChange();
             }
         );
     }

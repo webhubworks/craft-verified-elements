@@ -7,6 +7,7 @@ use craft\elements\User;
 use craft\helpers\Db;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
+use webhubworks\verifiedentries\models\SectionDefaults;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -19,6 +20,14 @@ use yii\db\Exception;
 class SectionSettings extends Component
 {
     private ?array $_enabledSectionIds = null;
+
+    /**
+     * Previously-queried default settings for a section per site.
+     *
+     * @var SectionDefaults[]|null[]
+     * @see getDefaultSettingsForSection
+     */
+    private array $sectionDefaults = [];
 
     /**
      * Returns an array of IDs for sections (channels, structures, singles) that have been
@@ -149,23 +158,29 @@ class SectionSettings extends Component
      *
      * @param int $sectionId
      * @param int $siteId
-     * @return array|null
+     * @return SectionDefaults|null
      */
-    public function getDefaultSettingsForSection(int $sectionId, int $siteId): ?array
+    public function getDefaultSettingsForSection(int $sectionId, int $siteId): ?SectionDefaults
     {
-        $result = (new CraftQuery())
-            ->select(['enabled', 'reviewerId', 'defaultPeriod'])
-            ->from(PluginTable::SECTIONS)
-            ->where(compact('sectionId', 'siteId'))
-            ->one();
+        $key = SectionDefaults::key($sectionId, $siteId);
 
-        if (! $result || ! $result['enabled']) {
-            return null;
+        if (array_key_exists($key, $this->sectionDefaults)) {
+            return $this->sectionDefaults[$key];
         }
 
-        return [
-            $result['reviewerId'],
-            $result['defaultPeriod'],
-        ];
+        $defaults = PluginQuery::sectionDefaults($sectionId, $siteId)->one();
+
+        if (! $defaults) {
+            return $this->sectionDefaults[$key] = null;
+        }
+
+        return $this->sectionDefaults[$key] = new SectionDefaults(
+            id: $defaults['id'],
+            name: $defaults['name'],
+            handle: $defaults['handle'],
+            siteId: $defaults['siteId'],
+            reviewerId: $defaults['reviewerId'],
+            period: $defaults['period'],
+        );
     }
 }

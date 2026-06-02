@@ -151,11 +151,11 @@ class Verification extends Component
 
         $defaultPeriod = null;
         if ($sectionId !== null && $siteId !== null) {
-            $defaults = VerifiedEntries::getInstance()
+            $sectionDefaults = VerifiedEntries::getInstance()
                 ->getSectionSettings()
                 ->getDefaultSettingsForSection($sectionId, $siteId);
 
-            [$reviewerId, $defaultPeriod] = $defaults ?? [null, null];
+            $defaultPeriod = $sectionDefaults?->period;
         }
 
         $options = [];
@@ -391,6 +391,25 @@ class Verification extends Component
         return Craft::$app->getFormatter()->asDate($verifiedUntilDate, 'short');
     }
 
+    /**
+     * Return a DateTime object (or null) for a given period value.
+     *
+     * @param string|null $period
+     * @return DateTime|null
+     * @see VerificationPeriod
+     */
+    public function convertPeriodToDateTime(?string $period): ?DateTime
+    {
+        if (! $period) {
+            return null;
+        }
+
+        // TODO handle date exception
+        $dateInterval = new DateInterval($period);
+
+        return DateTimeHelper::now()->add($dateInterval);
+    }
+
 
     // NOTIFICATIONS
     // =============================================================================================
@@ -420,167 +439,5 @@ class Verification extends Component
     public function sendChangeNotification(Entry $entry, NotifiableInterface $reviewer, ?string $locale = null): bool
     {
         return (new ChangeNotification($entry, $reviewer, $locale))->send();
-    }
-
-
-    // EVENTS
-    // =============================================================================================
-
-    /**
-     * On propagation, only seed the row if one doesn't exist yet. This prevents a save on one
-     * site from overwriting verification settings that were independently set on another site.
-     *
-     * @param int $entryId
-     * @param int $siteId
-     * @return void
-     * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
-     */
-    public function handlePropagationSave(int $entryId, int $siteId): void
-    {
-        if ($this->hasVerificationRow($entryId, $siteId)) {
-            return;
-        }
-
-        try {
-            $this->seedVerificationRow($entryId, $siteId);
-        }
-        catch (Exception $exception) {
-            $entryTitle = (new CraftQuery())
-                ->select(['title'])
-                ->from(CraftTable::ELEMENTS_SITES)
-                ->where(['elementId' => $entryId, 'siteId' => $siteId])
-                ->scalar();
-
-            Craft::error(sprintf(
-                'Error seeding verification row for entry %s "%s" on site %s: %s',
-                $entryId,
-                $entryTitle ?: '(No title)',
-                $siteId,
-                $exception->getMessage()
-            ), __METHOD__);
-        }
-    }
-
-    /**
-     * When performing normal save duties for the entry. update the entry's verification fields.
-     *
-     * @param Entry $entry
-     * @return void
-     * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
-     */
-    public function handleCanonicalSave(Entry $entry): void
-    {
-        /** @var Entry|VerifiableBehavior $entry */
-
-        $entryId = $entry->getCanonicalId();
-
-        try {
-            $this->upsertEntryDetails(
-                $entryId,
-                $entry->siteId,
-                $entry->getReviewerId(),
-                $entry->getVerifiedUntilDate()
-            );
-        }
-        catch (Exception $exception) {
-            Craft::error(sprintf(
-                'Error upserting "Verified Entries" details for entry %s "%s" on site %s: %s',
-                $entryId,
-                $entry->title,
-                $entry->siteId,
-                $exception->getMessage()
-            ), __METHOD__);
-        }
-
-        $settings = VerifiedEntries::getInstance()->getSectionSettings();
-
-        // Seed rows for any other supported sites that don't have a row yet.
-        // This handles initial entry creation before propagation fires.
-        foreach ($entry->getSupportedSites() as $siteInfo) {
-            $siteId = is_array($siteInfo) ? ($siteInfo['siteId'] ?? null) : (int)$siteInfo;
-
-            if (! $siteId || $siteId === $entry->siteId) {
-                continue;
-            }
-
-            if ($this->hasVerificationRow($entryId, $siteId)) {
-                continue;
-            }
-
-            // Apply this site's own section defaults — don't copy the canonical site's values
-            $siteDefaults = $settings->getDefaultSettingsForSection($entry->sectionId, $siteId);
-            [$siteReviewerId, $siteDefaultPeriod] = $siteDefaults ?? [null, null];
-
-            $siteVerifiedUntilDate = null;
-            if ($siteDefaultPeriod) {
-                // TODO handle date exception
-                $dateInterval = new DateInterval($siteDefaultPeriod);
-                $siteVerifiedUntilDate = DateTimeHelper::now()->add($dateInterval);
-            }
-
-            try {
-                $this->upsertEntryDetails(
-                    $entryId,
-                    $siteId,
-                    $siteReviewerId,
-                    $siteVerifiedUntilDate
-                );
-            }
-            catch (Exception $exception) {
-                Craft::error(sprintf(
-                    'Error seeding verification row for entry %s "%s" on site %s: %s',
-                    $entryId,
-                    $entry->title,
-                    $siteId,
-                    $exception->getMessage()
-                ), __METHOD__);
-            }
-        }
-    }
-
-    /**
-     * After an entry saves and changes to the entry were detected, notify the entry's assigned
-     * Reviewer if the changes were made by someone else.
-     *
-     * @param Entry $entry
-     * @return void
-     * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
-     */
-    public function handleCheckForChanges(Entry $entry): void
-    {
-        /** @var Entry|VerifiableBehavior $entry */
-
-        if (! $entry->getHasVerifiedUntilDate() || ! $entry->enabled) {
-            return;
-        }
-
-        $reviewer = $entry->getReviewer();
-        if (! $reviewer || ! $reviewer->active) {
-            Craft::info(sprintf(
-                'Entry %s "%s" on site %s "%s" has no Reviewer to notify.',
-                $entry->getCanonicalId(),
-                $entry->title,
-                $entry->siteId,
-                $entry->getSite()->name
-            ), __METHOD__);
-            return;
-        }
-
-        if ($reviewer->id === Craft::$app->getUser()->getId()) {
-            return;
-        }
-
-        // Email the Reviewer if someone else edits their assigned entry
-        $isSent = $this->sendChangeNotification(
-            $entry,
-            new UserRecipient($reviewer)
-        );
-
-        if (! $isSent) {
-            Craft::warning(
-                "Failed to send 'change' notification to $reviewer->email.",
-                __METHOD__
-            );
-        }
     }
 }

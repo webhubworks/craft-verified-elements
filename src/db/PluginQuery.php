@@ -187,4 +187,28 @@ abstract class PluginQuery
                 [':vesSiteId' => $siteId]
             );
     }
+
+    /**
+     * Returns a query for a section's default settings saved on the plugin's Settings CP page.
+     *
+     * @param int $sectionId
+     * @param int $siteId
+     * @return Query
+     * @see \webhubworks\verifiedentries\services\singletons\SectionSettings::getDefaultSettingsForSection()
+     */
+    public static function sectionDefaults(int $sectionId, int $siteId): Query
+    {
+        return (new Query())
+            ->select([
+                'ves.sectionId AS id',
+                's.name',
+                's.handle',
+                'ves.siteId',
+                'ves.reviewerId',
+                'ves.defaultPeriod AS period',
+            ])
+            ->from(['ves' => PluginTable::SECTIONS])
+            ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.sectionId]]')
+            ->where(['ves.sectionId' => $sectionId, 'ves.siteId' => $siteId, 'ves.enabled' => true]);
+    }
 }

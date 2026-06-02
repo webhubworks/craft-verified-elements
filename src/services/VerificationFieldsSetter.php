@@ -31,21 +31,22 @@ class VerificationFieldsSetter implements VerificationFieldsSetterInterface
         private readonly ?int      $currentReviewerId,
         private readonly ?DateTime $currentVerifiedUntilDate,
         private readonly bool      $isFirstSave,
-        SectionSettings            $sectionSettings,
+        SectionSettings            $settings,
     )
     {
-        $defaults = $sectionSettings->getDefaultSettingsForSection($sectionId, $siteId);
-        [$this->defaultReviewerId, $this->defaultPeriod] = $defaults ?? [null, null];
+        $sectionDefaults = $settings->getDefaultSettingsForSection($sectionId, $siteId);
+        $this->defaultReviewerId = $sectionDefaults?->reviewerId;
+        $this->defaultPeriod = $sectionDefaults?->period;
     }
 
     /**
      * Instantiate this class from an `Entry` object.
      *
      * @param Entry $entry
-     * @param SectionSettings $sectionSettings
+     * @param SectionSettings $settings
      * @return self
      */
-    public static function fromEntry(Entry $entry, SectionSettings $sectionSettings): self
+    public static function fromEntry(Entry $entry, SectionSettings $settings): self
     {
         /** @var Entry|VerifiableBehavior $entry */
         $isFirstSave = VerifiedEntries::getInstance()
@@ -61,7 +62,7 @@ class VerificationFieldsSetter implements VerificationFieldsSetterInterface
             currentReviewerId: $entry->getReviewerId(),
             currentVerifiedUntilDate: $entry->getVerifiedUntilDate(),
             isFirstSave: $isFirstSave,
-            sectionSettings: $sectionSettings,
+            settings: $settings,
         );
     }
 
