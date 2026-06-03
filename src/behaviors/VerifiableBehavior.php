@@ -5,10 +5,10 @@ namespace webhubworks\verifiedentries\behaviors;
 use Craft;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeZone;
 use webhubworks\verifiedentries\enums\VerificationStatus;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use yii\base\Behavior;
 
 /**
@@ -133,7 +133,7 @@ class VerifiableBehavior extends Behavior
         }
 
         // Datetime string from the DB — stored as UTC, convert to Craft's timezone
-        $verifiedUntilDate = DateTimeHelper::toDatetime($value);
+        $verifiedUntilDate = DateHelper::toDatetime($value);
         if ($verifiedUntilDate instanceof DateTime) {
             $this->_verifiedUntilDate = $verifiedUntilDate->setTimezone($craftTimezone);
             return;

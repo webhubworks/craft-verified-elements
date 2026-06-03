@@ -5,6 +5,7 @@ namespace webhubworks\verifiedentries\controllers;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\web\Response;
 
@@ -47,7 +48,7 @@ class CustomDateController extends Controller
     {
         $this->requirePostRequest();
 
-        $date = DateTimeHelper::toDateTime($this->request->getBodyParam('verifiedUntilDate'));
+        $date = DateHelper::toDateTime($this->request->getBodyParam('verifiedUntilDate'));
 
         if (! $date) {
             return $this->asFailure(

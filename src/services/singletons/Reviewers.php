@@ -12,6 +12,8 @@ use DateTime;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
+use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
@@ -129,9 +131,8 @@ class Reviewers extends Component
     {
         return array_map(static function ($entry) {
             $formatter = new Formatter();
-            // TODO handle date exception
-            $verifiedUntilDate = DateTimeHelper::toDateTime($entry['verifiedUntilDate']);
 
+            $verifiedUntilDate = DateHelper::toDateTime($entry['verifiedUntilDate']);
             $isVerified = $verifiedUntilDate && $verifiedUntilDate > new DateTime();
 
             $uri = sprintf("%s/%s/%s-%s",
@@ -147,7 +148,7 @@ class Reviewers extends Component
                 'verifiedUntilDate' => VerifiedEntries::getInstance()
                     ->getVerification()
                     ->makeVerificationDateReadable($verifiedUntilDate),
-                'dateUpdated' => $formatter->asDate(DateTimeHelper::toDateTime($entry['dateUpdated'])),
+                'dateUpdated' => $formatter->asDate(DateHelper::toDateTime($entry['dateUpdated'])),
                 'url' => UrlHelper::cpUrl($uri, ['site' => $entry['siteHandle']]),
             ];
         }, $entries);

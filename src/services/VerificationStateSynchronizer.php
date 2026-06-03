@@ -12,6 +12,7 @@ use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\events\EventRegistrar;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\mail\ChangeNotification;
 use webhubworks\verifiedentries\models\UserRecipient;
@@ -294,8 +295,7 @@ readonly class VerificationStateSynchronizer
 
         $verifiedUntilDate = null;
         if (isset($sourceRow['verifiedUntilDate'])) {
-            // TODO handle date exception
-            $verifiedUntilDate = DateTimeHelper::toDateTime($sourceRow['verifiedUntilDate']);
+            $verifiedUntilDate = DateHelper::toDateTime($sourceRow['verifiedUntilDate']);
         }
 
         Db::upsert(PluginTable::ENTRIES, [

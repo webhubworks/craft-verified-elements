@@ -8,6 +8,7 @@ use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use DateInterval;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
@@ -71,7 +72,7 @@ class EntriesController extends Controller
 
         if ($verificationPeriod === VerificationPeriod::SpecificDate->value) {
             $inputDate = $this->request->getRequiredBodyParam('specificDate');
-            $date = DateTimeHelper::toDateTime($inputDate);
+            $date = DateHelper::toDateTime($inputDate);
         }
         elseif ($verificationPeriod === VerificationPeriod::Indefinitely->value) {
             $date = null;
