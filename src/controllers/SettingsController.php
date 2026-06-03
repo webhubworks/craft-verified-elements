@@ -6,6 +6,7 @@ use Craft;
 use craft\errors\SiteNotFoundException;
 use craft\web\Controller;
 use webhubworks\verifiedentries\enums\Permission;
+use webhubworks\verifiedentries\services\VerificationFieldsRenderer;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\db\Exception;
 use yii\web\BadRequestHttpException;
@@ -51,7 +52,7 @@ class SettingsController extends Controller
                 'sites' => $sites,
                 'currentSite' => $currentSite,
                 'sections' => $sections,
-                'defaultPeriodOptions' => VerifiedEntries::getInstance()->getVerification()->getPeriodOptions(),
+                'defaultPeriodOptions' => VerificationFieldsRenderer::periodOptions(),
             ]
         );
     }
@@ -120,7 +121,7 @@ class SettingsController extends Controller
             VerifiedEntries::HANDLE . '/_settings-grouped.twig',
             [
                 'sections' => array_values($sectionsMap),
-                'defaultPeriodOptions' => VerifiedEntries::getInstance()->getVerification()->getPeriodOptions(),
+                'defaultPeriodOptions' => VerificationFieldsRenderer::periodOptions(),
                 'verifyEntriesPermission' => Permission::VerifyEntries->value,
             ]
         );

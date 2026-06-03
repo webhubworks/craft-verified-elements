@@ -8,6 +8,7 @@ use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedentries\services\VerificationFieldsRenderer;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
@@ -44,15 +45,12 @@ class EntriesController extends Controller
      */
     public function actionRequestPeriod(): Response
     {
-        $periodOptions = VerifiedEntries::getInstance()
-            ->getVerification()
-            ->getPeriodOptionsWithCustomDate();
-
         return $this->asCpModal()
             ->action(VerifiedEntries::HANDLE . '/entries/resolve-date')
-            ->contentTemplate(VerifiedEntries::HANDLE . '/_modals/_period.twig', [
-                'periodOptions' => $periodOptions,
-            ]);
+            ->contentTemplate(
+                VerifiedEntries::HANDLE . '/_modals/_period.twig',
+                ['periodOptions' => VerificationFieldsRenderer::periodOptionsWithCustomDate()]
+            );
     }
 
     /**

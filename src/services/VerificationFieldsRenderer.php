@@ -142,10 +142,8 @@ readonly class VerificationFieldsRenderer
      * entry's edit page.
      *
      * @param DateTime|null $currentUntilDate The field's currently selected value
-     * @param int|null $sectionId
-     * @param int|null $siteId
      * @return array The dropdown field's options
-     * @see VerificationPeriod enum
+     * @see VerificationPeriod
      */
     public static function getDateOptionsForEntry(
         PluginSettings $settings,
@@ -196,6 +194,58 @@ readonly class VerificationFieldsRenderer
         $options[] = [
             'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
             'value' => false,
+        ];
+
+        return $options;
+    }
+
+    /**
+     * Returns verification period intervals as options for a select field.
+     *
+     * An example of this can be found in the plugin's settings page in the "Default Period"
+     * column.
+     *
+     * @return array The default options
+     * @see VerificationPeriod
+     */
+    public static function periodOptions(): array
+    {
+        $options = [];
+
+        foreach (VerificationPeriod::intervals() as $period) {
+            $dateInterval = $period->toDateInterval();
+
+            $options[] = [
+                'label' => DateTimeHelper::humanDuration($dateInterval),
+                'value' => $period->value,
+            ];
+        }
+
+        $options[] = [
+            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
+            'value' => VerificationPeriod::Indefinitely->value,
+        ];
+
+        return $options;
+    }
+
+    /**
+     * Returns verification period intervals as options for a select field with the additional
+     * option to choose an arbitrary date.
+     *
+     * An example of this can be found in an entry's sidebar when selecting a custom
+     * "Verified until" date.
+     *
+     * @return array The dropdown's options
+     * @see VerificationPeriod
+     */
+    public static function periodOptionsWithCustomDate(): array
+    {
+        $options = self::periodOptions();
+
+        $options[] = [
+            'label' => Craft::t(VerifiedEntries::HANDLE, 'Specific Date'),
+            'value' => VerificationPeriod::SpecificDate->value,
         ];
 
         return $options;

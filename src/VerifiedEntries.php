@@ -10,7 +10,6 @@ use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\services\singletons\PluginSettings;
 use webhubworks\verifiedentries\services\singletons\Reviewers;
-use webhubworks\verifiedentries\services\singletons\Verification;
 
 /**
  * Verified Entries plugin
@@ -23,7 +22,6 @@ use webhubworks\verifiedentries\services\singletons\Verification;
  * @property-read null $settingsResponse
  * @property-read Reviewers $reviewers
  * @property-read PluginSettings $pluginSettings
- * @property-read Verification $verification
  */
 class VerifiedEntries extends Plugin
 {
@@ -39,7 +37,6 @@ class VerifiedEntries extends Plugin
             'components' => [
                 'pluginSettings' => PluginSettings::class,
                 'reviewers' => Reviewers::class,
-                'verification' => Verification::class,
             ],
         ];
     }
@@ -81,10 +78,6 @@ class VerifiedEntries extends Plugin
     public function getReviewers(): Reviewers
     {
         return $this->get('reviewers');
-    }
-    public function getVerification(): Verification
-    {
-        return $this->get('verification');
     }
 
     /** @inheritDoc */

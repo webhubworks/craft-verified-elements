@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use Craft;
 use craft\db\Query;
 use craft\helpers\Db;
-use DateTime;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
 
 /**
@@ -107,7 +106,6 @@ abstract class PluginQuery
      * @param int $entryId
      * @param int $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\singletons\Verification
      */
     public static function verifiableEntry(int $entryId, int $siteId): Query
     {
@@ -120,7 +118,6 @@ abstract class PluginQuery
      * Returns a query for all verifiable entries that have verification dates in the past.
      *
      * @return Query
-     * @see \webhubworks\verifiedentries\services\singletons\Verification::checkExpiredVerifications
      * @see ExpiredEntryData Populate this object with the results of the query
      */
     public static function expiredVerifiableEntries(): Query
