@@ -2,9 +2,11 @@
 
 namespace webhubworks\verifiedentries\helpers;
 
+use Craft;
 use craft\helpers\DateTimeHelper;
 use DateInterval;
 use DateTime;
+use DateTimeZone;
 use Exception;
 
 /**
@@ -44,6 +46,27 @@ class DateHelper
         catch (Exception $exception) {
             Log::error('Failed to create DateInterval from period string', $exception);
             return null;
+        }
+    }
+
+    /**
+     * Returns a new DateTimeZone object and handles errors.
+     *
+     * @param string|null $timeZone
+     * @return DateTimeZone
+     */
+    public static function createDateTimeZone(?string $timeZone = null): DateTimeZone
+    {
+        if (! $timeZone) {
+            $timeZone = Craft::$app->getTimeZone();
+        }
+
+        try {
+            return new DateTimeZone($timeZone);
+        }
+        catch (Exception $exception) {
+            Log::error('Failed to create DateTimeZone', $exception);
+            return new DateTimeZone('UTC');
         }
     }
 }

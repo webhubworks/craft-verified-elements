@@ -2,11 +2,13 @@
 
 namespace webhubworks\verifiedentries\services\singletons;
 
+use Carbon\Carbon;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeZone;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
@@ -82,10 +84,13 @@ class Verification extends Component
             return Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
         }
 
-        // TODO handle date exception
-        $timezone = new DateTimeZone(Craft::$app->getTimeZone());
-        $now = new DateTime('today', $timezone);
-        $dateOnly = new DateTime($verifiedUntilDate->format('Y-m-d'), $timezone);
+        $systemTimeZone = DateHelper::createDateTimeZone();
+        $now = Carbon::now($systemTimeZone);
+        $dateOnly = Carbon::createFromFormat(
+            'Y-m-d',
+            $verifiedUntilDate->format('Y-m-d'),
+            $systemTimeZone)
+        ;
         $diff = $now->diff($dateOnly);
 
         if ($diff->days === 0) {

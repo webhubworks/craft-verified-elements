@@ -2,6 +2,8 @@
 
 namespace webhubworks\verifiedentries\db;
 
+use Carbon\Carbon;
+use Craft;
 use craft\db\Query;
 use craft\helpers\Db;
 use DateTime;
@@ -147,7 +149,7 @@ abstract class PluginQuery
                 PluginTable::SECTIONS . ' ves',
                 '[[ves.sectionId]] = [[entries.sectionId]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1'
             )
-            ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(new DateTime())])
+            ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(Carbon::now(Craft::$app->getTimeZone()))])
             ->andWhere('elements.canonicalId IS null');
     }
 

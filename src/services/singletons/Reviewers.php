@@ -2,6 +2,7 @@
 
 namespace webhubworks\verifiedentries\services\singletons;
 
+use Carbon\Carbon;
 use Craft;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\Entry;
@@ -133,7 +134,7 @@ class Reviewers extends Component
             $formatter = new Formatter();
 
             $verifiedUntilDate = DateHelper::toDateTime($entry['verifiedUntilDate']);
-            $isVerified = $verifiedUntilDate && $verifiedUntilDate > new DateTime();
+            $isVerified = $verifiedUntilDate && $verifiedUntilDate > Carbon::now(Craft::$app->getTimeZone());
 
             $uri = sprintf("%s/%s/%s-%s",
                 'entries',

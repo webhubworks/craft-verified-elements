@@ -2,13 +2,16 @@
 
 namespace webhubworks\verifiedentries\behaviors;
 
+use Carbon\Carbon;
 use Craft;
 use craft\elements\Entry;
 use craft\elements\User;
 use DateTime;
 use DateTimeZone;
+use Exception;
 use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedentries\helpers\Log;
 use yii\base\Behavior;
 
 /**
@@ -113,11 +116,10 @@ class VerifiableBehavior extends Behavior
      */
     public function setVerifiedUntilDate(mixed $value): void
     {
-        // TODO handle date exception
-        $craftTimezone = new DateTimeZone(Craft::$app->getTimeZone());
+        $systemTimeZone = DateHelper::createDateTimeZone();
 
         if ($value instanceof DateTime) {
-            $this->_verifiedUntilDate = (clone $value)->setTimezone($craftTimezone);
+            $this->_verifiedUntilDate = (clone $value)->setTimezone($systemTimeZone);
             return;
         }
 
@@ -127,15 +129,26 @@ class VerifiableBehavior extends Behavior
         }
 
         if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
-            // Date-only string from a form post — midnight in Craft's timezone
-            $this->_verifiedUntilDate = new DateTime($value . ' 00:00:00', $craftTimezone);
+            try {
+                $this->_verifiedUntilDate = Carbon::createFromFormat(
+                    'Y-m-d H:i:s', $value . ' 00:00:00',
+                    $systemTimeZone
+                );
+            }
+            catch (Exception $exception) {
+                Log::error(
+                    'Failed to parse date-only string in setVerifiedUntilDate',
+                    $exception
+                );
+                $this->_verifiedUntilDate = null;
+            }
             return;
         }
 
         // Datetime string from the DB — stored as UTC, convert to Craft's timezone
-        $verifiedUntilDate = DateHelper::toDatetime($value);
+        $verifiedUntilDate = DateHelper::toDateTime($value);
         if ($verifiedUntilDate instanceof DateTime) {
-            $this->_verifiedUntilDate = $verifiedUntilDate->setTimezone($craftTimezone);
+            $this->_verifiedUntilDate = $verifiedUntilDate->setTimezone($systemTimeZone);
             return;
         }
 
@@ -176,8 +189,7 @@ class VerifiableBehavior extends Behavior
             return VerificationStatus::Indefinite;
         }
 
-        // TODO handle date exception
-        $now = new DateTime('now', new DateTimeZone(Craft::$app->getTimeZone()));
+        $now = Carbon::now(Craft::$app->getTimeZone());
 
         if ($this->_verifiedUntilDate <= $now) {
             return VerificationStatus::Expired;
