@@ -69,19 +69,19 @@ readonly class EntrySidebarRenderer
      */
     private function buildSidebarHtml(): string
     {
-        $dropdownFieldOptions = VerificationFieldsRenderer::getDateOptionsForEntry(
-            $this->settings,
-            $this->entry->getVerifiedUntilDate(),
+        $dateSelectOptions = VerificationFieldsRenderer::dateSelectOptions(
             $this->entry->sectionId,
-            $this->entry->siteId
+            $this->entry->siteId,
+            $this->settings,
+            $this->entry->getVerifiedUntilDate()
         );
 
         $templateVariables = [
-            'addOptionFn' => VerificationFieldsRenderer::addOptionJsFunction(),
+            'addOptionFn' => VerificationFieldsRenderer::jsFunctionToAddCustomDate(),
             'verifiedUntilDate' => $this->entry->getVerifiedUntilDate(),
             'isVerified' => $this->entry->getIsVerified(),
             'reviewer' => $this->entry->getReviewer(),
-            'options' => $dropdownFieldOptions,
+            'dateSelectOptions' => $dateSelectOptions,
         ];
 
         try {

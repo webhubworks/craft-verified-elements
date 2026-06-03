@@ -49,7 +49,7 @@ class EntriesController extends Controller
             ->action(VerifiedEntries::HANDLE . '/entries/resolve-date')
             ->contentTemplate(
                 VerifiedEntries::HANDLE . '/_modals/_period.twig',
-                ['periodOptions' => VerificationFieldsRenderer::periodOptionsWithCustomDate()]
+                ['periodSelectOptions' => VerificationFieldsRenderer::periodSelectOptions(true)]
             );
     }
 

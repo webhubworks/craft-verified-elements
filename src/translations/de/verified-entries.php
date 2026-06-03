@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '(Standard)' => '(Standard)',
+    'Standard' => 'Standard',
     'An entry you\'re assigned to review has been updated. Please take a moment to review the latest changes:' => 'Ein Eintrag, den Sie überprüfen sollen, wurde aktualisiert. Bitte nehmen Sie sich einen Moment Zeit, um die letzten Änderungen zu überprüfen:',
     'Assign Reviewer' => 'Reviewer zuweisen',
     'Could not set verification date.' => 'Verifizierungsdatum konnte nicht übernommen werden.',

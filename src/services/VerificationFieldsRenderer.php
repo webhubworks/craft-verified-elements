@@ -2,6 +2,7 @@
 
 namespace webhubworks\verifiedentries\services;
 
+use Carbon\Carbon;
 use Craft;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -26,8 +27,8 @@ readonly class VerificationFieldsRenderer
     /** @var Entry|VerifiableBehavior $entry */
 
     public function __construct(
-        private Entry           $entry,
-        private bool            $canVerifyEntries,
+        private Entry          $entry,
+        private bool           $canVerifyEntries,
         private PluginSettings $settings
     ) {}
 
@@ -66,24 +67,24 @@ readonly class VerificationFieldsRenderer
      */
     public function buildVerifiedUntilDateFieldHtml(): string
     {
-        $dropdownFieldOptions = self::getDateOptionsForEntry(
+        $dateSelectOptions = self::dateSelectOptions(
+            $this->entry->sectionId,
+            $this->entry->siteId,
             $this->settings,
             $this->entry->getVerifiedUntilDate(),
-            $this->entry->sectionId,
-            $this->entry->siteId
         );
 
         $config = [
             'id' => 'verifiedUntilDate',
             'name' => 'verifiedUntilDate',
-            'options' => $dropdownFieldOptions,
+            'options' => $dateSelectOptions,
             'selectizeOptions' => [
                 'allowEmptyOption' => false,
                 'autocomplete' => false,
             ],
             'value' => $this->getVerifiedUntilDateValue(),
             'addOptionLabel' => 'specificDate',
-            'addOptionFn' => self::addOptionJsFunction(),
+            'addOptionFn' => self::jsFunctionToAddCustomDate(),
             'disabled' => ! $this->canVerifyEntries,
         ];
 
@@ -101,13 +102,119 @@ readonly class VerificationFieldsRenderer
     // =============================================================================================
 
     /**
+     * Returns "Verified until" date options for a select field.
+     *
+     * An example of this can be found in an entry's "edit" page. The sidebar has a dropdown field
+     * called "Verified until" where you choose a date that indicates when the entry needs to be
+     * reviewed.
+     *
+     * @param int $sectionId
+     * @param int $siteId
+     * @param PluginSettings $settings
+     * @param DateTime|null $currentUntilDate The field's currently selected value
+     * @return array The dropdown field's options
+     * @see VerificationPeriod
+     */
+    public static function dateSelectOptions(
+        int            $sectionId,
+        int            $siteId,
+        PluginSettings $settings,
+        ?DateTime      $currentUntilDate
+    ): array
+    {
+        $formatter = new Formatter();
+        $sectionDefaults = $settings->getDefaultSettingsForSection($sectionId, $siteId);
+        $defaultPeriod = $sectionDefaults?->period;
+
+        $options = [];
+
+        // Add the user's selected date at the top of the list of options
+        if ($currentUntilDate) {
+            $options[] = [
+                'label' => $formatter->asDate($currentUntilDate),
+                'value' => $currentUntilDate->format('Y-m-d'),
+            ];
+        }
+
+        foreach (VerificationPeriod::intervals() as $period) {
+            $dateInterval = $period->toDateInterval();
+            $date = Carbon::now()->add($dateInterval);
+
+            // Don't add the user's selected date to the list
+            if ($currentUntilDate && $date->format('Y-m-d') === $currentUntilDate->format('Y-m-d')) {
+                continue;
+            }
+
+            // Tell the user how many days, months, or years away the date is
+            $hint = DateTimeHelper::humanDuration($dateInterval);
+            if ($period->value === $defaultPeriod) {
+                $hint .= ' (' . Craft::t(VerifiedEntries::HANDLE, 'Standard') . ')';
+            }
+
+            $options[] = [
+                'label' => $formatter->asDate($date),
+                'value' => $date->format('Y-m-d'),
+                'data' => ['hint' => $hint],
+            ];
+        }
+
+        $options[] = [
+            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
+            'value' => false,
+        ];
+
+        return $options;
+    }
+
+    /**
+     * Returns verification period intervals as options for a select field.
+     *
+     * An example of this can be found in the plugin's settings page in the "Default Period"
+     * column.
+     *
+     * An example that includes the custom date is on an entries listing page. If you select
+     * entries via their checkboxes and try to apply the "Verify Entry" action
+     * (click the gear icon), the dropdown appears in a modal.
+     *
+     * @return array The default options
+     * @see VerificationPeriod
+     */
+    public static function periodSelectOptions(bool $withCustomDate = false): array
+    {
+        $options = [];
+
+        foreach (VerificationPeriod::intervals() as $period) {
+            $dateInterval = $period->toDateInterval();
+
+            $options[] = [
+                'label' => DateTimeHelper::humanDuration($dateInterval),
+                'value' => $period->value,
+            ];
+        }
+
+        $options[] = [
+            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
+            'value' => VerificationPeriod::Indefinitely->value,
+        ];
+
+        if ($withCustomDate) {
+            $options[] = [
+                'label' => Craft::t(VerifiedEntries::HANDLE, 'Specific Date'),
+                'value' => VerificationPeriod::SpecificDate->value,
+            ];
+        }
+
+        return $options;
+    }
+
+    /**
      * Returns JavaScript code to manage Craft's custom-date modal for selecting a specific
      * verification date.
      *
      * @return string JS code to be executed by Craft
      * @noinspection JSUnresolvedReference
      */
-    public static function addOptionJsFunction(): string
+    public static function jsFunctionToAddCustomDate(): string
     {
         return <<<JS
             (createOption, selectize) => {
@@ -135,120 +242,6 @@ readonly class VerificationFieldsRenderer
                 });
             }
         JS;
-    }
-
-    /**
-     * Returns the options for the "Verified until" select field located in the sidebar of an
-     * entry's edit page.
-     *
-     * @param DateTime|null $currentUntilDate The field's currently selected value
-     * @return array The dropdown field's options
-     * @see VerificationPeriod
-     */
-    public static function getDateOptionsForEntry(
-        PluginSettings $settings,
-        ?DateTime      $currentUntilDate = null,
-        ?int           $sectionId = null,
-        ?int           $siteId = null
-    ): array
-    {
-        $formatter = new Formatter();
-
-        $defaultPeriod = null;
-        if ($sectionId !== null && $siteId !== null) {
-            $sectionDefaults = $settings->getDefaultSettingsForSection($sectionId, $siteId);
-
-            $defaultPeriod = $sectionDefaults?->period;
-        }
-
-        $options = [];
-
-        if ($currentUntilDate) {
-            $options[] = [
-                'label' => $formatter->asDate($currentUntilDate),
-                'value' => $currentUntilDate->format('Y-m-d'),
-            ];
-        }
-
-        foreach (VerificationPeriod::intervals() as $period) {
-            $dateInterval = $period->toDateInterval();
-
-            $date = DateTimeHelper::now()->add($dateInterval);
-
-            if ($currentUntilDate && $date->format('Y-m-d') === $currentUntilDate->format('Y-m-d')) {
-                continue;
-            }
-
-            $options[] = [
-                'label' => $formatter->asDate($date),
-                'value' => $date->format('Y-m-d'),
-                'data' => [
-                    'hint' => implode(' ', [
-                        DateTimeHelper::humanDuration($dateInterval),
-                        $period->value === $defaultPeriod ? Craft::t(VerifiedEntries::HANDLE, '(Standard)') : ''
-                    ])
-                ],
-            ];
-        }
-
-        $options[] = [
-            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
-            'value' => false,
-        ];
-
-        return $options;
-    }
-
-    /**
-     * Returns verification period intervals as options for a select field.
-     *
-     * An example of this can be found in the plugin's settings page in the "Default Period"
-     * column.
-     *
-     * @return array The default options
-     * @see VerificationPeriod
-     */
-    public static function periodOptions(): array
-    {
-        $options = [];
-
-        foreach (VerificationPeriod::intervals() as $period) {
-            $dateInterval = $period->toDateInterval();
-
-            $options[] = [
-                'label' => DateTimeHelper::humanDuration($dateInterval),
-                'value' => $period->value,
-            ];
-        }
-
-        $options[] = [
-            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
-            'value' => VerificationPeriod::Indefinitely->value,
-        ];
-
-        return $options;
-    }
-
-    /**
-     * Returns verification period intervals as options for a select field with the additional
-     * option to choose an arbitrary date.
-     *
-     * An example of this can be found in an entry's sidebar when selecting a custom
-     * "Verified until" date.
-     *
-     * @return array The dropdown's options
-     * @see VerificationPeriod
-     */
-    public static function periodOptionsWithCustomDate(): array
-    {
-        $options = self::periodOptions();
-
-        $options[] = [
-            'label' => Craft::t(VerifiedEntries::HANDLE, 'Specific Date'),
-            'value' => VerificationPeriod::SpecificDate->value,
-        ];
-
-        return $options;
     }
 
 

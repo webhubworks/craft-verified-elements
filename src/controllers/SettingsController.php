@@ -52,7 +52,7 @@ class SettingsController extends Controller
                 'sites' => $sites,
                 'currentSite' => $currentSite,
                 'sections' => $sections,
-                'defaultPeriodOptions' => VerificationFieldsRenderer::periodOptions(),
+                'periodSelectOptions' => VerificationFieldsRenderer::periodSelectOptions(),
             ]
         );
     }
@@ -121,7 +121,7 @@ class SettingsController extends Controller
             VerifiedEntries::HANDLE . '/_settings-grouped.twig',
             [
                 'sections' => array_values($sectionsMap),
-                'defaultPeriodOptions' => VerificationFieldsRenderer::periodOptions(),
+                'periodSelectOptions' => VerificationFieldsRenderer::periodSelectOptions(),
                 'verifyEntriesPermission' => Permission::VerifyEntries->value,
             ]
         );
