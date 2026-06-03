@@ -37,6 +37,7 @@ use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use DateTime;
 use Twig\TwigFilter;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
@@ -215,9 +216,7 @@ readonly class EventRegistrar
         Craft::$app->getView()->getTwig()->addFilter(
             new TwigFilter(
                 'readableVerificationDate',
-                fn(?DateTime $date): string => VerifiedEntries::getInstance()
-                    ->getVerification()
-                    ->makeVerificationDateReadable($date)
+                fn(?DateTime $date): string => DateHelper::readableVerificationDate($date)
             )
         );
     }
@@ -494,9 +493,7 @@ readonly class EventRegistrar
                         break;
 
                     case "verifiedUntilDate":
-                        $event->html = VerifiedEntries::getInstance()
-                            ->getVerification()
-                            ->makeVerificationDateReadable($entry->getVerifiedUntilDate());
+                        $event->html = DateHelper::readableVerificationDate($entry->getVerifiedUntilDate());
                         break;
 
                     case "reviewer":

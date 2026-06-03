@@ -2,13 +2,9 @@
 
 namespace webhubworks\verifiedentries\services\singletons;
 
-use Carbon\Carbon;
 use Craft;
 use craft\helpers\DateTimeHelper;
-use DateTime;
-use DateTimeZone;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
-use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
@@ -70,39 +66,5 @@ class Verification extends Component
         ];
 
         return $options;
-    }
-
-    /**
-     * Format a "Verified until" dropdown date to a human-readable value for convenience to the user.
-     *
-     * @param DateTime|null $verifiedUntilDate
-     * @return string
-     */
-    public function makeVerificationDateReadable(?DateTime $verifiedUntilDate): string
-    {
-        if ($verifiedUntilDate === null) {
-            return Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
-        }
-
-        $systemTimeZone = DateHelper::createDateTimeZone();
-        $now = Carbon::now($systemTimeZone);
-        $dateOnly = Carbon::createFromFormat(
-            'Y-m-d',
-            $verifiedUntilDate->format('Y-m-d'),
-            $systemTimeZone)
-        ;
-        $diff = $now->diff($dateOnly);
-
-        if ($diff->days === 0) {
-            return Craft::t(VerifiedEntries::HANDLE, 'Today');
-        }
-
-        if ($diff->days < 31) {
-            return $diff->invert
-                ? Craft::t(VerifiedEntries::HANDLE, '{n} days ago', ['n' => $diff->days])
-                : Craft::t(VerifiedEntries::HANDLE, '{n} days remaining', ['n' => $diff->days]);
-        }
-
-        return Craft::$app->getFormatter()->asDate($verifiedUntilDate, 'short');
     }
 }

@@ -2,12 +2,14 @@
 
 namespace webhubworks\verifiedentries\helpers;
 
+use Carbon\Carbon;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
  * Helper methods for handling date/time.
@@ -68,5 +70,39 @@ class DateHelper
             Log::error('Failed to create DateTimeZone', $exception);
             return new DateTimeZone('UTC');
         }
+    }
+
+    /**
+     * Format a "Verified until" dropdown date to a human-readable value for convenience to the user.
+     *
+     * @param DateTime|null $date
+     * @return string
+     */
+    public static function readableVerificationDate(?DateTime $date): string
+    {
+        if ($date === null) {
+            return Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
+        }
+
+        $systemTimeZone = self::createDateTimeZone();
+        $now = Carbon::now($systemTimeZone);
+        $dateOnly = Carbon::createFromFormat(
+            'Y-m-d',
+            $date->format('Y-m-d'),
+            $systemTimeZone)
+        ;
+        $diff = $now->diff($dateOnly);
+
+        if ($diff->days === 0) {
+            return Craft::t('app', 'Today');
+        }
+
+        if ($diff->days < 31) {
+            return $diff->invert
+                ? Craft::t(VerifiedEntries::HANDLE, '{n} days ago', ['n' => $diff->days])
+                : Craft::t(VerifiedEntries::HANDLE, '{n} days remaining', ['n' => $diff->days]);
+        }
+
+        return Craft::$app->getFormatter()->asDate($date, 'short');
     }
 }

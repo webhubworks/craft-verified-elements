@@ -9,13 +9,10 @@ use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use DateTime;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
 /**
@@ -146,9 +143,7 @@ class Reviewers extends Component
             return [
                 ...$entry,
                 'isVerified' => $isVerified ? 'Verified' : 'Expired',
-                'verifiedUntilDate' => VerifiedEntries::getInstance()
-                    ->getVerification()
-                    ->makeVerificationDateReadable($verifiedUntilDate),
+                'verifiedUntilDate' => DateHelper::readableVerificationDate($verifiedUntilDate),
                 'dateUpdated' => $formatter->asDate(DateHelper::toDateTime($entry['dateUpdated'])),
                 'url' => UrlHelper::cpUrl($uri, ['site' => $entry['siteHandle']]),
             ];
