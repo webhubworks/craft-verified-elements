@@ -71,7 +71,7 @@ class EntriesToReview extends Widget
     public function getBodyHtml(): ?string
     {
         $userId = Craft::$app->getUser()->getId();
-        $enabledSectionIds = VerifiedEntries::getInstance()->getSectionSettings()->getEnabledSectionIds();
+        $enabledSectionIds = VerifiedEntries::getInstance()->getPluginSettings()->getEnabledSectionIds();
 
         /** @noinspection PhpUndefinedMethodInspection */
         $entries = Entry::find()

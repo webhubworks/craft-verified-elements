@@ -9,7 +9,7 @@ use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\services\singletons\SectionSettings;
+use webhubworks\verifiedentries\services\singletons\PluginSettings;
 
 /**
  * Resolves the default Reviewer ID and "Verified until" date that should be applied to an entry's
@@ -30,7 +30,7 @@ class VerificationFieldsSetter
         private readonly ?int      $currentReviewerId,
         private readonly ?DateTime $currentVerifiedUntilDate,
         private readonly bool      $isFirstSave,
-        SectionSettings            $settings,
+        PluginSettings             $settings,
     )
     {
         $sectionDefaults = $settings->getDefaultSettingsForSection($sectionId, $siteId);
@@ -42,10 +42,10 @@ class VerificationFieldsSetter
      * Instantiate this class from an `Entry` object.
      *
      * @param Entry $entry
-     * @param SectionSettings $settings
+     * @param PluginSettings $settings
      * @return self
      */
-    public static function fromEntry(Entry $entry, SectionSettings $settings): self
+    public static function fromEntry(Entry $entry, PluginSettings $settings): self
     {
         /** @var Entry|VerifiableBehavior $entry */
 

@@ -2,7 +2,7 @@
 
 namespace webhubworks\verifiedentries\services\singletons;
 
-use craft\db\Query as CraftQuery;
+use craft\db\Query;
 use craft\elements\User;
 use craft\helpers\Db;
 use webhubworks\verifiedentries\db\PluginQuery;
@@ -12,12 +12,11 @@ use yii\base\Component;
 use yii\db\Exception;
 
 /**
- * The SectionSettings service represents logic related to Craft Sections (channels, structures, singles) that are
- * enabled for this plugin.
+ * Singleton to handle related plugin settings' actions.
  *
  * @property-read int[] $enabledSectionIds
  */
-class SectionSettings extends Component
+class PluginSettings extends Component
 {
     private ?array $_enabledSectionIds = null;
 
@@ -43,7 +42,7 @@ class SectionSettings extends Component
         if ($this->_enabledSectionIds === null) {
             $this->_enabledSectionIds = array_map(
                 'intval',
-                (new CraftQuery())
+                (new Query())
                     ->select(['sectionId'])
                     ->from(PluginTable::SECTIONS)
                     ->where(['enabled' => true])
@@ -66,7 +65,7 @@ class SectionSettings extends Component
     {
         return array_map(
             'intval',
-            (new CraftQuery())
+            (new Query())
                 ->select(['sectionId'])
                 ->from(PluginTable::SECTIONS)
                 ->where(['enabled' => true, 'siteId' => $siteId])
@@ -84,7 +83,7 @@ class SectionSettings extends Component
      */
     public function isSectionEnabledForSite(int $sectionId, int $siteId): bool
     {
-        return (new CraftQuery())
+        return (new Query())
             ->from(PluginTable::SECTIONS)
             ->where(['sectionId' => $sectionId, 'siteId' => $siteId, 'enabled' => true])
             ->exists();

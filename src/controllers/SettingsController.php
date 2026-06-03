@@ -42,7 +42,7 @@ class SettingsController extends Controller
             : Craft::$app->getSites()->getPrimarySite();
 
         $sections = VerifiedEntries::getInstance()
-            ->getSectionSettings()
+            ->getPluginSettings()
             ->getAllSectionsWithSettings($currentSite->id);
 
         return $this->renderTemplate(
@@ -70,7 +70,7 @@ class SettingsController extends Controller
 
         $siteId = (int) $this->request->getRequiredBodyParam('siteId');
         $sections = $this->request->getRequiredBodyParam('sections');
-        $service = VerifiedEntries::getInstance()->getSectionSettings();
+        $service = VerifiedEntries::getInstance()->getPluginSettings();
 
         foreach ($sections as $sectionId => $settings) {
             $service->saveSectionSettings((int) $sectionId, $siteId, $settings);
@@ -89,7 +89,7 @@ class SettingsController extends Controller
     public function actionGrouped(): Response
     {
         $sites = Craft::$app->getSites()->getAllSites();
-        $service = VerifiedEntries::getInstance()->getSectionSettings();
+        $service = VerifiedEntries::getInstance()->getPluginSettings();
 
         $sectionsMap = [];
         foreach ($sites as $site) {
@@ -137,7 +137,7 @@ class SettingsController extends Controller
         $this->requirePostRequest();
 
         $sections = $this->request->getRequiredBodyParam('sections');
-        $service = VerifiedEntries::getInstance()->getSectionSettings();
+        $service = VerifiedEntries::getInstance()->getPluginSettings();
 
         foreach ($sections as $sectionId => $siteSettings) {
             foreach ($siteSettings as $siteId => $settings) {

@@ -37,7 +37,7 @@ class VerifiedEntry extends Entry
     /** @inheritDoc */
     protected static function defineSources(string $context = null): array
     {
-        $enabledSectionIds = VerifiedEntries::getInstance()->getSectionSettings()->getEnabledSectionIds();
+        $enabledSectionIds = VerifiedEntries::getInstance()->getPluginSettings()->getEnabledSectionIds();
         $currentUser = Craft::$app->getUser();
 
         $sources = [

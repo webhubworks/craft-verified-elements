@@ -8,7 +8,7 @@ use craft\helpers\Html;
 use Throwable;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\services\singletons\SectionSettings;
+use webhubworks\verifiedentries\services\singletons\PluginSettings;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -23,7 +23,7 @@ readonly class EntrySidebarRenderer
 
     public function __construct(
         private Entry $entry,
-        private SectionSettings $settings
+        private PluginSettings $settings
     ) {}
 
     /**

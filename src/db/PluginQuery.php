@@ -162,7 +162,7 @@ abstract class PluginQuery
      *
      * @param int $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\singletons\SectionSettings::getAllSectionsWithSettings
+     * @see \webhubworks\verifiedentries\services\singletons\PluginSettings::getAllSectionsWithSettings
      */
     public static function sectionsWithSettings(int $siteId): Query
     {
@@ -196,7 +196,7 @@ abstract class PluginQuery
      * @param int $sectionId
      * @param int $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\singletons\SectionSettings::getDefaultSettingsForSection()
+     * @see \webhubworks\verifiedentries\services\singletons\PluginSettings::getDefaultSettingsForSection()
      */
     public static function sectionDefaults(int $sectionId, int $siteId): Query
     {

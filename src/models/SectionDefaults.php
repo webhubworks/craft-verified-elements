@@ -2,7 +2,7 @@
 
 namespace webhubworks\verifiedentries\models;
 
-use webhubworks\verifiedentries\services\singletons\SectionSettings;
+use webhubworks\verifiedentries\services\singletons\PluginSettings;
 
 /**
  * Default settings for a section (per site) that was saved in the plugin's settings page in the CP.
@@ -24,7 +24,7 @@ readonly class SectionDefaults
      * @param int $sectionId
      * @param int $siteId
      * @return string
-     * @see SectionSettings::getDefaultSettingsForSection()
+     * @see PluginSettings::getDefaultSettingsForSection()
      */
     public static function key(int $sectionId, int $siteId): string
     {

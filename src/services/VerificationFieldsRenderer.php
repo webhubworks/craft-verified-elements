@@ -14,7 +14,7 @@ use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\services\singletons\SectionSettings;
+use webhubworks\verifiedentries\services\singletons\PluginSettings;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -28,7 +28,7 @@ readonly class VerificationFieldsRenderer
     public function __construct(
         private Entry           $entry,
         private bool            $canVerifyEntries,
-        private SectionSettings $settings
+        private PluginSettings $settings
     ) {}
 
     /**
@@ -148,10 +148,10 @@ readonly class VerificationFieldsRenderer
      * @see VerificationPeriod enum
      */
     public static function getDateOptionsForEntry(
-        SectionSettings $settings,
-        ?DateTime       $currentUntilDate = null,
-        ?int            $sectionId = null,
-        ?int            $siteId = null
+        PluginSettings $settings,
+        ?DateTime      $currentUntilDate = null,
+        ?int           $sectionId = null,
+        ?int           $siteId = null
     ): array
     {
         $formatter = new Formatter();

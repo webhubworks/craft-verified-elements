@@ -16,7 +16,7 @@ use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\mail\ChangeNotification;
 use webhubworks\verifiedentries\models\UserRecipient;
-use webhubworks\verifiedentries\services\singletons\SectionSettings;
+use webhubworks\verifiedentries\services\singletons\PluginSettings;
 use yii\db\Exception;
 
 /**
@@ -33,9 +33,9 @@ readonly class VerificationStateSynchronizer
      */
 
     public function __construct(
-        private Entry           $entry,
-        private SectionSettings $settings,
-        private ?int            $currentUserId,
+        private Entry          $entry,
+        private PluginSettings $settings,
+        private ?int           $currentUserId,
     ) {}
 
     /**

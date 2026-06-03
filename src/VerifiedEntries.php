@@ -8,7 +8,7 @@ use craft\helpers\UrlHelper;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\services\singletons\SectionSettings;
+use webhubworks\verifiedentries\services\singletons\PluginSettings;
 use webhubworks\verifiedentries\services\singletons\Reviewers;
 use webhubworks\verifiedentries\services\singletons\Verification;
 
@@ -22,7 +22,7 @@ use webhubworks\verifiedentries\services\singletons\Verification;
  * @property-read null|array $cpNavItem
  * @property-read null $settingsResponse
  * @property-read Reviewers $reviewers
- * @property-read SectionSettings $sectionSettings
+ * @property-read PluginSettings $pluginSettings
  * @property-read Verification $verification
  */
 class VerifiedEntries extends Plugin
@@ -37,7 +37,7 @@ class VerifiedEntries extends Plugin
     {
         return [
             'components' => [
-                'sectionSettings' => SectionSettings::class,
+                'pluginSettings' => PluginSettings::class,
                 'reviewers' => Reviewers::class,
                 'verification' => Verification::class,
             ],
@@ -74,9 +74,9 @@ class VerifiedEntries extends Plugin
     /**
      * Use these methods to return our service Components and bypass Yii's magic method system.
      */
-    public function getSectionSettings(): SectionSettings
+    public function getPluginSettings(): PluginSettings
     {
-        return $this->get('sectionSettings');
+        return $this->get('pluginSettings');
     }
     public function getReviewers(): Reviewers
     {

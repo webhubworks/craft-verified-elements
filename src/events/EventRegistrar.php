@@ -252,7 +252,7 @@ readonly class EventRegistrar
                     // the entry's behavior class.
                     $service = VerificationFieldsSetter::fromEntry(
                         $entry,
-                        $this->plugin->getSectionSettings()
+                        $this->plugin->getPluginSettings()
                     );
 
                     $service->updateEntryFields($entry);
@@ -277,7 +277,7 @@ readonly class EventRegistrar
 
                 $service = new VerificationStateSynchronizer(
                     $entry,
-                    $this->plugin->getSectionSettings(),
+                    $this->plugin->getPluginSettings(),
                     Craft::$app->getUser()->getId()
                 );
 
@@ -381,7 +381,7 @@ readonly class EventRegistrar
                     return;
                 }
 
-                $settings = $this->plugin->getSectionSettings();
+                $settings = $this->plugin->getPluginSettings();
                 $isSectionEnabled = $settings->isSectionEnabledForSite(
                     $entry->sectionId,
                     $entry->siteId
@@ -406,7 +406,7 @@ readonly class EventRegistrar
                 $service = new VerificationFieldsRenderer(
                     $entry,
                     $canVerifyEntries,
-                    $this->plugin->getSectionSettings()
+                    $this->plugin->getPluginSettings()
                 );
 
                 if ($event->attribute === 'reviewer') {
