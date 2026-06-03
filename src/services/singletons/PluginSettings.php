@@ -7,6 +7,7 @@ use craft\elements\User;
 use craft\helpers\Db;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\models\SectionDefaults;
 use yii\base\Component;
 use yii\db\Exception;
@@ -130,10 +131,9 @@ class PluginSettings extends Component
      * @param int $sectionId
      * @param int $siteId
      * @param array $settings
-     * @return void
-     * @throws Exception
+     * @return bool If the save was successful.
      */
-    public function saveSectionSettings(int $sectionId, int $siteId, array $settings): void
+    public function saveSectionSettings(int $sectionId, int $siteId, array $settings): bool
     {
         $enabled = ! empty($settings['enabled']);
         $defaultPeriod = $settings['defaultPeriod'] ?? null;
@@ -146,9 +146,19 @@ class PluginSettings extends Component
             $reviewerId = $reviewerId ?: null;
         }
 
-        Db::upsert(PluginTable::SECTIONS,
-            compact('sectionId', 'siteId', 'reviewerId', 'enabled', 'defaultPeriod'),
-            compact('reviewerId', 'enabled', 'defaultPeriod'));
+        try {
+            Db::upsert(
+                PluginTable::SECTIONS,
+                compact('sectionId', 'siteId', 'reviewerId', 'enabled', 'defaultPeriod'),
+                compact('reviewerId', 'enabled', 'defaultPeriod')
+            );
+        }
+        catch (Exception $exception) {
+            Log::error('Failed to save section settings', $exception);
+            return false;
+        }
+
+        return true;
     }
 
     /**

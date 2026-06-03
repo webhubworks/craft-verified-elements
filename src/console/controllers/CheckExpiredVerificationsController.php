@@ -3,6 +3,7 @@
 namespace webhubworks\verifiedentries\console\controllers;
 
 use craft\console\Controller;
+use craft\log\Dispatcher;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
@@ -20,7 +21,7 @@ class CheckExpiredVerificationsController extends Controller
     /** @inheritDoc */
     public function beforeAction($action): bool
     {
-        $this->service = new ExpiredVerificationNotifier();
+        $this->service = new ExpiredVerificationNotifier(Dispatcher::TARGET_CONSOLE);
         return parent::beforeAction($action);
     }
 

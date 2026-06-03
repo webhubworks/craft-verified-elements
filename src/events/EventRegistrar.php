@@ -29,6 +29,7 @@ use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
+use craft\log\Dispatcher;
 use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\Gc;
@@ -108,7 +109,7 @@ readonly class EventRegistrar
             Gc::EVENT_RUN,
             static function () {
 
-                $service = new ExpiredVerificationNotifier();
+                $service = new ExpiredVerificationNotifier(Dispatcher::TARGET_WEB);
 
                 foreach ($service->getExpiredEntriesByReviewer() as $reviewerId => $expiredEntries) {
 

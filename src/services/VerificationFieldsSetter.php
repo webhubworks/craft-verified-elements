@@ -2,8 +2,8 @@
 
 namespace webhubworks\verifiedentries\services;
 
+use Carbon\Carbon;
 use craft\elements\Entry;
-use craft\helpers\DateTimeHelper;
 use DateTime;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
@@ -114,8 +114,11 @@ class VerificationFieldsSetter
         }
 
         $dateInterval = DateHelper::createDateInterval($this->defaultPeriod);
+        if ($dateInterval === null) {
+            return null;
+        }
 
-        return DateTimeHelper::now()->add($dateInterval);
+        return Carbon::now()->add($dateInterval);
     }
 
     /**

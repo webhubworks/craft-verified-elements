@@ -26,12 +26,17 @@ class DateHelper
     {
         try {
             $result = DateTimeHelper::toDateTime($value);
-            return $result ?: null;
         }
         catch (Exception $exception) {
             Log::error('Failed to parse datetime value', $exception);
             return null;
         }
+
+        if ($result === false && $value !== null) {
+            Log::warning(sprintf('Could not parse datetime value: %s', $value));
+        }
+
+        return $result ?: null;
     }
 
     /**
@@ -89,8 +94,7 @@ class DateHelper
         $dateOnly = Carbon::createFromFormat(
             'Y-m-d',
             $date->format('Y-m-d'),
-            $systemTimeZone)
-        ;
+            $systemTimeZone);
         $diff = $now->diff($dateOnly);
 
         if ($diff->days === 0) {

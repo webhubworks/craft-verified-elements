@@ -7,6 +7,7 @@ use webhubworks\verifiedentries\base\NotifiableInterface;
 use webhubworks\verifiedentries\console\controllers\CheckExpiredVerificationsController;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\events\EventRegistrar;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\mail\ExpiredNotification;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
 
@@ -19,6 +20,10 @@ use webhubworks\verifiedentries\models\ExpiredEntryData;
  */
 class ExpiredVerificationNotifier
 {
+    public function __construct(
+        private readonly string $target
+    ) {}
+
     /**
      * @var array<int, ExpiredEntryData[]>|null
      */
@@ -98,7 +103,16 @@ class ExpiredVerificationNotifier
      */
     public function notifyRecipient(NotifiableInterface $recipient, array $expiredEntries): bool
     {
-        return (new ExpiredNotification($expiredEntries, $recipient))->send();
+        $isSent = (new ExpiredNotification($expiredEntries, $recipient))->send();
+
+        if (! $isSent) {
+            Log::warning(
+                sprintf('Failed to send expired verification digest to %s.', $recipient->getEmail()),
+                $this->target
+            );
+        }
+
+        return $isSent;
     }
 
     /**

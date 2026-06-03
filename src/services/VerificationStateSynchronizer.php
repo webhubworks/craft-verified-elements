@@ -2,11 +2,10 @@
 
 namespace webhubworks\verifiedentries\services;
 
+use Carbon\Carbon;
 use craft\db\Query;
 use craft\elements\Entry;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use DateInterval;
 use DateTime;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
@@ -268,8 +267,11 @@ readonly class VerificationStateSynchronizer
         }
 
         $dateInterval = DateHelper::createDateInterval($period);
+        if ($dateInterval === null) {
+            return null;
+        }
 
-        return DateTimeHelper::now()->add($dateInterval);
+        return Carbon::now()->add($dateInterval);
     }
 
     /**
