@@ -2,7 +2,6 @@
 
 namespace webhubworks\verifiedentries\services;
 
-use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
@@ -13,6 +12,7 @@ use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\events\EventRegistrar;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\mail\ChangeNotification;
 use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\services\singletons\SectionSettings;
@@ -77,13 +77,12 @@ readonly class VerificationStateSynchronizer
             );
         }
         catch (Exception $exception) {
-            Craft::error(sprintf(
-                'Error seeding verification row for entry %s "%s" on site %s: %s',
+            Log::error(sprintf(
+                'Error seeding verification row for entry %s "%s" on site %s',
                 $this->entry->getCanonicalId(),
                 $this->entry->title,
-                $this->entry->siteId,
-                $exception->getMessage()
-            ), __METHOD__);
+                $this->entry->siteId
+            ), $exception);
 
             return false;
         }
@@ -110,13 +109,12 @@ readonly class VerificationStateSynchronizer
             ]);
         }
         catch (Exception $exception) {
-            Craft::error(sprintf(
-                'Error upserting "Verified Entries" details for entry %s "%s" on site %s: %s',
+            Log::error(sprintf(
+                'Error upserting "Verified Entries" details for entry %s "%s" on site %s',
                 $this->entry->getCanonicalId(),
                 $this->entry->title,
-                $this->entry->siteId,
-                $exception->getMessage()
-            ), __METHOD__);
+                $this->entry->siteId
+            ), $exception);
 
             return false;
         }
@@ -167,7 +165,7 @@ readonly class VerificationStateSynchronizer
 
         $reviewer = $this->entry->getReviewer();
         if (! $reviewer || ! $reviewer->active) {
-            Craft::info(sprintf(
+            Log::warning(sprintf(
                 'Entry %s "%s" on site %s "%s" has no Reviewer to notify.',
                 $this->entry->getCanonicalId(),
                 $this->entry->title,
@@ -188,7 +186,7 @@ readonly class VerificationStateSynchronizer
         ))->send();
 
         if (! $isSent) {
-            Craft::warning(
+            Log::warning(
                 "Failed to send 'change' notification to $reviewer->email.",
                 __METHOD__
             );
@@ -241,13 +239,12 @@ readonly class VerificationStateSynchronizer
             ]);
         }
         catch (Exception $exception) {
-            Craft::error(sprintf(
-                'Error seeding verification row for entry %s "%s" on site %s: %s',
+            Log::error(sprintf(
+                'Error seeding verification row for entry %s "%s" on site %s',
                 $this->entry->getCanonicalId(),
                 $this->entry->title,
-                $siteId,
-                $exception->getMessage()
-            ), __METHOD__);
+                $siteId
+            ), $exception);
 
             return false;
         }

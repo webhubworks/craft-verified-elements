@@ -10,7 +10,6 @@ use craft\base\conditions\BaseCondition;
 use craft\controllers\UsersController;
 use craft\db\Query;
 use craft\elements\Entry;
-use craft\elements\User;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\db\EntryQuery;
 use craft\events\DefineAttributeHtmlEvent;
@@ -38,6 +37,7 @@ use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use DateTime;
 use Twig\TwigFilter;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\models\SystemRecipient;
 use webhubworks\verifiedentries\models\UserRecipient;
 use webhubworks\verifiedentries\services\EntrySidebarRenderer;
@@ -113,7 +113,7 @@ readonly class EventRegistrar
 
                     // 1. Find the Reviewer
                     if (! $reviewer = $service->getReviewer($reviewerId)) {
-                        Craft::warning(
+                        Log::warning(
                             "Reviewer $reviewerId not found or inactive — skipping expired notification.",
                             __METHOD__
                         );
@@ -128,7 +128,7 @@ readonly class EventRegistrar
                     );
 
                     if (! $isSent) {
-                        Craft::warning(
+                        Log::warning(
                             "Failed to send expired notification to User $reviewer->id.",
                             __METHOD__
                         );
@@ -147,7 +147,7 @@ readonly class EventRegistrar
                 );
 
                 if (! $isSent) {
-                    Craft::warning(
+                    Log::warning(
                         "Failed to send expired notification to " . $recipient->getEmail() . '.',
                         __METHOD__
                     );

@@ -12,6 +12,7 @@ use craft\elements\Entry;
 use Throwable;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -46,7 +47,7 @@ class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implemen
             return $this->matchValue($element->getVerifiedUntilDate());
         }
         catch (Throwable $exception) {
-            Craft::error($exception->getMessage(), __METHOD__);
+            Log::error($exception->getMessage(), $exception);
         }
 
         return false;

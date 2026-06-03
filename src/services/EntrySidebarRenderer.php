@@ -7,6 +7,7 @@ use craft\elements\Entry;
 use craft\helpers\Html;
 use Throwable;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\services\singletons\SectionSettings;
 use webhubworks\verifiedentries\VerifiedEntries;
 
@@ -90,10 +91,7 @@ readonly class EntrySidebarRenderer
             );
         }
         catch (Throwable $exception) {
-            Craft::error(sprintf(
-                "Error rendering sidebar HTML for entries: %s",
-                $exception->getMessage()
-            ), __METHOD__);
+            Log::error('Error rendering sidebar HTML for entries', $exception);
             return '';
         }
     }

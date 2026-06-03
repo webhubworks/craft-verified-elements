@@ -9,6 +9,7 @@ use craft\helpers\Cp;
 use craft\helpers\Html;
 use Throwable;
 use webhubworks\verifiedentries\enums\VerificationStatus;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -105,10 +106,7 @@ class EntriesToReview extends Widget
             );
         }
         catch (Throwable $exception) {
-            Craft::error(
-                'Error loading "Entries to Review" widget: ' . $exception->getMessage(),
-                __METHOD__
-            );
+            Log::error('Error loading "Entries to Review" widget', $exception);
         }
 
         return null;

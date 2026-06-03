@@ -13,6 +13,7 @@ use Throwable;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\services\singletons\SectionSettings;
 use webhubworks\verifiedentries\VerifiedEntries;
 
@@ -55,10 +56,7 @@ readonly class VerificationFieldsRenderer
             return Cp::elementSelectHtml($config);
         }
         catch (Throwable $exception) {
-            Craft::error(sprintf(
-                'Error rendering "Reviewer" field: %s',
-                $exception->getMessage()
-            ), __METHOD__);
+            Log::error('Error rendering "Reviewer" field', $exception);
             return '';
         }
     }
@@ -93,10 +91,7 @@ readonly class VerificationFieldsRenderer
             return Cp::selectizeFieldHtml($config);
         }
         catch (Throwable $exception) {
-            Craft::error(sprintf(
-                'Error rendering "Verified until" date field: %s',
-                $exception->getMessage()
-            ), __METHOD__);
+            Log::error('Error rendering "Verified until" date field', $exception);
             return '';
         }
     }

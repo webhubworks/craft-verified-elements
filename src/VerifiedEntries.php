@@ -7,6 +7,7 @@ use craft\base\Plugin;
 use craft\helpers\UrlHelper;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\events\EventRegistrar;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\services\singletons\SectionSettings;
 use webhubworks\verifiedentries\services\singletons\Reviewers;
 use webhubworks\verifiedentries\services\singletons\Verification;
@@ -50,15 +51,18 @@ class VerifiedEntries extends Plugin
 
         $this->name = Craft::t(self::HANDLE, 'Verified Entries');
 
+        // Allow this plugin to log its errors in a dedicated log file called "verified-entries".
+        Log::registerLogger();
+
         $request = Craft::$app->getRequest();
         $isCpRequest = $request->getIsCpRequest();
         $isConsoleRequest = $request->getIsConsoleRequest();
 
-        // these event handlers must be registered before onInit()
+        // These event handlers must be registered before onInit()
         EventRegistrar::registerEarlyEvents($this, $isCpRequest, $isConsoleRequest);
 
         Craft::$app->onInit(function() use ($isCpRequest, $isConsoleRequest) {
-            // register the many event handlers
+            // Register the many event handlers.
             (new EventRegistrar(
                 $this,
                 $isCpRequest,

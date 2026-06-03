@@ -8,6 +8,7 @@ use craft\elements\Entry;
 use craft\helpers\Cp;
 use Throwable;
 use webhubworks\verifiedentries\enums\VerificationStatus;
+use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -122,10 +123,7 @@ class VerificationHealth extends Widget
             );
         }
         catch (Throwable $exception) {
-            Craft::error(
-                'Error loading "Verification Health" widget: ' . $exception->getMessage(),
-                __METHOD__
-            );
+            Log::error('Error loading "Verification Health" widget', $exception);
         }
 
         return null;
@@ -157,10 +155,7 @@ class VerificationHealth extends Widget
             );
         }
         catch (Throwable $exception) {
-            Craft::error(
-                'Error loading "Verification Health" widget settings: ' . $exception->getMessage(),
-                __METHOD__
-            );
+            Log::error('Error loading "Verification Health" widget settings', $exception);
         }
 
         return null;
