@@ -6,7 +6,6 @@ use Craft;
 use craft\helpers\AdminTable;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
-use DateInterval;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -78,7 +77,7 @@ class EntriesController extends Controller
             $date = null;
         }
         else {
-            $interval = new DateInterval($verificationPeriod);
+            $interval = DateHelper::createDateInterval($verificationPeriod);
             $date = DateTimeHelper::now()->add($interval);
         }
 

@@ -4,11 +4,11 @@ namespace webhubworks\verifiedentries\services;
 
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
-use DateInterval;
 use DateTime;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\events\EventRegistrar;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\services\singletons\SectionSettings;
 
 /**
@@ -113,8 +113,7 @@ class VerificationFieldsSetter
             return null;
         }
 
-        // TODO handle date exception
-        $dateInterval = new DateInterval($this->defaultPeriod);
+        $dateInterval = DateHelper::createDateInterval($this->defaultPeriod);
 
         return DateTimeHelper::now()->add($dateInterval);
     }

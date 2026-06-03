@@ -267,8 +267,7 @@ readonly class VerificationStateSynchronizer
             return null;
         }
 
-        // TODO handle date exception
-        $dateInterval = new DateInterval($period);
+        $dateInterval = DateHelper::createDateInterval($period);
 
         return DateTimeHelper::now()->add($dateInterval);
     }

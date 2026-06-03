@@ -3,6 +3,7 @@
 namespace webhubworks\verifiedentries\enums;
 
 use DateInterval;
+use webhubworks\verifiedentries\helpers\DateHelper;
 
 /**
  * Enum representing the options an admin can choose in the CP for when an entry needs verification (e.g. the
@@ -25,7 +26,6 @@ enum VerificationPeriod: string
 
     public function toDateInterval(): DateInterval
     {
-        // TODO handle date exception
-        return new DateInterval($this->value);
+        return DateHelper::createDateInterval($this->value);
     }
 }
