@@ -2,6 +2,7 @@
 
 namespace webhubworks\verifiedentries\elements\conditions;
 
+use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
@@ -13,7 +14,13 @@ use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 
 /**
- * Condition rule that filters entries by their assigned Reviewer.
+ * Condition rule for filtering entries by their Reviewer.
+ *
+ * To find this in the CP:
+ * 1. Go to an entries listing page.
+ * 2. Click the filter icon in the search bar.
+ * 3. Select "Add a filter" and choose "Reviewer".
+ * 4. A new dropdown field appears. Those options come from this class.
  */
 class ReviewerConditionRule extends BaseElementSelectConditionRule implements ElementConditionRuleInterface
 {
@@ -26,7 +33,7 @@ class ReviewerConditionRule extends BaseElementSelectConditionRule implements El
     /** @inheritDoc */
     public function getLabel(): string
     {
-        return 'Reviewer';
+        return Craft::t(VerifiedEntries::HANDLE, 'Reviewer');
     }
 
     /** @inheritDoc */

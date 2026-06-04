@@ -15,8 +15,14 @@ use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
- * Condition rule that filters entries by verification status or field state
- * (Verified, Expired, Unassigned, or Indefinite).
+ * Condition rule for filtering entries by their Verification Status.
+ *
+ * To find this in the CP:
+ * 1. Go to an entries listing page.
+ * 2. Click the filter icon in the search bar.
+ * 3. Select "Add a filter" and choose "Verification Status".
+ * 4. A new dropdown field appears. Those options come from this class.
+ *
  * @see VerificationStatus
  */
 class VerifiedConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface

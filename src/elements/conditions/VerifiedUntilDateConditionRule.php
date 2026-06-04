@@ -16,7 +16,13 @@ use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
- * Condition rule that filters entries by their "Verified until" date.
+ * Condition rule for filtering entries by their "Verified until" date.
+ *
+ * To find this in the CP:
+ * 1. Go to an entries listing page.
+ * 2. Click the filter icon in the search bar.
+ * 3. Select "Add a filter" and choose "Verified until".
+ * 4. A new dropdown field appears. Those options come from this class.
  */
 class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implements ElementConditionRuleInterface
 {
