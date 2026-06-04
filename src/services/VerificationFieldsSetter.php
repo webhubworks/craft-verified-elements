@@ -83,7 +83,10 @@ class VerificationFieldsSetter
             return null;
         }
 
-        if ($this->currentVerifiedUntilDate === null) {
+        if (
+            $this->currentVerifiedUntilDate === null &&
+            $this->resolveVerificationDate() === null
+        ) {
             return null;
         }
 
