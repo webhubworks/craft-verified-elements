@@ -5,6 +5,7 @@ namespace webhubworks\verifiedentries\services;
 use Carbon\Carbon;
 use craft\db\Query;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\helpers\Db;
 use DateTime;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
@@ -24,7 +25,7 @@ use yii\db\Exception;
  *
  * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
  */
-readonly class VerificationStateSynchronizer
+class VerificationStateSynchronizer
 {
     /**
      * @var Entry|VerifiableBehavior $entry
@@ -32,9 +33,9 @@ readonly class VerificationStateSynchronizer
      */
 
     public function __construct(
-        private Entry          $entry,
-        private PluginSettings $settings,
-        private ?int           $currentUserId,
+        private readonly Entry          $entry,
+        private readonly PluginSettings $settings,
+        private readonly ?int           $currentUserId,
     ) {}
 
     /**
@@ -180,10 +181,7 @@ readonly class VerificationStateSynchronizer
         }
 
         // Email the Reviewer if someone else edits their assigned entry
-        $isSent = (new ChangeNotification(
-            $this->entry,
-            new UserRecipient($reviewer)
-        ))->send();
+        $isSent = $this->buildChangeNotification($reviewer)->send();
 
         if (! $isSent) {
             Log::warning(
@@ -308,5 +306,16 @@ readonly class VerificationStateSynchronizer
             'reviewerId' => $sourceRow['reviewerId'],
             'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
         ]);
+    }
+
+    /**
+     * Factory method for testing.
+     *
+     * @param User $reviewer
+     * @return ChangeNotification
+     */
+    protected function buildChangeNotification(User $reviewer): ChangeNotification
+    {
+        return new ChangeNotification($this->entry, new UserRecipient($reviewer));
     }
 }

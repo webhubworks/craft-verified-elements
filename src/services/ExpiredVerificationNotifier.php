@@ -103,7 +103,7 @@ class ExpiredVerificationNotifier
      */
     public function notifyRecipient(NotifiableInterface $recipient, array $expiredEntries): bool
     {
-        $isSent = (new ExpiredNotification($expiredEntries, $recipient))->send();
+        $isSent = $this->buildExpiredNotification($expiredEntries, $recipient)->send();
 
         if (! $isSent) {
             Log::warning(
@@ -145,7 +145,7 @@ class ExpiredVerificationNotifier
      *
      * @return void
      */
-    private function setExpiredEntries(): void
+    protected function setExpiredEntries(): void
     {
         $this->expiredEntriesByReviewerId = [];
         $this->expiredUnassignedEntries = [];
@@ -160,5 +160,17 @@ class ExpiredVerificationNotifier
 
             $this->expiredEntriesByReviewerId[$entry->reviewerId][] = $entry;
         }
+    }
+
+    /**
+     * Factory method for testing.
+     *
+     * @param array $expiredEntries
+     * @param NotifiableInterface $recipient
+     * @return ExpiredNotification
+     */
+    protected function buildExpiredNotification(array $expiredEntries, NotifiableInterface $recipient): ExpiredNotification
+    {
+        return new ExpiredNotification($expiredEntries, $recipient);
     }
 }
