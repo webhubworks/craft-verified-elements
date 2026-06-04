@@ -94,7 +94,8 @@ class DateHelper
         $dateOnly = Carbon::createFromFormat(
             'Y-m-d',
             $date->format('Y-m-d'),
-            $systemTimeZone);
+            $systemTimeZone
+        );
         $diff = $now->diff($dateOnly);
 
         if ($diff->days === 0) {
@@ -102,9 +103,9 @@ class DateHelper
         }
 
         if ($diff->days < 31) {
-            return $diff->invert
-                ? Craft::t(VerifiedEntries::HANDLE, '{n} days ago', ['n' => $diff->days])
-                : Craft::t(VerifiedEntries::HANDLE, '{n} days remaining', ['n' => $diff->days]);
+            $message = $diff->invert ? '{n} days ago' : '{n} days remaining';
+
+            return Craft::t(VerifiedEntries::HANDLE, $message, ['n' => $diff->days]);
         }
 
         return Craft::$app->getFormatter()->asDate($date, 'short');
