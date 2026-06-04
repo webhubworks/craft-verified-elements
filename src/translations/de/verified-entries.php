@@ -21,6 +21,7 @@ return [
     'No date provided.' => 'Kein Datum angegeben.',
     'Not a valid date.' => 'Kein gültiges Datum.',
     'Specific Date' => 'Bestimmtes Datum',
+    'Total' => 'Gesamt',
     'The following entries have verification dates that have expired:' => 'bei den folgeden Einträgen ist das Verifizierungsdatum abgelaufen:',
     'Unassigned' => 'Unbestimmt',
     'Verification Status' => 'Verifizierungsstatus',
