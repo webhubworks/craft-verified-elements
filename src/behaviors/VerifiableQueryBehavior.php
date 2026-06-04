@@ -129,7 +129,11 @@ class VerifiableQueryBehavior extends Behavior
     }
 
     /**
-     * Query param for filtering entries that have or haven't been assigned to a reviewer
+     * Query param for filtering entries that have or haven't been assigned to a Reviewer.
+     *
+     * Note: an "Unassigned" entry is one with a "Verified until" date that will eventually expire,
+     * but nobody is responsible for checking it. Entries without Reviewers AND "Verified until"
+     * dates (a.k.a. the date is set to "Indefinitely") are neither assigned nor unassigned.
      *
      * @param bool $value
      * @return EntryQuery
@@ -143,6 +147,7 @@ class VerifiableQueryBehavior extends Behavior
         }
         else {
             $query->andWhere('veea.reviewerId IS NULL');
+            $query->andWhere('veea.verifiedUntilDate IS NOT NULL');
         }
 
         return $query;
