@@ -3,15 +3,14 @@
 namespace webhubworks\verifiedentries\elements\conditions;
 
 use Craft;
-use craft\base\conditions\BaseSelectConditionRule;
+use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\enums\VerificationStatus;
+use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -25,7 +24,7 @@ use webhubworks\verifiedentries\VerifiedEntries;
  *
  * @see VerificationStatus
  */
-class VerifiedConditionRule extends BaseSelectConditionRule implements ElementConditionRuleInterface
+class VerifiedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /** @inheritDoc */
     public function getLabel(): string
@@ -36,41 +35,20 @@ class VerifiedConditionRule extends BaseSelectConditionRule implements ElementCo
     /** @inheritDoc */
     public function getExclusiveQueryParams(): array
     {
-        return ['isVerified', 'isAssigned', 'verifiedUntilDate'];
-    }
-
-    /** @inheritDoc */
-    protected function options(): array
-    {
-        return [
-            ['value' => VerificationStatus::Verified->handle(), 'label' => VerificationStatus::Verified->label()],
-            ['value' => VerificationStatus::Expired->handle(), 'label' => VerificationStatus::Expired->label()],
-            ['value' => VerificationStatus::Unassigned->handle(), 'label' => VerificationStatus::Unassigned->label()],
-            ['value' => VerificationStatus::Indefinite->handle(), 'label' => VerificationStatus::Indefinite->label()],
-        ];
+        return ['isVerified'];
     }
 
     /** @inheritDoc */
     public function modifyQuery(ElementQueryInterface $query): void
     {
         /** @var EntryQuery|VerifiableQueryBehavior $query */
-        /** @noinspection PhpUndefinedMethodInspection */
-        match ($this->value) {
-            VerificationStatus::Verified->handle() => $query->andWhere(['and',
-                'veea.verifiedUntilDate IS NOT NULL',
-                'veea.verifiedUntilDate >= UTC_TIMESTAMP()',
-            ])->isAssigned(true),
-            VerificationStatus::Expired->handle() => $query->isVerified(false),
-            VerificationStatus::Unassigned->handle() => $query->isAssigned(false),
-            VerificationStatus::Indefinite->handle() => $query->andWhere('veea.verifiedUntilDate IS NULL'),
-            default => null,
-        };
+        $query->isVerified($this->value);
     }
 
     /** @inheritDoc */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry|VerifiableBehavior $element */
-        return $element->getVerificationStatus()->handle() === $this->value;
+        return $element->getIsVerified() === $this->value;
     }
 }
