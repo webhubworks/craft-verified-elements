@@ -9,11 +9,14 @@
 
 {% if sites|length > 1 %}
     {% set tabs = [] %}
+    {% set selectedTab = 0 %}
     {% for site in sites %}
+        {% if site.id == currentSite.id %}
+            {% set selectedTab = loop.index0 %}
+        {% endif %}
         {% set tabs = tabs|merge([{
             label: site.name,
             url: url(pluginHandle ~ '/settings', {site: site.handle}),
-            class: site.id == currentSite.id ? 'sel' : null
         }]) %}
     {% endfor %}
 {% endif %}
