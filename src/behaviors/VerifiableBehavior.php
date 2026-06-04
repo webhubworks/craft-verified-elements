@@ -195,10 +195,6 @@ class VerifiableBehavior extends Behavior
             return VerificationStatus::Expired;
         }
 
-        if ($this->_reviewerId === null) {
-            return VerificationStatus::Unassigned;
-        }
-
         return VerificationStatus::Verified;
     }
 
