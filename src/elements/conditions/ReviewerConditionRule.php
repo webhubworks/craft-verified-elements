@@ -12,6 +12,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
  * Condition rule for filtering entries by their Reviewer.
