@@ -75,14 +75,18 @@ class VerificationFieldsSetter
      */
     public function resolveReviewerId(): ?int
     {
+        // The section has no default reviewer to apply, so ignore.
         if (! $this->defaultReviewerId) {
             return null;
         }
 
+        // The entry already has a Reviewer assigned, so ignore.
         if ($this->currentReviewerId !== null) {
             return null;
         }
 
+        // The entry has no verification date right now AND no date is about to be applied in
+        // this same save, so ignore
         if (
             $this->currentVerifiedUntilDate === null &&
             $this->resolveVerificationDate() === null
@@ -90,6 +94,8 @@ class VerificationFieldsSetter
             return null;
         }
 
+        // There's a default reviewer, the entry doesn't have one yet, and a verification date
+        // exists (or is about to), so apply the section's default Reviewer.
         return $this->defaultReviewerId;
     }
 
@@ -104,23 +110,31 @@ class VerificationFieldsSetter
      */
     public function resolveVerificationDate(): ?DateTime
     {
+        // The entry already exists, so never apply the section's default period as the entry's
+        // verification date.
         if (! $this->isFirstSave) {
             return null;
         }
 
+        // The entry already has a verification date set on it, so ignore.
         if ($this->currentVerifiedUntilDate !== null) {
             return null;
         }
 
+        // The section's plugin settings has no default period configured, so ignore.
         if (! $this->defaultPeriod) {
             return null;
         }
 
+        // The period is a string (like "P30D"), but parsing the value into a DateInterval object
+        // failed (likely a corrupt or unrecognized value in the DB). Exit rather than throw.
         $dateInterval = DateHelper::createDateInterval($this->defaultPeriod);
         if ($dateInterval === null) {
             return null;
         }
 
+        // It's the first save, there's no existing date, the section has a valid default period,
+        // and it parsed cleanly. Return the default verification date.
         return Carbon::now()->add($dateInterval);
     }
 
