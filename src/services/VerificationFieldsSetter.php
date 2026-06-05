@@ -7,6 +7,7 @@ use craft\elements\Entry;
 use DateTime;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
+use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\services\singletons\PluginSettings;
@@ -49,17 +50,19 @@ class VerificationFieldsSetter
     {
         /** @var Entry|VerifiableBehavior $entry */
 
-        $recordAlreadyExists = PluginQuery::verifiableEntry(
-            $entry->getCanonicalId(),
-            $entry->siteId
-        )->exists();
+        $canonicalId = $entry->getCanonicalId();
+        $isFirstSave = true;
+
+        if ($canonicalId !== null) {
+            $isFirstSave = ! PluginQuery::verifiableEntry($canonicalId, $entry->siteId)->exists();
+        }
 
         return new self(
             sectionId: $entry->sectionId,
             siteId: $entry->siteId,
             currentReviewerId: $entry->getReviewerId(),
             currentVerifiedUntilDate: $entry->getVerifiedUntilDate(),
-            isFirstSave: ! $recordAlreadyExists,
+            isFirstSave: $isFirstSave,
             settings: $settings,
         );
     }
@@ -85,11 +88,13 @@ class VerificationFieldsSetter
             return null;
         }
 
-        // The entry has no verification date right now AND no date is about to be applied in
-        // this same save, so ignore
+        // The entry has no verification date right now, no date is about to be applied in
+        // this same save, and the default period is not "Indefinitely" — so there's no
+        // date context to assign a reviewer to.
         if (
             $this->currentVerifiedUntilDate === null &&
-            $this->resolveVerificationDate() === null
+            $this->resolveVerificationDate() === null &&
+            $this->defaultPeriod !== VerificationPeriod::Indefinitely->value
         ) {
             return null;
         }
@@ -123,6 +128,12 @@ class VerificationFieldsSetter
 
         // The section's plugin settings has no default period configured, so ignore.
         if (! $this->defaultPeriod) {
+            return null;
+        }
+
+        // The default period is "Indefinitely", so no date to compute, but this is a valid
+        // configured state. The caller should not treat this as "no date will be set."
+        if ($this->defaultPeriod === VerificationPeriod::Indefinitely->value) {
             return null;
         }
 

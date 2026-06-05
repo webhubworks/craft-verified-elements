@@ -242,8 +242,7 @@ readonly class EventRegistrar
                     // Skip for propagation, matrix entries, drafts, and revisions.
                     if (
                         $entry->propagating ||
-                        $entry->sectionId === null ||
-                        ElementHelper::isDraftOrRevision($entry)
+                        $entry->sectionId === null
                     ) {
                         return;
                     }
@@ -271,15 +270,18 @@ readonly class EventRegistrar
                 /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
 
-                if (ElementHelper::isDraftOrRevision($entry)) {
-                    return;
-                }
-
                 $service = new VerificationStateSynchronizer(
                     $entry,
                     $this->plugin->getPluginSettings(),
                     Craft::$app->getUser()->getId()
                 );
+
+                if (ElementHelper::isDraftOrRevision($entry)) {
+                    if ($event->isNew && $service->isSectionEnabled()) {
+                        $service->saveVerificationRecord();
+                    }
+                    return;
+                }
 
                 if (! $service->isSectionEnabled()) {
                     return;
@@ -386,7 +388,7 @@ readonly class EventRegistrar
                     $entry->sectionId,
                     $entry->siteId
                 );
-                if (!$isSectionEnabled) {
+                if (! $isSectionEnabled) {
                     return;
                 }
 
