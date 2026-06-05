@@ -75,7 +75,7 @@ class EntriesToReview extends Widget
 
         /** @noinspection PhpUndefinedMethodInspection */
         $entries = Entry::find()
-            ->status('live')
+            ->status(Entry::STATUS_LIVE)
             ->site('*')
             ->sectionId($enabledSectionIds)
             ->reviewerId($userId)
