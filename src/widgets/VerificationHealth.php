@@ -59,20 +59,20 @@ class VerificationHealth extends Widget
         $site = $this->siteId ?: '*';
 
         $totalEntryCount = Entry::find()
-            ->status('live')
+            ->status(Entry::STATUS_LIVE)
             ->siteId($site)
-            ->sectionId($enabledSectionIds)
+            ->section('*')
             ->count();
 
         $verifiedEntryCount = Entry::find()
-            ->status('live')
+            ->status(Entry::STATUS_LIVE)
             ->siteId($site)
             ->sectionId($enabledSectionIds)
             ->isVerified(true)
             ->count();
 
         $expiredEntryCount = Entry::find()
-            ->status('live')
+            ->status(Entry::STATUS_LIVE)
             ->siteId($site)
             ->sectionId($enabledSectionIds)
             ->isVerified(false)
