@@ -19,7 +19,7 @@ use webhubworks\verifiedentries\VerifiedEntries;
  * To find this in the CP:
  * 1. Go to an entries listing page.
  * 2. Click the filter icon in the search bar.
- * 3. Select "Add a filter" and choose "Verification Status".
+ * 3. Select "Add a filter" and choose "Verified".
  * 4. A new dropdown field appears. Those options come from this class.
  *
  * @see VerificationStatus
@@ -29,7 +29,7 @@ class VerifiedConditionRule extends BaseLightswitchConditionRule implements Elem
     /** @inheritDoc */
     public function getLabel(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, 'Verification Status');
+        return Craft::t(VerifiedEntries::HANDLE, 'Verified');
     }
 
     /** @inheritDoc */
