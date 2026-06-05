@@ -50,20 +50,29 @@
                                         }) }}
                                     </td>
                                     <td>
-                                        {{ forms.elementSelect({
-                                            name: 'reviewerId',
-                                            elementType: 'craft\\elements\\User',
-                                            elements: siteSetting.reviewerId ? [siteSetting.reviewer] : [],
-                                            criteria: {
-                                                status: 'active',
-                                                can: 'verified-entries:verifyEntries',
-                                            },
-                                            limit: 1,
-                                            hideSidebar: true,
-                                        }) }}
+                                        {% set reviewerSelectField %}
+                                            {{ forms.elementSelect({
+                                                name: 'reviewerId',
+                                                elementType: 'craft\\elements\\User',
+                                                elements: siteSetting.reviewerId ? [siteSetting.reviewer] : [],
+                                                criteria: {
+                                                    status: 'active',
+                                                    can: 'verified-entries:verifyEntries',
+                                                },
+                                                limit: 1,
+                                                hideSidebar: true,
+                                            }) }}
+                                        {% endset %}
+
                                         {% if siteSetting.enabled and not siteSetting.reviewerId %}
-                                            {# TODO needs translation #}
-                                            <p class="warning">{{ 'No default reviewer. Expired entries will go unnotified.'|t(pluginHandle) }}</p>
+                                            <div class="flex" style="align-items:center;flex-wrap:nowrap;">
+                                                {{ reviewerSelectField }}
+                                                <p class="warning" style="margin:0;max-width:400px;">
+                                                    {{ 'No default reviewer. Expired entries will go unnotified.'|t(pluginHandle) }}
+                                                </p>
+                                            </div>
+                                        {% else %}
+                                            {{ reviewerSelectField }}
                                         {% endif %}
                                     </td>
                                     <td>

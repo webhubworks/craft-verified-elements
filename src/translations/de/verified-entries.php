@@ -19,6 +19,7 @@ return [
     'Indefinitely' => 'Unbegrenzt',
     'Manage Verification Settings' => 'Verifizierungseinstellungen verwalten',
     'No date provided.' => 'Kein Datum angegeben.',
+    'No default reviewer. Expired entries will go unnotified.' => 'Kein Standard-Prüfer festgelegt. Für abgelaufene Einträge erfolgt keine Benachrichtigung.',
     'Not a valid date.' => 'Kein gültiges Datum.',
     'Specific Date' => 'Bestimmtes Datum',
     'Total' => 'Gesamt',
