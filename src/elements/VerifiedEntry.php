@@ -40,6 +40,14 @@ class VerifiedEntry extends Entry
         $enabledSectionIds = VerifiedEntries::getInstance()->getPluginSettings()->getEnabledSectionIds();
         $currentUser = Craft::$app->getUser();
 
+        /** @noinspection PhpUndefinedMethodInspection */
+        $unassignedCount = Entry::find()
+            ->sectionId($enabledSectionIds)
+            ->site(Craft::$app->getRequest()->getQueryParam('site'))
+            ->status('live')
+            ->isAssigned(false)
+            ->count();
+
         $sources = [
             [
                 'key' => VerificationStatus::Expired->handle(),
@@ -72,11 +80,12 @@ class VerifiedEntry extends Entry
             [
                 'key' => VerificationStatus::Unassigned->handle(),
                 'label' => VerificationStatus::Unassigned->label(),
+                'badgeCount' => $unassignedCount > 0 ? $unassignedCount : null,
                 'criteria' => [
                     'isAssigned' => false,
                     'sectionId' => $enabledSectionIds,
                     'status' => 'live',
-                ]
+                ],
             ],
             [
                 'heading' => Craft::t(VerifiedEntries::HANDLE, 'Reviewer'),
