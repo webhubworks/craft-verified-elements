@@ -178,15 +178,13 @@ class VerifiableBehavior extends Behavior
     /**
      * Returns the entry's current verification status.
      *
-     * Note: this returns an enum. You'll need to call "->handle()", "->label()", or "->color()"
-     * for the value you want.
-     *
      * @return VerificationStatus
      */
     public function getVerificationStatus(): VerificationStatus
     {
+        // An "Indefinitely" date is considered "verified".
         if ($this->_verifiedUntilDate === null) {
-            return VerificationStatus::Indefinite;
+            return VerificationStatus::Verified;
         }
 
         $now = Carbon::now(Craft::$app->getTimeZone());
