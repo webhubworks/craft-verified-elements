@@ -12,6 +12,7 @@ use craft\i18n\Formatter;
 use DateTime;
 use Throwable;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
+use webhubworks\verifiedentries\enums\DateStatus;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\helpers\Log;
@@ -159,7 +160,7 @@ readonly class VerificationFieldsRenderer
         }
 
         $options[] = [
-            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
+            'label' => DateStatus::Indefinite->label(),
             'value' => false,
         ];
 
@@ -193,8 +194,8 @@ readonly class VerificationFieldsRenderer
         }
 
         $options[] = [
-            'label' => Craft::t(VerifiedEntries::HANDLE, 'Indefinitely'),
-            'value' => VerificationPeriod::Indefinitely->value,
+            'label' => DateStatus::Indefinite->label(),
+            'value' => DateStatus::Indefinite->value,
         ];
 
         if ($withCustomDate) {

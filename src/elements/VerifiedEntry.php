@@ -7,6 +7,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use webhubworks\verifiedentries\enums\Permission;
+use webhubworks\verifiedentries\enums\ReviewerStatus;
 use webhubworks\verifiedentries\enums\VerificationStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
@@ -78,8 +79,8 @@ class VerifiedEntry extends Entry
                 ]
             ],
             [
-                'key' => VerificationStatus::Unassigned->handle(),
-                'label' => VerificationStatus::Unassigned->label(),
+                'key' => ReviewerStatus::Unassigned->handle(),
+                'label' => ReviewerStatus::Unassigned->label(),
                 'badgeCount' => $unassignedCount > 0 ? $unassignedCount : null,
                 'criteria' => [
                     'isAssigned' => false,

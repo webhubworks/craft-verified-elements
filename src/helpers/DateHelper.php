@@ -9,6 +9,7 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
+use webhubworks\verifiedentries\enums\DateStatus;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -86,7 +87,7 @@ class DateHelper
     public static function readableVerificationDate(?DateTime $date): string
     {
         if ($date === null) {
-            return Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
+            return DateStatus::Indefinite->label();
         }
 
         $systemTimeZone = self::createDateTimeZone();

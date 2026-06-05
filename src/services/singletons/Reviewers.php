@@ -13,6 +13,7 @@ use craft\models\Section;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
+use webhubworks\verifiedentries\enums\DateStatus;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -41,7 +42,7 @@ class Reviewers extends Component
         return array_map(static function ($section) use ($filters) {
 
             if ($section['defaultPeriod'] === VerificationPeriod::Indefinitely->value) {
-                $defaultPeriod = Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
+                $defaultPeriod = DateStatus::Indefinite->label();
             }
             else {
                 $defaultPeriod = DateTimeHelper::humanDuration($section['defaultPeriod']);
