@@ -78,7 +78,10 @@ abstract class PluginQuery
                 'sites.name AS siteName',
             ])
             ->from(['veea' => PluginTable::ENTRIES])
-            ->rightJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
+            ->rightJoin(
+                '{{%elements}}',
+                '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true AND [[elements.draftId]] IS NULL'
+            )
             ->leftJoin(
                 '{{%elements_sites}} es',
                 '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = [[veea.siteId]]'

@@ -9,10 +9,13 @@ use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
+use craft\models\Section;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
+use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
 /**
@@ -36,17 +39,26 @@ class Reviewers extends Component
         $filters = $this->getFilterParams();
 
         return array_map(static function ($section) use ($filters) {
-            return [
-                ...$section,
-                'defaultPeriod' => DateTimeHelper::humanDuration($section['defaultPeriod']),
-                'url' => $section['type'] == 'single'
-                    ? UrlHelper::cpUrl('entries/singles')
-                    : UrlHelper::cpUrl(
-                        'entries/' . $section['handle'],
-                        ['filters' => $filters]
-                    ),
 
-            ];
+            if ($section['defaultPeriod'] === VerificationPeriod::Indefinitely->value) {
+                $defaultPeriod = Craft::t(VerifiedEntries::HANDLE, 'Indefinitely');
+            }
+            else {
+                $defaultPeriod = DateTimeHelper::humanDuration($section['defaultPeriod']);
+            }
+
+            if ($section['type'] == Section::TYPE_SINGLE) {
+                $url = UrlHelper::cpUrl('entries/singles');
+            }
+            else {
+                $url = UrlHelper::cpUrl(
+                    'entries/' . $section['handle'],
+                    ['filters' => $filters]
+                );
+            }
+
+            return [...$section, 'defaultPeriod' => $defaultPeriod, 'url' => $url];
+
         }, $sections);
     }
 
