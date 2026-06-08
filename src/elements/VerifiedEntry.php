@@ -60,7 +60,7 @@ class VerifiedEntry extends Entry
                 ]
             ],
             [
-                'key' => 'imminent',
+                'key' => 'upcoming',
                 'label' => Craft::t(VerifiedEntries::HANDLE, 'Imminent'),
                 'criteria' => [
                     'isVerified' => true,
