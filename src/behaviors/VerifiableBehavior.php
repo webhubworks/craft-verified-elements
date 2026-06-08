@@ -123,12 +123,12 @@ class VerifiableBehavior extends Behavior
             return;
         }
 
-        if (! $value) {
+        if (!DateHelper::isDateString($value)) {
             $this->_verifiedUntilDate = null;
             return;
         }
 
-        if (is_string($value) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+        if (DateHelper::isDateOnlyString($value)) {
             try {
                 $this->_verifiedUntilDate = Carbon::createFromFormat(
                     'Y-m-d H:i:s', $value . ' 00:00:00',
@@ -137,7 +137,7 @@ class VerifiableBehavior extends Behavior
             }
             catch (Exception $exception) {
                 Log::error(
-                    'Failed to parse date-only string in setVerifiedUntilDate',
+                    'Failed to parse date-only string',
                     $exception
                 );
                 $this->_verifiedUntilDate = null;

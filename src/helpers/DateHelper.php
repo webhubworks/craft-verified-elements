@@ -111,4 +111,35 @@ class DateHelper
 
         return Craft::$app->getFormatter()->asDate($date, 'short');
     }
+
+    /**
+     * Detect if a value is a date string like "2026-05-24" or datetime string like
+     * "2026-05-24 12:00:00", for example.
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    public static function isDateString(mixed $value): bool
+    {
+        if (! is_string($value)) {
+            return false;
+        }
+
+        return (bool) preg_match('/^\d{4}-\d{2}-\d{2}/', $value);
+    }
+
+    /**
+     * Detect if a value is a date string like "2026-05-24" (without time added), for example.
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    public static function isDateOnlyString(mixed $value): bool
+    {
+        if (! is_string($value)) {
+            return false;
+        }
+
+        return (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', $value);
+    }
 }
