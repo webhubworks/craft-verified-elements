@@ -375,11 +375,14 @@ readonly class EventRegistrar
             Entry::class,
             Element::EVENT_DEFINE_SIDEBAR_HTML,
             function (DefineHtmlEvent $event) {
-                /** @var Entry|VerifiableBehavior $entry */
-                $entry = $event->sender;
-
                 $currentUser = Craft::$app->getUser();
                 if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+                    return;
+                }
+
+                /** @var Entry|VerifiableBehavior $entry */
+                $entry = $event->sender;
+                if ($entry->sectionId === null) {
                     return;
                 }
 

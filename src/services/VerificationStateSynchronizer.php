@@ -46,6 +46,11 @@ class VerificationStateSynchronizer
      */
     public function isSectionEnabled(): bool
     {
+        // Ignore matrix entries, which have no sections.
+        if ($this->entry->sectionId === null) {
+            return false;
+        }
+
         return $this->settings->isSectionEnabledForSite(
             $this->entry->sectionId,
             $this->entry->siteId,
