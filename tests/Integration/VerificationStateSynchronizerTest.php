@@ -42,6 +42,9 @@ it('upserts rather than inserts a second row when called twice for the same entr
     $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
 
     $synchronizer->saveVerificationRecord();
+
+    // Calling this again updates the existing row rather than inserting a new one.
+    // If the upsert wasn't working correctly, count() would return 2 instead of 1.
     $synchronizer->saveVerificationRecord();
 
     $count = PluginQuery::verifiableEntry($entry->getCanonicalId(), $entry->siteId)->count();
