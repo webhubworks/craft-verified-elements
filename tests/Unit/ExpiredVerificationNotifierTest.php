@@ -1,36 +1,20 @@
 <?php
 
+require_once __DIR__ . '/helpers.php';
+
 use webhubworks\verifiedentries\base\NotifiableInterface;
 use webhubworks\verifiedentries\mail\ExpiredNotification;
-use webhubworks\verifiedentries\models\ExpiredEntryData;
 use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
 
-// Test double that bypasses the DB-dependent setExpiredEntries()
-class TestableExpiredVerificationNotifier extends ExpiredVerificationNotifier
-{
-    protected function setExpiredEntries(): void {}
-
-    public function seed(array $byReviewer, array $unassigned): void
-    {
-        $reflection = new ReflectionClass(ExpiredVerificationNotifier::class);
-        $reflection->getProperty('expiredEntriesByReviewerId')->setValue($this, $byReviewer);
-        $reflection->getProperty('expiredUnassignedEntries')->setValue($this, $unassigned);
-    }
-}
-
-function makeExpiredEntry(?int $reviewerId = 1): ExpiredEntryData
-{
-    return new ExpiredEntryData(
-        100,
-        1,
-        $reviewerId,
-        '2020-01-01 00:00:00',
-        1,
-        'Test Entry',
-        'testSection',
-        'default',
-    );
-}
+/**
+ * UNIT TESTS
+ * @see ExpiredVerificationNotifier Service
+ *
+ * Tests the orchestration logic that groups expired entries by reviewer and dispatches
+ * notifications. The expired entry data and mail transport are both mocked, isolating the
+ * grouping, recipient resolution, and notification dispatch decisions from any real database
+ * or mail state.
+ */
 
 
 // hasExpiredEntriesByReviewer()
@@ -46,7 +30,7 @@ it('returns false when there are no expired entries assigned to a reviewer', fun
 it('returns true when there are expired entries assigned to a reviewer', function () {
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed(
-        [42 => [makeExpiredEntry(42)]],
+        [42 => [mockExpiredEntry(42)]],
         [],
     );
 
@@ -68,7 +52,7 @@ it('returns true when there are unassigned expired entries', function () {
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed(
         [],
-        [makeExpiredEntry(null)],
+        [mockExpiredEntry(null)],
     );
 
     expect($notifier->hasUnassignedExpiredEntries())->toBeTrue();
@@ -86,7 +70,7 @@ it('returns false when the reviewer ID has no entries', function () {
 });
 
 it('returns true and moves entries to unassigned when reviewer is found', function () {
-    $entry = makeExpiredEntry(42);
+    $entry = mockExpiredEntry(42);
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed(
         [42 => [$entry]],

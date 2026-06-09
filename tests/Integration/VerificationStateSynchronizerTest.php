@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/helpers.php';
 
 use Carbon\Carbon;
 use craft\helpers\Db;
@@ -12,6 +12,17 @@ use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\models\SectionDefaults;
 use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
 use webhubworks\verifiedentries\services\singletons\PluginSettings;
+
+/**
+ * INTEGRATION TESTS
+ * @see VerificationStateSynchronizer Service
+ *
+ * Tests that the synchronizer's DB write methods produce the correct rows in
+ * verifiedentries_entryattributes against a real Craft database. Covers upsert correctness,
+ * multisite record seeding, and propagation — the scenarios where mocking the DB layer would
+ * hide real schema and query bugs.
+ */
+
 
 
 // saveVerificationRecord()

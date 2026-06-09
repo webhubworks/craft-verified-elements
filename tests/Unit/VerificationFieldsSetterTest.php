@@ -1,48 +1,27 @@
 <?php
 
+require_once __DIR__ . '/helpers.php';
+
 use Carbon\Carbon;
-use Mockery\MockInterface;
-use webhubworks\verifiedentries\models\SectionDefaults;
 use webhubworks\verifiedentries\services\VerificationFieldsSetter;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
 
-function mockSettings(?int $reviewerId, ?string $period): PluginSettings
-{
-    $defaults = $reviewerId !== null || $period !== null
-        ? new SectionDefaults(1, 'Test', 'test', 1, $reviewerId, $period)
-        : null;
+/**
+ * UNIT TESTS
+ * @see VerificationFieldsSetter Service
+ *
+ * Tests the logic that resolves default reviewer and verification date values before an entry is
+ * saved. All DB interaction is mocked, so these tests purely verify the decision-making rules:
+ * when defaults apply, when they're skipped, and how edge cases like missing periods or existing
+ * values are handled.
+ */
 
-    /** @var PluginSettings|MockInterface $settings */
-    $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getDefaultSettingsForSection')->andReturn($defaults);
-
-    return $settings;
-}
-
-function makeSetter(
-    ?int      $currentReviewerId,
-    ?DateTime $currentVerifiedUntilDate,
-    bool      $isFirstSave,
-    ?int      $defaultReviewerId,
-    ?string   $defaultPeriod,
-): VerificationFieldsSetter
-{
-    return new VerificationFieldsSetter(
-        1,
-        1,
-        $currentReviewerId,
-        $currentVerifiedUntilDate,
-        $isFirstSave,
-        mockSettings($defaultReviewerId, $defaultPeriod),
-    );
-}
 
 
 // resolveReviewerId() tests
 // =================================================================================================
 
 it('returns null when section has no default reviewer', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         new DateTime('+30 days'),
         true,
@@ -54,7 +33,7 @@ it('returns null when section has no default reviewer', function () {
 });
 
 it('returns null when entry already has a reviewer', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         5,
         new DateTime('+30 days'),
         true,
@@ -66,7 +45,7 @@ it('returns null when entry already has a reviewer', function () {
 });
 
 it('returns null when entry has no date and no date is about to be set', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         null,
         false,
@@ -78,7 +57,7 @@ it('returns null when entry has no date and no date is about to be set', functio
 });
 
 it('returns default reviewer when entry has an existing date', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         new DateTime('+30 days'),
         false,
@@ -90,7 +69,7 @@ it('returns default reviewer when entry has an existing date', function () {
 });
 
 it('returns default reviewer on first save when date is about to be set', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         null,
         true,
@@ -106,7 +85,7 @@ it('returns default reviewer on first save when date is about to be set', functi
 // =================================================================================================
 
 it('returns null when not the first save', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         null,
         false,
@@ -118,7 +97,7 @@ it('returns null when not the first save', function () {
 });
 
 it('returns null when entry already has a verification date', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         new DateTime('+30 days'),
         true,
@@ -130,7 +109,7 @@ it('returns null when entry already has a verification date', function () {
 });
 
 it('returns null when section has no default period', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         null,
         true,
@@ -142,7 +121,7 @@ it('returns null when section has no default period', function () {
 });
 
 it('returns null when the default period string is invalid', function () {
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         null,
         true,
@@ -156,7 +135,7 @@ it('returns null when the default period string is invalid', function () {
 it('returns a date offset from now by the default period', function () {
     Carbon::setTestNow('2026-01-01 00:00:00');
 
-    $setter = makeSetter(
+    $setter = mockVerificationFieldsSetter(
         null,
         null,
         true,

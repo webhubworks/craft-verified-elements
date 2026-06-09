@@ -1,12 +1,22 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/helpers.php';
 
 use craft\helpers\Db;
 use markhuot\craftpest\factories\Entry;
 use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\services\VerificationFieldsSetter;
 use webhubworks\verifiedentries\services\singletons\PluginSettings;
+
+/**
+ * INTEGRATION TESTS
+ * @see VerificationFieldsSetter Service
+ *
+ * Tests the fromEntry() factory method's live database lookup that determines whether an entry
+ * is being saved for the first time. Verifies correct isFirstSave detection with and without an
+ * existing verification record, and confirms graceful handling of entries with no canonical ID yet.
+ */
+
 
 
 // VerificationFieldsSetter::fromEntry()

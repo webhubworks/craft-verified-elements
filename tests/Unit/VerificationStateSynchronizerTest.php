@@ -1,27 +1,22 @@
 <?php
 
-use craft\elements\Entry;
+require_once __DIR__ . '/helpers.php';
+
 use craft\elements\User;
 use craft\models\Site;
 use Mockery\MockInterface;
 use webhubworks\verifiedentries\mail\ChangeNotification;
 use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
 
-function mockEntry(int $sectionId = 1, int $siteId = 1): Entry|MockInterface
-{
-    $entry = Mockery::mock(Entry::class);
-    $entry->sectionId = $sectionId;
-    $entry->siteId = $siteId;
-    return $entry;
-}
+/**
+ * UNIT TESTS
+ * @see VerificationStateSynchronizer Service
+ *
+ * Tests the conditional logic that governs post-save behaviour — whether a section is enabled
+ * for a site, whether a reviewer should be notified, and under what conditions notifications are
+ * suppressed. All DB writes and mail sending are mocked; only the branching logic is under test.
+ */
 
-function mockPluginSettings(bool $sectionEnabled): PluginSettings|MockInterface
-{
-    $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('isSectionEnabledForSite')->andReturn($sectionEnabled);
-    return $settings;
-}
 
 
 // isSectionEnabled()

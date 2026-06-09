@@ -1,12 +1,23 @@
 <?php
 
-require_once __DIR__ . '/../helpers.php';
+require_once __DIR__ . '/helpers.php';
 
 use craft\elements\Entry as EntryElement;
 use craft\helpers\Db;
 use markhuot\craftpest\factories\Entry;
 use markhuot\craftpest\factories\User;
+use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedentries\db\PluginTable;
+
+/**
+ * INTEGRATION TESTS
+ * @see VerifiableQueryBehavior Yii Behavior
+ *
+ * Tests that the query behavior's JOIN and filter methods work correctly against real database
+ * rows. Verifies that site-scoped queries return only the correct site's verification data,
+ * and that isVerified, isAssigned, and reviewerId filters include and exclude the right entries.
+ */
+
 
 
 // JOIN correctness
