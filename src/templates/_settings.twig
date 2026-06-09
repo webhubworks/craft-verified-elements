@@ -36,8 +36,6 @@
     {{ redirectInput(pluginHandle ~ '/settings?site=' ~ currentSite.handle) }}
     {{ hiddenInput('siteId', currentSite.id) }}
 
-    <p><a href="{{ url(pluginHandle ~ '/settings/grouped') }}">{{ 'Switch to section view'|t(pluginHandle) }}</a></p>
-
     <div class="ve-table-wrap">
         <table class="ve-table">
             <thead>
