@@ -256,3 +256,91 @@ it('returns true when all site records are seeded successfully', function () {
 
     expect($synchronizer->ensureOtherSiteRecords())->toBeTrue();
 });
+
+
+// ensurePropagatedRecord()
+// =================================================================================================
+
+it('creates no record when no source record exists for the entry', function () {
+    $siteB = createSite('Site B', 'siteB');
+    $section = Section::factory()->create();
+    $entryOnSiteA = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    // Simulate the entry being propagated to site B by setting its siteId to site B
+    $entryOnSiteB = withVerifiableBehavior(Entry::factory()->section($section)->create());
+    $entryOnSiteB->siteId = $siteB->id;
+
+    $settings = Mockery::mock(PluginSettings::class);
+    $synchronizer = new VerificationStateSynchronizer($entryOnSiteB, $settings, null);
+    $synchronizer->ensurePropagatedRecord();
+
+    $row = PluginQuery::verifiableEntry($entryOnSiteB->getCanonicalId(), $siteB->id)->one();
+
+    expect($row)->toBeNull();
+});
+
+it('copies the source record to the propagated site when none exists there yet', function () {
+    Carbon::setTestNow('2026-01-01 00:00:00');
+
+    $siteB = createSite('Site B', 'siteB');
+    $section = Section::factory()->create();
+    $reviewer = User::factory()->create();
+
+    // Create an entry and seed its site A record
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+    Db::insert(PluginTable::ENTRIES, [
+        'entryId' => $entry->getCanonicalId(),
+        'siteId' => $entry->siteId,
+        'reviewerId' => $reviewer->id,
+        'verifiedUntilDate' => '2026-04-01 00:00:00',
+    ]);
+
+    // Simulate the entry being propagated to site B
+    $entry->siteId = $siteB->id;
+
+    $settings = Mockery::mock(PluginSettings::class);
+    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer->ensurePropagatedRecord();
+
+    $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
+    $storedDate = DateHelper::toDateTime($row['verifiedUntilDate']);
+
+    expect($row)->not->toBeNull();
+    expect((int) $row['reviewerId'])->toBe($reviewer->id);
+    expect($storedDate->format('Y-m-d'))->toBe('2026-04-01');
+
+    Carbon::setTestNow();
+});
+
+it('does not overwrite an existing record on the propagated site', function () {
+    $siteB = createSite('Site B', 'siteB');
+    $section = Section::factory()->create();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    // Seed site A record
+    Db::insert(PluginTable::ENTRIES, [
+        'entryId' => $entry->getCanonicalId(),
+        'siteId' => $entry->siteId,
+        'reviewerId' => null,
+        'verifiedUntilDate' => '2026-04-01 00:00:00',
+    ]);
+
+    // Seed an independently-set site B record
+    Db::insert(PluginTable::ENTRIES, [
+        'entryId' => $entry->getCanonicalId(),
+        'siteId' => $siteB->id,
+        'reviewerId' => null,
+        'verifiedUntilDate' => '2030-01-01 00:00:00',
+    ]);
+
+    // Simulate propagation to site B
+    $entry->siteId = $siteB->id;
+
+    $settings = Mockery::mock(PluginSettings::class);
+    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer->ensurePropagatedRecord();
+
+    $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
+
+    expect($row['verifiedUntilDate'])->toBe('2030-01-01 00:00:00');
+});
