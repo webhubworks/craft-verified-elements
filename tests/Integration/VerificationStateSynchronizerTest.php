@@ -3,13 +3,18 @@
 use Carbon\Carbon;
 use craft\elements\Entry as EntryElement;
 use craft\elements\db\EntryQuery;
+use craft\errors\SiteNotFoundException;
+use craft\helpers\Db;
+use craft\models\Site;
 use markhuot\craftpest\factories\Entry;
 use markhuot\craftpest\factories\Section;
 use markhuot\craftpest\factories\User;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
+use webhubworks\verifiedentries\db\PluginTable;
 use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedentries\models\SectionDefaults;
 use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
 use webhubworks\verifiedentries\services\singletons\PluginSettings;
 
@@ -43,6 +48,38 @@ function withVerifiableQueryBehavior(EntryQuery $query): EntryQuery|VerifiableQu
     $query->attachBehavior(VerifiableQueryBehavior::NAME, VerifiableQueryBehavior::class);
 
     return $query;
+}
+
+/**
+ * Generates a `Site` model for testing.
+ *
+ * @param string $name
+ * @param string $handle
+ * @return Site
+ * @throws Throwable
+ * @throws SiteNotFoundException
+ */
+function createSite(string $name, string $handle): Site
+{
+    /** @noinspection NonSecureUniqidUsageInspection */
+    $suffix = uniqid();
+    $name .= ' ' . $suffix;
+    $handle .= '_' . $suffix;
+    $primarySite = Craft::$app->getSites()->getPrimarySite();
+    $site = new Site([
+        'groupId' => $primarySite->groupId,
+        'name' => $name,
+        'handle' => $handle,
+        'language' => 'en-US',
+        'baseUrl' => '@web/' . $handle,
+    ]);
+
+    $isSaved = Craft::$app->getSites()->saveSite($site);
+    if (! $isSaved) {
+        throw new RuntimeException('Failed to save site: ' . implode(', ', $site->getFirstErrors()));
+    }
+
+    return $site;
 }
 
 
@@ -130,4 +167,92 @@ it('stores the reviewer id when one is set on the entry', function () {
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $entry->siteId)->one();
 
     expect((int) $row['reviewerId'])->toBe($reviewer->id);
+});
+
+
+// ensureOtherSiteRecords()
+// =================================================================================================
+
+it('creates a record for each other supported site', function () {
+    $siteB = createSite('Site B', 'siteB');
+    $section = Section::factory()->create();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    $settings = Mockery::mock(PluginSettings::class);
+    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+
+    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer->ensureOtherSiteRecords();
+
+    $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
+
+    expect($row)->not->toBeNull();
+});
+
+it("seeds each site record using that site's own section defaults", function () {
+    Carbon::setTestNow('2026-01-01 00:00:00');
+
+    $siteB = createSite('Site B', 'siteB');
+    $section = Section::factory()->create();
+    $reviewer = User::factory()->create();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    $sectionDefaults = new SectionDefaults(
+        $section->id,
+        $section->name,
+        $section->handle,
+        $siteB->id,
+        $reviewer->id,
+        'P90D',
+    );
+
+    $settings = Mockery::mock(PluginSettings::class);
+    $settings->allows('getDefaultSettingsForSection')->andReturn($sectionDefaults);
+
+    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer->ensureOtherSiteRecords();
+
+    $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
+    $storedDate = DateHelper::toDateTime($row['verifiedUntilDate']);
+
+    expect((int) $row['reviewerId'])->toBe($reviewer->id);
+    expect($storedDate->format('Y-m-d'))->toBe('2026-04-01');
+
+    Carbon::setTestNow();
+});
+
+it('does not overwrite an existing record for another site', function () {
+    $siteB = createSite('Site B', 'siteB');
+    $section = Section::factory()->create();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    Db::insert(PluginTable::ENTRIES, [
+        'entryId' => $entry->getCanonicalId(),
+        'siteId' => $siteB->id,
+        'reviewerId' => null,
+        'verifiedUntilDate' => '2030-06-01 00:00:00',
+    ]);
+
+    $settings = Mockery::mock(PluginSettings::class);
+    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+
+    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer->ensureOtherSiteRecords();
+
+    $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
+
+    expect($row['verifiedUntilDate'])->toBe('2030-06-01 00:00:00');
+});
+
+it('returns true when all site records are seeded successfully', function () {
+    $siteB = createSite('Site B', 'siteB');
+    $section = Section::factory()->create();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    $settings = Mockery::mock(PluginSettings::class);
+    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+
+    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+
+    expect($synchronizer->ensureOtherSiteRecords())->toBeTrue();
 });
