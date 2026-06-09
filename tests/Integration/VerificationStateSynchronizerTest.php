@@ -5,7 +5,6 @@ require_once __DIR__ . '/../helpers.php';
 use Carbon\Carbon;
 use craft\helpers\Db;
 use markhuot\craftpest\factories\Entry;
-use markhuot\craftpest\factories\Section;
 use markhuot\craftpest\factories\User;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
@@ -19,7 +18,7 @@ use webhubworks\verifiedentries\services\singletons\PluginSettings;
 // =================================================================================================
 
 it('writes a verification record for the entry and site', function () {
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(30));
 
@@ -35,7 +34,7 @@ it('writes a verification record for the entry and site', function () {
 });
 
 it('upserts rather than inserts a second row when called twice for the same entry and site', function () {
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(30));
 
@@ -53,7 +52,7 @@ it('upserts rather than inserts a second row when called twice for the same entr
 it('overwrites the stored values when called a second time with updated fields', function () {
     Carbon::setTestNow('2026-01-01 00:00:00');
 
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(30));
 
@@ -74,7 +73,7 @@ it('overwrites the stored values when called a second time with updated fields',
 });
 
 it('stores a null reviewer id when none is set on the entry', function () {
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     $settings = Mockery::mock(PluginSettings::class);
@@ -87,7 +86,7 @@ it('stores a null reviewer id when none is set on the entry', function () {
 });
 
 it('stores the reviewer id when one is set on the entry', function () {
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $reviewer = User::factory()->create();
     $entry->setReviewerId($reviewer->id);
@@ -107,7 +106,7 @@ it('stores the reviewer id when one is set on the entry', function () {
 
 it('creates a record for each other supported site', function () {
     $siteB = createSite('Site B', 'siteB');
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     $settings = Mockery::mock(PluginSettings::class);
@@ -125,7 +124,7 @@ it("seeds each site record using that site's own section defaults", function () 
     Carbon::setTestNow('2026-01-01 00:00:00');
 
     $siteB = createSite('Site B', 'siteB');
-    $section = Section::factory()->create();
+    $section = createSection();
     $reviewer = User::factory()->create();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -155,7 +154,7 @@ it("seeds each site record using that site's own section defaults", function () 
 
 it('does not overwrite an existing record for another site', function () {
     $siteB = createSite('Site B', 'siteB');
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     Db::insert(PluginTable::ENTRIES, [
@@ -178,7 +177,7 @@ it('does not overwrite an existing record for another site', function () {
 
 it('returns true when all site records are seeded successfully', function () {
     $siteB = createSite('Site B', 'siteB');
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     $settings = Mockery::mock(PluginSettings::class);
@@ -195,7 +194,7 @@ it('returns true when all site records are seeded successfully', function () {
 
 it('creates no record when no source record exists for the entry', function () {
     $siteB = createSite('Site B', 'siteB');
-    $section = Section::factory()->create();
+    $section = createSection();
     $entryOnSiteA = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     // Simulate the entry being propagated to site B by setting its siteId to site B
@@ -215,7 +214,7 @@ it('copies the source record to the propagated site when none exists there yet',
     Carbon::setTestNow('2026-01-01 00:00:00');
 
     $siteB = createSite('Site B', 'siteB');
-    $section = Section::factory()->create();
+    $section = createSection();
     $reviewer = User::factory()->create();
 
     // Create an entry and seed its site A record
@@ -246,7 +245,7 @@ it('copies the source record to the propagated site when none exists there yet',
 
 it('does not overwrite an existing record on the propagated site', function () {
     $siteB = createSite('Site B', 'siteB');
-    $section = Section::factory()->create();
+    $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     // Seed site A record

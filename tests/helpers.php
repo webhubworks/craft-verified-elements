@@ -1,9 +1,11 @@
 <?php
 
-use craft\elements\Entry as EntryElement;
+use craft\elements\Entry;
 use craft\elements\db\EntryQuery;
 use craft\errors\SiteNotFoundException;
+use craft\models\Section;
 use craft\models\Site;
+use Random\RandomException;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
 
@@ -11,10 +13,10 @@ use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
  * Helper for ensuring entries have the behavior class that the plugin normally directs Craft to
  * attach to all entries.
  *
- * @param EntryElement $entry
- * @return EntryElement|VerifiableBehavior
+ * @param Entry $entry
+ * @return Entry|VerifiableBehavior
  */
-function withVerifiableBehavior(EntryElement $entry): EntryElement|VerifiableBehavior
+function withVerifiableBehavior(Entry $entry): Entry|VerifiableBehavior
 {
     $entry->attachBehavior(VerifiableBehavior::NAME, VerifiableBehavior::class);
 
@@ -36,6 +38,20 @@ function withVerifiableQueryBehavior(EntryQuery $query): EntryQuery|VerifiableQu
 }
 
 /**
+ * Creates a section with a unique name and handle to avoid project config collisions across
+ * test runs.
+ *
+ * @return Section
+ * @throws RandomException
+ */
+function createSection(): Section
+{
+    return \markhuot\craftpest\factories\Section::factory()
+        ->name('Section ' . bin2hex(random_bytes(4)))
+        ->create();
+}
+
+/**
  * Generates a `Site` model for testing.
  *
  * @param string $name
@@ -46,11 +62,12 @@ function withVerifiableQueryBehavior(EntryQuery $query): EntryQuery|VerifiableQu
  */
 function createSite(string $name, string $handle): Site
 {
-    /** @noinspection NonSecureUniqidUsageInspection */
-    $suffix = uniqid();
+    $suffix = bin2hex(random_bytes(4));
     $name .= ' ' . $suffix;
     $handle .= '_' . $suffix;
+
     $primarySite = Craft::$app->getSites()->getPrimarySite();
+
     $site = new Site([
         'groupId' => $primarySite->groupId,
         'name' => $name,
