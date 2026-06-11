@@ -334,15 +334,24 @@ function createSite(string $name): Site
 }
 
 /**
- * Wrapper for generating throwaway User elements with which to test.
+ * Returns a Craft `User` object from Pest's factory.
  *
- * @param string|null $name
+ * Calling this will save the user to the testing database for reuse across all tests. It's
+ * deliberately NOT prefixed with TEST_PREFIX so the afterEach sweeps never delete them.
+ * Treat as immutable: tests may reference them (e.g. assign as reviewer) but never modify or
+ * delete them.
+ *
+ * @param string $name
  * @return User
- * @throws RandomException
  */
-function createUser(?string $name = null): User
+function getSharedReviewer(string $name = 'a'): User
 {
-    $email = pestHandle('user', $name) . '@test.com';
+    $email = sprintf('pest.shared.reviewer.%s@test.com', $name);
+
+    $user = User::find()->email($email)->one();
+    if ($user !== null) {
+        return $user;
+    }
 
     return \markhuot\craftpest\factories\User::factory()
         ->sequence(['email' => $email])

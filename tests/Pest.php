@@ -27,7 +27,18 @@ uses(TestCase::class)->in(__DIR__ . '/Unit');
 
 // INTEGRATION tests
 uses(TestCase::class, RefreshesDatabase::class)
-    ->afterEach(function() {
+    ->beforeAll(function () {
+        // First run against an empty DB: craft-pest hasn't installed Craft yet
+        // (that happens in the first test's setUp). Skip; the re-exec after
+        // install comes back through here.
+        if (! Craft::$app->getIsInstalled(true)) {
+            return;
+        }
+
+        getSharedReviewer('a');
+        getSharedReviewer('b');
+    })
+    ->afterEach(function () {
         cleanUpSites();
         cleanUpSections();
         cleanUpUsers();

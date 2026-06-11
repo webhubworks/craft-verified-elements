@@ -99,7 +99,7 @@ it('stores a null reviewer id when none is set on the entry', function () {
 it('stores the reviewer id when one is set on the entry', function () {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
-    $reviewer = createUser();
+    $reviewer = getSharedReviewer();
     $entry->setReviewerId($reviewer->id);
 
     $settings = Mockery::mock(PluginSettings::class);
@@ -136,7 +136,7 @@ it("seeds each site record using that site's own section defaults", function () 
 
     $siteB = createSite('B');
     $section = createSection();
-    $reviewer = createUser();
+    $reviewer = getSharedReviewer();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     $sectionDefaults = new SectionDefaults(
@@ -226,7 +226,7 @@ it('copies the source record to the propagated site when none exists there yet',
 
     $siteB = createSite('B');
     $section = createSection();
-    $reviewer = createUser();
+    $reviewer = getSharedReviewer();
 
     // Create an entry and seed its site A record
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());

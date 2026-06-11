@@ -21,9 +21,9 @@ use webhubworks\verifiedentries\db\PluginTable;
 // =================================================================================================
 
 it("returns the queried site's verification data when an entry exists on multiple sites", function () {
-    $siteB = createSite('B');
+    $siteB = createSite('b');
     $section = createSection();
-    $user = createUser();
+    $user = getSharedReviewer();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
 
@@ -149,7 +149,7 @@ it('returns only entries with expired dates when isVerified is false', function 
 
 it('returns only entries with a reviewer when isAssigned is true', function () {
     $section = createSection();
-    $reviewer = createUser();
+    $reviewer = getSharedReviewer();
     $assignedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $unassignedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -177,7 +177,7 @@ it('returns only entries with a reviewer when isAssigned is true', function () {
 
 it('returns only entries without a reviewer and with a date set when isAssigned is false', function () {
     $section = createSection();
-    $reviewer = createUser();
+    $reviewer = getSharedReviewer();
     $assignedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $unassignedWithDate = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $unassignedIndefinite = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -218,8 +218,8 @@ it('returns only entries without a reviewer and with a date set when isAssigned 
 
 it('returns only entries assigned to the given reviewer', function () {
     $section = createSection();
-    $reviewerA = createUser('A');
-    $reviewerB = createUser('B');
+    $reviewerA = getSharedReviewer();
+    $reviewerB = getSharedReviewer('b');
     $entryForA = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $entryForB = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
