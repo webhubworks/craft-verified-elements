@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/helpers.php';
-
 use craft\elements\User;
 use craft\models\Site;
 use Mockery\MockInterface;

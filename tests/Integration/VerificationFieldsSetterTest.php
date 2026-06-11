@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/helpers.php';
-
 use craft\helpers\Db;
 use markhuot\craftpest\factories\Entry;
 use webhubworks\verifiedentries\db\PluginTable;

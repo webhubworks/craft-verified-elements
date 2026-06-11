@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/helpers.php';
-
 use webhubworks\verifiedentries\base\NotifiableInterface;
 use webhubworks\verifiedentries\mail\ExpiredNotification;
 use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;

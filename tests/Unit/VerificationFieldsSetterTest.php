@@ -1,7 +1,5 @@
 <?php
 
-require_once __DIR__ . '/helpers.php';
-
 use Carbon\Carbon;
 use webhubworks\verifiedentries\services\VerificationFieldsSetter;
 
