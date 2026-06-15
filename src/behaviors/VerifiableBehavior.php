@@ -187,8 +187,7 @@ class VerifiableBehavior extends Behavior
             return VerificationStatus::Verified;
         }
 
-        $now = Carbon::now(Craft::$app->getTimeZone());
-
+        $now = DateHelper::now();
         if ($this->_verifiedUntilDate <= $now) {
             return VerificationStatus::Expired;
         }

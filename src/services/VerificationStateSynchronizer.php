@@ -2,7 +2,6 @@
 
 namespace webhubworks\verifiedentries\services;
 
-use Carbon\Carbon;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -274,7 +273,7 @@ class VerificationStateSynchronizer
             return null;
         }
 
-        return Carbon::now()->add($dateInterval);
+        return DateHelper::now()->add($dateInterval);
     }
 
     /**

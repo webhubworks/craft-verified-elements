@@ -2,7 +2,6 @@
 
 namespace webhubworks\verifiedentries\services;
 
-use Carbon\Carbon;
 use craft\elements\Entry;
 use DateTime;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
@@ -146,7 +145,7 @@ class VerificationFieldsSetter
 
         // It's the first save, there's no existing date, the section has a valid default period,
         // and it parsed cleanly. Return the default verification date.
-        return Carbon::now()->add($dateInterval);
+        return DateHelper::now()->add($dateInterval);
     }
 
     /**

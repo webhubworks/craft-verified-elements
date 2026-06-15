@@ -2,7 +2,6 @@
 
 namespace webhubworks\verifiedentries\services\singletons;
 
-use Carbon\Carbon;
 use Craft;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\Entry;
@@ -16,7 +15,6 @@ use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\enums\DateStatus;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
 use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\VerifiedEntries;
 use yii\base\Component;
 
 /**
@@ -144,7 +142,8 @@ class Reviewers extends Component
             $formatter = new Formatter();
 
             $verifiedUntilDate = DateHelper::toDateTime($entry['verifiedUntilDate']);
-            $isVerified = $verifiedUntilDate && $verifiedUntilDate > Carbon::now(Craft::$app->getTimeZone());
+            $now = DateHelper::now();
+            $isVerified = $verifiedUntilDate && $verifiedUntilDate > $now;
 
             $uri = sprintf("%s/%s/%s-%s",
                 'entries',

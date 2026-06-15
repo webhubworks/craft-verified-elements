@@ -2,10 +2,9 @@
 
 namespace webhubworks\verifiedentries\db;
 
-use Carbon\Carbon;
-use Craft;
 use craft\db\Query;
 use craft\helpers\Db;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\models\ExpiredEntryData;
 
 /**
@@ -125,6 +124,8 @@ abstract class PluginQuery
      */
     public static function expiredVerifiableEntries(): Query
     {
+        $now = Db::prepareDateForDb(DateHelper::now());
+
         return (new Query())
             ->select([
                 'veea.entryId',
@@ -149,7 +150,7 @@ abstract class PluginQuery
                 PluginTable::SECTIONS . ' ves',
                 '[[ves.sectionId]] = [[entries.sectionId]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1'
             )
-            ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(Carbon::now(Craft::$app->getTimeZone()))])
+            ->where(['<', 'veea.verifiedUntilDate', $now])
             ->andWhere('elements.canonicalId IS null');
     }
 

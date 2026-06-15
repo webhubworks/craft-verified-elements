@@ -18,6 +18,17 @@ use webhubworks\verifiedentries\VerifiedEntries;
 class DateHelper
 {
     /**
+     * Returns the current DateTime object (via Carbon) set to the system's timezone.
+     *
+     * @param DateTimeZone|string|null $timeZone
+     * @return Carbon
+     */
+    public static function now(DateTimeZone|null|string $timeZone = null): Carbon
+    {
+        return Carbon::now($timeZone ?? Craft::$app->getTimeZone());
+    }
+
+    /**
      * Wraps Craft's `toDateTime`, converting false returns and any internal exceptions to null.
      *
      * @param mixed $value
@@ -91,7 +102,7 @@ class DateHelper
         }
 
         $systemTimeZone = self::createDateTimeZone();
-        $now = Carbon::now($systemTimeZone);
+        $now = self::now($systemTimeZone);
         $dateOnly = Carbon::createFromFormat(
             'Y-m-d',
             $date->format('Y-m-d'),

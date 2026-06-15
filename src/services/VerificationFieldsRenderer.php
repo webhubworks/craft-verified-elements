@@ -2,7 +2,6 @@
 
 namespace webhubworks\verifiedentries\services;
 
-use Carbon\Carbon;
 use Craft;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -15,6 +14,7 @@ use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\enums\DateStatus;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\helpers\Log;
 use webhubworks\verifiedentries\services\singletons\PluginSettings;
 use webhubworks\verifiedentries\VerifiedEntries;
@@ -139,7 +139,7 @@ readonly class VerificationFieldsRenderer
 
         foreach (VerificationPeriod::intervals() as $period) {
             $dateInterval = $period->toDateInterval();
-            $date = Carbon::now()->add($dateInterval);
+            $date = DateHelper::now()->add($dateInterval);
 
             // Don't add the user's selected date to the list
             if ($currentUntilDate && $date->format('Y-m-d') === $currentUntilDate->format('Y-m-d')) {
