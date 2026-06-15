@@ -138,7 +138,7 @@ abstract class PluginQuery
                 'sites.handle AS siteHandle',
             ])
             ->from(['veea' => PluginTable::ENTRIES])
-            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
+            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]]')
             ->leftJoin(
                 '{{%elements_sites}} es',
                 '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = [[veea.siteId]]'
@@ -151,6 +151,8 @@ abstract class PluginQuery
                 '[[ves.sectionId]] = [[entries.sectionId]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1'
             )
             ->where(['<', 'veea.verifiedUntilDate', $now])
+            ->andWhere(['elements.enabled' => true])
+            ->andWhere(['es.enabled' => true])
             ->andWhere('elements.canonicalId IS null');
     }
 
