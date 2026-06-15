@@ -162,7 +162,7 @@ class Verification extends Component
                 'sections.handle AS sectionHandle',
             ])
             ->from(['veea' => '{{%verifiedentries_entryattributes}}'])
-            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true')
+            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]]')
             ->leftJoin(
                 '{{%elements_sites}} es',
                 '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = :siteId',
@@ -173,6 +173,8 @@ class Verification extends Component
             ->where(['<', 'veea.verifiedUntilDate', Db::prepareDateForDb(new \DateTime())])
             ->andWhere('elements.canonicalId IS null')
             ->andWhere(['entries.sectionId' => $enabledSections->pluck('sectionId')])
+            ->andWhere(['elements.enabled' => true])
+            ->andWhere(['es.enabled' => true])
             ->all();
 
         if (!empty($expiredEntries)) {
