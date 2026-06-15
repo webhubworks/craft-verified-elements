@@ -283,6 +283,7 @@ class VerificationStateSynchronizer
      * @param int $entryId
      * @param int $siteId
      * @return void
+     * @throws Exception
      */
     private function copyRecordToSite(int $entryId, int $siteId): void
     {
