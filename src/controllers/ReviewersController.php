@@ -45,7 +45,7 @@ class ReviewersController extends Controller
             VerifiedEntries::HANDLE . '/_user.twig',
             [
                 'sections' => VerifiedEntries::getInstance()->getReviewers()->getSections($userId),
-                'userId' => $userId,
+                'userId' => $user->id,
             ]
         );
     }
