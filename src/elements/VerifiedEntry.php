@@ -54,7 +54,6 @@ class VerifiedEntry extends Entry
                 'criteria' => [
                     'isVerified' => false,
                     'sectionId' => $enabledSectionIds,
-                    'status' => 'live',
                 ]
             ],
             [
@@ -63,7 +62,6 @@ class VerifiedEntry extends Entry
                 'criteria' => [
                     'isVerified' => true,
                     'sectionId' => $enabledSectionIds,
-                    'status' => 'live',
                     'verifiedUntil' => '< ' . (DateTimeHelper::nextMonth())->format('Y-m-d'),
                 ]
             ],
@@ -73,7 +71,6 @@ class VerifiedEntry extends Entry
                 'criteria' => [
                     'isVerified' => true,
                     'sectionId' => $enabledSectionIds,
-                    'status' => 'live',
                 ]
             ],
             [
@@ -84,7 +81,6 @@ class VerifiedEntry extends Entry
                 'label' => $currentUser->getIdentity()->friendlyName,
                 'criteria' => [
                     'reviewerId' => $currentUser->id,
-                    'status' => 'live',
                     'sectionId' => $enabledSectionIds,
                 ]
             ]
@@ -97,7 +93,6 @@ class VerifiedEntry extends Entry
                 'label' => $reviewer->friendlyName,
                 'criteria' => [
                     'reviewerId' => $reviewer->id,
-                    'status' => 'live',
                     'sectionId' => $enabledSectionIds,
                 ],
             ];
