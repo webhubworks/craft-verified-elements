@@ -28,7 +28,7 @@ class UsersController extends Controller
 
         $response->contentTemplate('verified-entries/_user.twig', [
             'sections' => VerifiedEntries::getInstance()->users->getSections($userId),
-            'userId' => $userId,
+            'userId' => $user->id,
         ]);
 
         return $response;
