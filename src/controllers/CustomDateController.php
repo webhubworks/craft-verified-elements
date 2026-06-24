@@ -37,9 +37,7 @@ class CustomDateController extends Controller
     }
 
     /**
-     * Receives the POST from the modal, validates that the submitted date is present and in the
-     * future, and returns the formatted date as JSON on success or a failure response with field
-     * errors on failure.
+     * Resolves the user's selected date value in an entry's "Verified until" date field.
      *
      * @return Response
      * @throws \yii\web\MethodNotAllowedHttpException
@@ -63,24 +61,9 @@ class CustomDateController extends Controller
             );
         }
 
-        if ($date < DateTimeHelper::now()) {
-            return $this->asFailure(
-                Craft::t(VerifiedEntries::HANDLE, 'Could not set verification date.'),
-                [
-                    'errors' => [
-                        'verifiedUntilDate' => [
-                            Craft::t(VerifiedEntries::HANDLE, 'Date must be in the future.'),
-                        ]
-                    ]
-                ]
-            );
-        }
-
-        $formatter = Craft::$app->getFormatter();
-
         return $this->asJson([
             'date' => $date->format('Y-m-d'),
-            'label' => $formatter->asDate($date),
+            'label' => Craft::$app->getFormatter()->asDate($date),
         ]);
     }
 }
