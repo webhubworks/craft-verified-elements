@@ -57,6 +57,7 @@ abstract class PluginQuery
      * @param int|null $siteId
      * @return Query
      * @see \webhubworks\verifiedentries\services\singletons\Reviewers
+     * @see \webhubworks\verifiedentries\models\ReviewerEntryData
      */
     public static function entriesByReviewer(int $userId, ?int $siteId = null): Query
     {

@@ -7,14 +7,13 @@ use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
-use craft\i18n\Formatter;
 use craft\models\Section;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedentries\enums\DateStatus;
 use webhubworks\verifiedentries\enums\VerificationPeriod;
-use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedentries\models\ReviewerEntryData;
 use yii\base\Component;
 
 /**
@@ -70,7 +69,7 @@ class Reviewers extends Component
      * @param string $orderBy
      * @param int|null $userId
      * @param int|null $siteId
-     * @return array
+     * @return array{0: ReviewerEntryData[], 1: int} A tuple of [page of entries, total count across all pages]
      */
     public function getPaginatedEntries(
         int    $page,
@@ -94,7 +93,8 @@ class Reviewers extends Component
         $query->limit($limit);
         $query->offset($offset);
 
-        $entries = $this->transformEntries($query->all());
+        /** @var ReviewerEntryData[] $entries */
+        $entries = array_map(ReviewerEntryData::fromArray(...), $query->all());
 
         return [$entries, $total];
     }
@@ -124,41 +124,5 @@ class Reviewers extends Component
         ];
 
         return UrlHelper::buildQuery($config);
-    }
-
-
-    // HELPERS
-    // =============================================================================================
-
-    /**
-     * Transform the result of the query to an array of entries.
-     *
-     * @param array $entries
-     * @return array
-     */
-    private function transformEntries(array $entries): array
-    {
-        return array_map(static function ($entry) {
-            $formatter = new Formatter();
-
-            $verifiedUntilDate = DateHelper::toDateTime($entry['verifiedUntilDate']);
-            $now = DateHelper::now();
-            $isVerified = $verifiedUntilDate && $verifiedUntilDate > $now;
-
-            $uri = sprintf("%s/%s/%s-%s",
-                'entries',
-                $entry['sectionHandle'],
-                $entry['entryId'],
-                $entry['slug']
-            );
-
-            return [
-                ...$entry,
-                'isVerified' => $isVerified ? 'Verified' : 'Expired',
-                'verifiedUntilDate' => DateHelper::readableVerificationDate($verifiedUntilDate),
-                'dateUpdated' => $formatter->asDate(DateHelper::toDateTime($entry['dateUpdated'])),
-                'url' => UrlHelper::cpUrl($uri, ['site' => $entry['siteHandle']]),
-            ];
-        }, $entries);
     }
 }
