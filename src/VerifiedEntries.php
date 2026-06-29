@@ -5,6 +5,7 @@ namespace webhubworks\verifiedentries;
 use Craft;
 use craft\base\Plugin;
 use craft\helpers\UrlHelper;
+use webhubworks\verifiedentries\enums\Edition;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\helpers\Log;
@@ -29,6 +30,17 @@ class VerifiedEntries extends Plugin
     public string $schemaVersion = '1.0.0';
     public bool $hasCpSettings = true;
     public bool $hasCpSection = true;
+
+    /** @inheritDoc */
+    public static function editions(): array
+    {
+        // list each edition from lowest to highest
+        return [
+            Edition::Lite->handle(),
+            Edition::Basic->handle(),
+            Edition::Pro->handle(),
+        ];
+    }
 
     /** @inheritDoc */
     public static function config(): array
