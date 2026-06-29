@@ -2,6 +2,7 @@
 
 namespace webhubworks\verifiedentries\services;
 
+use Craft;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -10,6 +11,7 @@ use DateTime;
 use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
 use webhubworks\verifiedentries\db\PluginQuery;
 use webhubworks\verifiedentries\db\PluginTable;
+use webhubworks\verifiedentries\elements\VerifiedEntry;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\helpers\Log;
@@ -123,6 +125,9 @@ class VerificationStateSynchronizer
 
             return false;
         }
+
+        // An entry save only busts craft\elements\Entry caches, so refresh ours explicitly.
+        Craft::$app->getElements()->invalidateCachesForElementType(VerifiedEntry::class);
 
         return true;
     }
