@@ -21,7 +21,7 @@ class DateHelper
      * The number of days that a verified entry is considered "imminent" for expiration. If the
      * entry's "Verified until" date is less than 30 days away, the entry is considered "imminent".
      */
-    public const int IMMINENT_WINDOW_DAYS = 30;
+    public const IMMINENT_WINDOW_DAYS = 30;
 
     /**
      * Returns the current DateTime object (via Carbon) set to the system's timezone.
