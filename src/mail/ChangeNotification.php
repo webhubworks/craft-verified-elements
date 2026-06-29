@@ -41,7 +41,7 @@ class ChangeNotification extends Notification
 
     private function subject(): string
     {
-        return $this->t('Entry has been updated');
+        return $this->t('email.changeNotification.subject');
     }
 
     private function body(): string
@@ -52,7 +52,7 @@ class ChangeNotification extends Notification
         );
 
         $recipientName = Html::encode($this->recipient->getFriendlyName());
-        $message = $this->t("An entry you're assigned to review has been updated. Please take a moment to review the latest changes:");
+        $message = $this->t('email.changeNotification.body') . ':';
         $title = Html::tag('strong', Html::encode($this->entry->title));
         $verifiedUntil = $this->t('Verified until');
         $link = Html::a($this->t('Show', null, 'app'), $this->entry->getCpEditUrl());

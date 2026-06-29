@@ -46,7 +46,7 @@ class ExpiredNotification extends Notification
     private function subject(): string
     {
         return $this->t(
-            '{count, number} {count, plural, =1{entry awaits} other{entries await}} your verification',
+            'email.expiredNotification.subject',
             ['count' => count($this->entries)]
         );
     }
@@ -54,7 +54,7 @@ class ExpiredNotification extends Notification
     private function body(): string
     {
         $recipientName = Html::encode($this->recipient->getFriendlyName());
-        $intro = $this->t('The following entries have verification dates that have expired:');
+        $intro = $this->t('email.expiredNotification.body') . ':';
         $viewAll = Html::a($this->t('View all'), $this->viewAllUrl());
         $listItems = implode('', array_map(fn($entry) => $this->listItem($entry), $this->entries));
         $styles = implode(';', $this->styles());
