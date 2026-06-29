@@ -18,6 +18,12 @@ use webhubworks\verifiedentries\VerifiedEntries;
 class DateHelper
 {
     /**
+     * The number of days that a verified entry is considered "imminent" for expiration. If the
+     * entry's "Verified until" date is less than 30 days away, the entry is considered "imminent".
+     */
+    public const int IMMINENT_WINDOW_DAYS = 30;
+
+    /**
      * Returns the current DateTime object (via Carbon) set to the system's timezone.
      *
      * @param DateTimeZone|string|null $timeZone
@@ -136,7 +142,7 @@ class DateHelper
             return false;
         }
 
-        return (bool) preg_match('/^\d{4}-\d{2}-\d{2}/', $value);
+        return (bool)preg_match('/^\d{4}-\d{2}-\d{2}/', $value);
     }
 
     /**
@@ -151,6 +157,17 @@ class DateHelper
             return false;
         }
 
-        return (bool) preg_match('/^\d{4}-\d{2}-\d{2}$/', $value);
+        return (bool)preg_match('/^\d{4}-\d{2}-\d{2}$/', $value);
+    }
+
+    /**
+     * Returns the upper bound of the "imminent" verification window: an entry is "imminent" when
+     * its expiry falls between now and this date. A rolling 30-day lookahead from now.
+     *
+     * @return Carbon
+     */
+    public static function imminentDateMax(): Carbon
+    {
+        return self::now()->addDays(self::IMMINENT_WINDOW_DAYS);
     }
 }

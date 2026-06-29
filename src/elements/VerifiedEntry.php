@@ -5,10 +5,10 @@ namespace webhubworks\verifiedentries\elements;
 use Craft;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\helpers\DateTimeHelper;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\enums\ReviewerStatus;
 use webhubworks\verifiedentries\enums\VerificationStatus;
+use webhubworks\verifiedentries\helpers\DateHelper;
 use webhubworks\verifiedentries\VerifiedEntries;
 
 /**
@@ -64,7 +64,7 @@ class VerifiedEntry extends Entry
                 'criteria' => [
                     'isVerified' => true,
                     'sectionId' => $enabledSectionIds,
-                    'verifiedUntil' => '< ' . (DateTimeHelper::nextMonth())->format('Y-m-d'),
+                    'verifiedUntil' => '< ' . DateHelper::imminentDateMax()->format('Y-m-d'),
                 ],
             ],
             [
