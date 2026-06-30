@@ -73,7 +73,7 @@ readonly class EventRegistrar
     ) {}
 
 
-    // PRE-INIT EVENTS
+    // GLOBAL events
     // =============================================================================================
 
     /**
@@ -178,10 +178,6 @@ readonly class EventRegistrar
         );
     }
 
-
-    // ON-INIT EVENTS
-    // =============================================================================================
-
     /**
      * Extend Twig for the plugin's needs.
      *
@@ -200,6 +196,82 @@ readonly class EventRegistrar
             )
         );
     }
+
+    /**
+     * Events that register plugin features into Craft's various systems.
+     *
+     * @return void
+     * @see Elements::EVENT_REGISTER_ELEMENT_TYPES
+     * @see UserPermissions::EVENT_REGISTER_PERMISSIONS
+     * @see Dashboard::EVENT_REGISTER_WIDGET_TYPES
+     * @see UsersController::EVENT_DEFINE_EDIT_SCREENS
+     */
+    public function registerCraftComponents(): void
+    {
+        if ($this->isCpRequest || $this->isConsoleRequest) {
+            Event::on(
+                Elements::class,
+                Elements::EVENT_REGISTER_ELEMENT_TYPES,
+                static function (RegisterComponentTypesEvent $event) {
+                    $event->types[] = VerifiedEntry::class;
+                }
+            );
+        }
+
+        if (! $this->isCpRequest) {
+            return;
+        }
+
+        Event::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            static function (RegisterUserPermissionsEvent $event) {
+                $event->permissions[] = [
+                    'heading' => Craft::t(VerifiedEntries::HANDLE, 'Verified Entries'),
+                    'permissions' => [
+                        Permission::ManageVerificationSettings->value => [
+                            'label' => Craft::t(VerifiedEntries::HANDLE, 'Manage Verification Settings'),
+                        ],
+                        Permission::VerifyEntries->value => [
+                            'label' => Craft::t(VerifiedEntries::HANDLE, 'Verify entries'),
+                        ]
+                    ],
+                ];
+            }
+        );
+
+        Event::on(
+            Dashboard::class,
+            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
+            static function (RegisterComponentTypesEvent $event) {
+                $currentUser = Craft::$app->getUser();
+
+                $event->types[] = VerificationHealth::class;
+
+                if ($currentUser->checkPermission(Permission::VerifyEntries->value)) {
+                    $event->types[] = EntriesToReview::class;
+                }
+            }
+        );
+
+        Event::on(
+            UsersController::class,
+            UsersController::EVENT_DEFINE_EDIT_SCREENS,
+            static function (DefineEditUserScreensEvent $event) {
+                if (! $event->editedUser->can(Permission::VerifyEntries->value)) {
+                    return;
+                }
+
+                $event->screens[VerifiedEntries::HANDLE] = [
+                    'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified Entries'),
+                ];
+            }
+        );
+    }
+
+
+    // ENTRY events
+    // =============================================================================================
 
     /**
      * Events that run during CRUD operations on entries.
@@ -502,75 +574,7 @@ readonly class EventRegistrar
         );
     }
 
-    /**
-     * Events that register plugin features into Craft's various systems.
-     *
-     * @return void
-     * @see Elements::EVENT_REGISTER_ELEMENT_TYPES
-     * @see UserPermissions::EVENT_REGISTER_PERMISSIONS
-     * @see Dashboard::EVENT_REGISTER_WIDGET_TYPES
-     * @see UsersController::EVENT_DEFINE_EDIT_SCREENS
-     */
-    public function registerCraftComponents(): void
-    {
-        if ($this->isCpRequest || $this->isConsoleRequest) {
-            Event::on(
-                Elements::class,
-                Elements::EVENT_REGISTER_ELEMENT_TYPES,
-                static function (RegisterComponentTypesEvent $event) {
-                    $event->types[] = VerifiedEntry::class;
-                }
-            );
-        }
 
-        if (! $this->isCpRequest) {
-            return;
-        }
-
-        Event::on(
-            UserPermissions::class,
-            UserPermissions::EVENT_REGISTER_PERMISSIONS,
-            static function (RegisterUserPermissionsEvent $event) {
-                $event->permissions[] = [
-                    'heading' => Craft::t(VerifiedEntries::HANDLE, 'Verified Entries'),
-                    'permissions' => [
-                        Permission::ManageVerificationSettings->value => [
-                            'label' => Craft::t(VerifiedEntries::HANDLE, 'Manage Verification Settings'),
-                        ],
-                        Permission::VerifyEntries->value => [
-                            'label' => Craft::t(VerifiedEntries::HANDLE, 'Verify entries'),
-                        ]
-                    ],
-                ];
-            }
-        );
-
-        Event::on(
-            Dashboard::class,
-            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
-            static function (RegisterComponentTypesEvent $event) {
-                $currentUser = Craft::$app->getUser();
-
-                $event->types[] = VerificationHealth::class;
-
-                if ($currentUser->checkPermission(Permission::VerifyEntries->value)) {
-                    $event->types[] = EntriesToReview::class;
-                }
-            }
-        );
-
-        Event::on(
-            UsersController::class,
-            UsersController::EVENT_DEFINE_EDIT_SCREENS,
-            static function (DefineEditUserScreensEvent $event) {
-                if (! $event->editedUser->can(Permission::VerifyEntries->value)) {
-                    return;
-                }
-
-                $event->screens[VerifiedEntries::HANDLE] = [
-                    'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified Entries'),
-                ];
-            }
-        );
-    }
+    // ASSET events
+    // =============================================================================================
 }
