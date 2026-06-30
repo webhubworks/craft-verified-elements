@@ -79,18 +79,15 @@ readonly class EventRegistrar
     /**
      * Events that must run before Craft::$app->onInit() runs.
      *
-     * @param VerifiedEntries $plugin
-     * @param bool $isCpRequest
-     * @param bool $isConsoleRequest
      * @return void
      * @see BaseCondition::EVENT_REGISTER_CONDITION_RULES
      * @see Gc::EVENT_RUN
      * @see UrlManager::EVENT_REGISTER_CP_URL_RULES
      * @see VerifiedEntries::init()
      */
-    public static function registerEarlyEvents(VerifiedEntries $plugin, bool $isCpRequest, bool $isConsoleRequest): void
+    public function registerEarlyEvents(): void
     {
-        if (! $isCpRequest && ! $isConsoleRequest) {
+        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
             return;
         }
 
@@ -157,7 +154,7 @@ readonly class EventRegistrar
             }
         );
 
-        if (! $isCpRequest) {
+        if (! $this->isCpRequest) {
             return;
         }
 
@@ -186,24 +183,6 @@ readonly class EventRegistrar
     // =============================================================================================
 
     /**
-     * Events that run during Craft::$app->onInit(). This is the parent method that triggers all
-     * private methods below.
-     *
-     * @return void
-     * @see VerifiedEntries::init()
-     */
-    public function registerOnInitEvents(): void
-    {
-        // the order that these methods run doesn't matter.
-        $this->registerEntryBehaviors();
-        $this->registerEntryEditUi();
-        $this->registerEntryIndexUi();
-        $this->registerEntryLifecycle();
-        $this->registerCraftComponents();
-        $this->extendTwig();
-    }
-
-    /**
      * Extend Twig for the plugin's needs.
      *
      * @return void
@@ -229,7 +208,7 @@ readonly class EventRegistrar
      * @see Element::EVENT_BEFORE_SAVE
      * @see Element::EVENT_AFTER_SAVE
      */
-    private function registerEntryLifecycle(): void
+    public function registerEntryLifecycle(): void
     {
         if ($this->isCpRequest || $this->isConsoleRequest) {
             Event::on(
@@ -307,7 +286,7 @@ readonly class EventRegistrar
      * @see Model::EVENT_DEFINE_BEHAVIORS
      * @see Query::EVENT_DEFINE_BEHAVIORS
      */
-    private function registerEntryBehaviors(): void
+    public function registerEntryBehaviors(): void
     {
         if (! $this->isCpRequest && ! $this->isConsoleRequest) {
             return;
@@ -347,7 +326,7 @@ readonly class EventRegistrar
      * @see Element::EVENT_DEFINE_SIDEBAR_HTML
      * @see Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML
      */
-    private function registerEntryEditUi(): void
+    public function registerEntryEditUi(): void
     {
         if (! $this->isCpRequest) {
             return;
@@ -433,7 +412,7 @@ readonly class EventRegistrar
      * @see Element::EVENT_REGISTER_TABLE_ATTRIBUTES
      * @see Element::EVENT_DEFINE_ATTRIBUTE_HTML
      */
-    private function registerEntryIndexUi(): void
+    public function registerEntryIndexUi(): void
     {
         if (! $this->isCpRequest) {
             return;
@@ -532,7 +511,7 @@ readonly class EventRegistrar
      * @see Dashboard::EVENT_REGISTER_WIDGET_TYPES
      * @see UsersController::EVENT_DEFINE_EDIT_SCREENS
      */
-    private function registerCraftComponents(): void
+    public function registerCraftComponents(): void
     {
         if ($this->isCpRequest || $this->isConsoleRequest) {
             Event::on(

@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\helpers\UrlHelper;
 use webhubworks\verifiedentries\enums\Edition;
+use webhubworks\verifiedentries\enums\Feature;
 use webhubworks\verifiedentries\enums\Permission;
 use webhubworks\verifiedentries\events\EventRegistrar;
 use webhubworks\verifiedentries\helpers\Log;
@@ -64,19 +65,25 @@ class VerifiedEntries extends Plugin
         Log::registerLogger();
 
         $request = Craft::$app->getRequest();
-        $isCpRequest = $request->getIsCpRequest();
-        $isConsoleRequest = $request->getIsConsoleRequest();
 
-        // These event handlers must be registered before onInit()
-        EventRegistrar::registerEarlyEvents($this, $isCpRequest, $isConsoleRequest);
+        $events = new EventRegistrar(
+            $this,
+            $request->getIsCpRequest(),
+            $request->getIsConsoleRequest()
+        );
 
-        Craft::$app->onInit(function() use ($isCpRequest, $isConsoleRequest) {
-            // Register the many event handlers.
-            (new EventRegistrar(
-                $this,
-                $isCpRequest,
-                $isConsoleRequest,
-            ))->registerOnInitEvents();
+        $events->registerEarlyEvents();
+
+        Craft::$app->onInit(function() use ($events) {
+            $events->registerCraftComponents();
+            $events->extendTwig();
+
+            if (Feature::EntryVerification->isEnabled()) {
+                $events->registerEntryBehaviors();
+                $events->registerEntryLifecycle();
+                $events->registerEntryIndexUi();
+                $events->registerEntryEditUi();
+            }
         });
     }
 
