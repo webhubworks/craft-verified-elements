@@ -227,7 +227,7 @@ readonly class EventRegistrar
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             static function (RegisterUserPermissionsEvent $event) {
                 $event->permissions[] = [
-                    'heading' => Craft::t(Plugin::HANDLE, 'Verified Entries'),
+                    'heading' => Craft::t(Plugin::HANDLE, 'Verified Elements'),
                     'permissions' => [
                         Permission::ManageVerificationSettings->value => [
                             'label' => Craft::t(Plugin::HANDLE, 'Manage Verification Settings'),
@@ -263,7 +263,7 @@ readonly class EventRegistrar
                 }
 
                 $event->screens[Plugin::HANDLE] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verified Entries'),
+                    'label' => Craft::t(Plugin::HANDLE, 'Verified Elements'),
                 ];
             }
         );

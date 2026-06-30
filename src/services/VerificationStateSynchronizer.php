@@ -117,7 +117,7 @@ class VerificationStateSynchronizer
         }
         catch (Exception $exception) {
             Log::error(sprintf(
-                'Error upserting "Verified Entries" details for entry %s "%s" on site %s',
+                'Error upserting "Verified Elements" details for entry %s "%s" on site %s',
                 $this->entry->getCanonicalId(),
                 $this->entry->title,
                 $this->entry->siteId

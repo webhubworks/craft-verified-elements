@@ -28,7 +28,7 @@ use yii\base\Behavior;
  */
 class VerifiableBehavior extends Behavior
 {
-    public const NAME = 'verified-entries.verifiable';
+    public const NAME = 'verified-elements.verifiable';
 
     // REVIEWER (Craft User element)
     // =============================================================================================

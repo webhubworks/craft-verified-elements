@@ -14,7 +14,7 @@ use yii\base\Behavior;
  */
 class VerifiableQueryBehavior extends Behavior
 {
-    public const NAME = 'verified-entries.verifiable-query';
+    public const NAME = 'verified-elements.verifiable-query';
     public ?bool $isVerified = null;
     public ?bool $isAssigned = null;
     public ?int $reviewerId = null;

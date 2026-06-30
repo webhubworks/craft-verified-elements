@@ -47,7 +47,7 @@ class AssignReviewer extends ElementAction
                           multiSelect: false,
                           criteria: {
                               'status': 'active',
-                              'can': 'verified-entries:verifyEntries', // this value must match what's in the Permission enum
+                              'can': 'verified-elements:verifyEntries', // this value must match what's in the Permission enum
                           },
                           onSelect: ([user]) => {
                               elementIndex.submitAction($type, { reviewerId: user.id })

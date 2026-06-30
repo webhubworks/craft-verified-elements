@@ -11,7 +11,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 
 /**
- * Handles the Verified Entries tab on a reviewer's user edit screen.
+ * Handles the Verified Elements tab on a reviewer's user edit screen.
  */
 class ReviewersController extends Controller
 {
@@ -27,7 +27,7 @@ class ReviewersController extends Controller
     }
 
     /**
-     * Renders the reviewer's Verified Entries tab.
+     * Renders the reviewer's Verified Elements tab.
      *
      * @param int|null $userId
      * @return Response

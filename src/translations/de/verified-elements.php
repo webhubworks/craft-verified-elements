@@ -30,7 +30,7 @@ return [
     'Verification Status' => 'Verifizierungsstatus',
     'Verification settings saved.' => 'Einstellungen zur Verifizierung gespeichert.',
     'Verification' => 'Verifizierung',
-    'Verified Entries' => 'Verifizierung',
+    'Verified Elements' => 'Verifizierung',
     'Verified until' => 'Verifiziert bis',
     'Verified' => 'Verifiziert',
     'Verify Entry' => 'Eintrag verifizieren',

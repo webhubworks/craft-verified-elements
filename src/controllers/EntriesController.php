@@ -15,7 +15,7 @@ use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
 
 /**
- * Handles rendering and data endpoints for the Verified Entries index and entry verification modals.
+ * Handles rendering and data endpoints for the Verified Elements index and entry verification modals.
  */
 class EntriesController extends Controller
 {
@@ -29,7 +29,7 @@ class EntriesController extends Controller
     }
 
     /**
-     * Renders the Verified Entries index page.
+     * Renders the Verified Elements index page.
      *
      * @return Response
      */

@@ -219,7 +219,7 @@ readonly class VerificationFieldsRenderer
     {
         return <<<JS
             (createOption, selectize) => {
-                const modal = new Craft.CpModal('verified-entries/custom-date');
+                const modal = new Craft.CpModal('verified-elements/custom-date');
         
                 modal.on('submit', ({response}) => {
                     const {date, label} = response.data;

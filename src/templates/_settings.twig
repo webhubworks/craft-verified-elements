@@ -4,7 +4,7 @@
 {% set fullPageForm = true %}
 {% set selectedSubnavItem = 'settings' %}
 {% set crumbs = [
-    { label: 'Verified Entries'|t(pluginHandle), url: url(pluginHandle) }
+    { label: 'Verified Elements'|t(pluginHandle), url: url(pluginHandle) }
 ] %}
 
 {% if sites|length > 1 %}
@@ -68,7 +68,7 @@
                                     elements: section.reviewerId ? [section.reviewer] : [],
                                     criteria: {
                                         status: 'active',
-                                        can: 'verified-entries:verifyEntries',
+                                        can: 'verified-elements:verifyEntries',
                                     },
                                     limit: 1,
                                     hideSidebar: true,

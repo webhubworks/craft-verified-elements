@@ -7,7 +7,7 @@ use craft\helpers\App;
 
 $databaseName = App::env('CRAFT_DB_DATABASE');
 if (! str_contains((string)$databaseName, 'test')) {
-    fwrite(STDERR, "Aborting: Pest must run against a dedicated test database. Run via `ddev composer test:verified-entries` or set CRAFT_DB_DATABASE to a database whose name contains 'test'.\n");
+    fwrite(STDERR, "Aborting: Pest must run against a dedicated test database. Run via `ddev composer test:verified-elements` or set CRAFT_DB_DATABASE to a database whose name contains 'test'.\n");
     exit(1);
 }
 

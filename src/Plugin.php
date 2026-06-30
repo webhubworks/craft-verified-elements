@@ -14,7 +14,7 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
 use webhubworks\verifiedelements\services\singletons\Reviewers;
 
 /**
- * Verified Entries plugin
+ * Verified Elements plugin
  *
  * @method static Plugin getInstance()
  * @author webhubworks <support@webhub.de>
@@ -27,7 +27,7 @@ use webhubworks\verifiedelements\services\singletons\Reviewers;
  */
 class Plugin extends BasePlugin
 {
-    public const HANDLE = 'verified-entries';
+    public const HANDLE = 'verified-elements';
     public string $schemaVersion = '1.0.0';
     public bool $hasCpSettings = true;
     public bool $hasCpSection = true;
@@ -48,9 +48,9 @@ class Plugin extends BasePlugin
     {
         parent::init();
 
-        $this->name = Craft::t(self::HANDLE, 'Verified Entries');
+        $this->name = Craft::t(self::HANDLE, 'Verified Elements');
 
-        // Allow this plugin to log its errors in a dedicated log file called "verified-entries".
+        // Allow this plugin to log its errors in a dedicated log file called "verified-elements".
         Log::registerLogger();
 
         $request = Craft::$app->getRequest();
