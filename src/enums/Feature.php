@@ -7,18 +7,18 @@ use webhubworks\verifiedentries\VerifiedEntries;
 /**
  * Enum representing the single source of truth for which edition unlocks which feature.
  *
- * To change what an edition includes, edit the match arm in `requiredEdition` and nothing else in
- * the codebase needs to touch an edition handle directly.
+ * To add a new feature:
+ * 1. Create its case below.
+ * 2. Edit the `match` arm in `requiredEdition` method below, selecting which edition it belongs to.
+ * 3. Update the codebase where applicable to conditionally check if the feature is enabled in the
+ *    edition that the user has purchased.
+ *
+ * @see Edition
  */
 enum Feature
 {
     // LIST of FEATURES
     // =============================================================================================
-
-    /**
-     * Will the plugin allow enabling sections from multiple sites or just the primary site?
-     */
-    case MultiSite;
 
     /**
      * Will the plugin allow verifying Asset elements?
@@ -31,6 +31,11 @@ enum Feature
     case EntryVerification;
 
     /**
+     * Will the plugin allow enabling sections from multiple sites or just the primary site?
+     */
+    case MultiSite;
+
+    /**
      * Will the plugin allow assigning a Reviewer (Craft user) to keep an element updated or must
      * a single user be the sole Reviewer?
      */
@@ -41,14 +46,16 @@ enum Feature
     // =============================================================================================
 
     /**
-     * The plugin's lowest required edition that unlocks this feature.
+     * For a given feature in this enum, output the base edition required to unlock the feature.
+     * Editions are stacked, so the more expensive editions inherit all the features of cheaper
+     * editions.
      */
     public function requiredEdition(): Edition
     {
         return match ($this) {
             self::EntryVerification, self::ReviewerAssignment => Edition::Lite,
-            self::AssetVerification => Edition::Pro,
-            self::MultiSite => Edition::Basic,
+            self::MultiSite => Edition::Pro,
+            self::AssetVerification => Edition::ProPlus,
         };
     }
 

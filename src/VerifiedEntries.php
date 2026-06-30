@@ -33,17 +33,6 @@ class VerifiedEntries extends Plugin
     public bool $hasCpSection = true;
 
     /** @inheritDoc */
-    public static function editions(): array
-    {
-        // list each edition from lowest to highest
-        return [
-            Edition::Lite->handle(),
-            Edition::Basic->handle(),
-            Edition::Pro->handle(),
-        ];
-    }
-
-    /** @inheritDoc */
     public static function config(): array
     {
         return [
@@ -85,6 +74,12 @@ class VerifiedEntries extends Plugin
                 $events->registerEntryEditUi();
             }
         });
+    }
+
+    /** @inheritDoc */
+    public static function editions(): array
+    {
+        return Edition::currentlyAvailable();
     }
 
     /**
