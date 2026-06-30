@@ -2,8 +2,8 @@
 
 use Carbon\Carbon;
 use craft\i18n\Formatter;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\models\ReviewerEntryData;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\models\ReviewerEntryData;
 
 /**
  * UNIT TESTS

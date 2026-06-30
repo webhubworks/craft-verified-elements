@@ -1,11 +1,11 @@
 <?php
 
-namespace webhubworks\verifiedentries\controllers;
+namespace webhubworks\verifiedelements\controllers;
 
 use craft\web\Controller;
 use craft\controllers\EditUserTrait;
 use craft\web\CpScreenResponseBehavior;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\Plugin;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -39,12 +39,12 @@ class ReviewersController extends Controller
         $user = $this->editedUser($userId);
 
         /** @var Response|CpScreenResponseBehavior $response */
-        $response = $this->asEditUserScreen($user, VerifiedEntries::HANDLE);
+        $response = $this->asEditUserScreen($user, Plugin::HANDLE);
 
         return $response->contentTemplate(
-            VerifiedEntries::HANDLE . '/_user.twig',
+            Plugin::HANDLE . '/_user.twig',
             [
-                'sections' => VerifiedEntries::getInstance()->getReviewers()->getSections($userId),
+                'sections' => Plugin::getInstance()->getReviewers()->getSections($userId),
                 'userId' => $user->id,
             ]
         );

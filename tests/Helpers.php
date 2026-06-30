@@ -9,14 +9,14 @@ use craft\errors\SiteNotFoundException;
 use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\models\Site;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\models\ExpiredEntryData;
-use webhubworks\verifiedentries\models\SectionDefaults;
-use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
-use webhubworks\verifiedentries\services\VerificationFieldsSetter;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\models\ExpiredEntryData;
+use webhubworks\verifiedelements\models\SectionDefaults;
+use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
+use webhubworks\verifiedelements\services\VerificationFieldsSetter;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 
 

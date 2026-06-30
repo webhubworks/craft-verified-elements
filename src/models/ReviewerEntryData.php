@@ -1,13 +1,13 @@
 <?php
 
-namespace webhubworks\verifiedentries\models;
+namespace webhubworks\verifiedelements\models;
 
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use DateTime;
 use JsonSerializable;
-use webhubworks\verifiedentries\db\PluginQuery;
-use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\helpers\DateHelper;
 
 /**
  * Object representing a single entry assigned to a Reviewer, as returned by the paginated reviewer
@@ -15,7 +15,7 @@ use webhubworks\verifiedentries\helpers\DateHelper;
  * Vue component expects.
  *
  * @see PluginQuery::entriesByReviewer()
- * @see \webhubworks\verifiedentries\services\singletons\Reviewers::getPaginatedEntries()
+ * @see \webhubworks\verifiedelements\services\singletons\Reviewers::getPaginatedEntries()
  */
 readonly class ReviewerEntryData implements JsonSerializable
 {

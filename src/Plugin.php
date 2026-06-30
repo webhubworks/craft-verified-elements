@@ -1,22 +1,22 @@
 <?php
 
-namespace webhubworks\verifiedentries;
+namespace webhubworks\verifiedelements;
 
 use Craft;
-use craft\base\Plugin;
+use craft\base\Plugin as BasePlugin;
 use craft\helpers\UrlHelper;
-use webhubworks\verifiedentries\enums\Edition;
-use webhubworks\verifiedentries\enums\Feature;
-use webhubworks\verifiedentries\enums\Permission;
-use webhubworks\verifiedentries\events\EventRegistrar;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
-use webhubworks\verifiedentries\services\singletons\Reviewers;
+use webhubworks\verifiedelements\enums\Edition;
+use webhubworks\verifiedelements\enums\Feature;
+use webhubworks\verifiedelements\enums\Permission;
+use webhubworks\verifiedelements\events\EventRegistrar;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\services\singletons\Reviewers;
 
 /**
  * Verified Entries plugin
  *
- * @method static VerifiedEntries getInstance()
+ * @method static Plugin getInstance()
  * @author webhubworks <support@webhub.de>
  * @copyright webhubworks
  * @license https://craftcms.github.io/license/ Craft License
@@ -25,7 +25,7 @@ use webhubworks\verifiedentries\services\singletons\Reviewers;
  * @property-read Reviewers $reviewers
  * @property-read PluginSettings $pluginSettings
  */
-class VerifiedEntries extends Plugin
+class Plugin extends BasePlugin
 {
     public const HANDLE = 'verified-entries';
     public string $schemaVersion = '1.0.0';

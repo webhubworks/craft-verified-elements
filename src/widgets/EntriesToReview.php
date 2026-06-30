@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\widgets;
+namespace webhubworks\verifiedelements\widgets;
 
 use Craft;
 use craft\base\Widget;
@@ -8,9 +8,9 @@ use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use Throwable;
-use webhubworks\verifiedentries\enums\VerificationStatus;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\enums\VerificationStatus;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Expired Entries Widget widget type
@@ -25,7 +25,7 @@ class EntriesToReview extends Widget
     /** @inheritDoc */
     public static function displayName(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, 'Entries to Review');
+        return Craft::t(Plugin::HANDLE, 'Entries to Review');
     }
 
     /** @inheritDoc */
@@ -71,7 +71,7 @@ class EntriesToReview extends Widget
     public function getBodyHtml(): ?string
     {
         $userId = Craft::$app->getUser()->getId();
-        $enabledSectionIds = VerifiedEntries::getInstance()->getPluginSettings()->getEnabledSectionIds();
+        $enabledSectionIds = Plugin::getInstance()->getPluginSettings()->getEnabledSectionIds();
 
         /** @noinspection PhpUndefinedMethodInspection */
         $entries = Entry::find()
@@ -86,7 +86,7 @@ class EntriesToReview extends Widget
         if (empty($entries)) {
             return Html::tag(
                 'div',
-                Craft::t(VerifiedEntries::HANDLE, 'There are no entries up for review.'),
+                Craft::t(Plugin::HANDLE, 'There are no entries up for review.'),
                 ['class' => ['zilch', 'small']]
             );
         }
@@ -101,7 +101,7 @@ class EntriesToReview extends Widget
 
         try {
             return Craft::$app->getView()->renderTemplate(
-                VerifiedEntries::HANDLE . '/_widgets/review.twig',
+                Plugin::HANDLE . '/_widgets/review.twig',
                 $templateVariables
             );
         }

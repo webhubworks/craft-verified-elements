@@ -1,10 +1,10 @@
 <?php
 
-namespace webhubworks\verifiedentries\enums;
+namespace webhubworks\verifiedelements\enums;
 
 use Craft;
 use craft\enums\Color;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Enum representing whether an entry has a Craft `User` assigned to review the entry when it
@@ -22,7 +22,7 @@ enum ReviewerStatus: string
 
     public function label(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, match ($this) {
+        return Craft::t(Plugin::HANDLE, match ($this) {
             self::Assigned => 'Assigned',
             self::Unassigned => 'Unassigned',
         });

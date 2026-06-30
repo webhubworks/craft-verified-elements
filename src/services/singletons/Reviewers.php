@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\services\singletons;
+namespace webhubworks\verifiedelements\services\singletons;
 
 use Craft;
 use craft\elements\conditions\entries\EntryCondition;
@@ -8,12 +8,12 @@ use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
-use webhubworks\verifiedentries\db\PluginQuery;
-use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
-use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
-use webhubworks\verifiedentries\enums\DateStatus;
-use webhubworks\verifiedentries\enums\VerificationPeriod;
-use webhubworks\verifiedentries\models\ReviewerEntryData;
+use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\elements\conditions\ReviewerConditionRule;
+use webhubworks\verifiedelements\elements\conditions\VerifiedConditionRule;
+use webhubworks\verifiedelements\enums\DateStatus;
+use webhubworks\verifiedelements\enums\VerificationPeriod;
+use webhubworks\verifiedelements\models\ReviewerEntryData;
 use yii\base\Component;
 
 /**

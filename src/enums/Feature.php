@@ -1,8 +1,8 @@
 <?php
 
-namespace webhubworks\verifiedentries\enums;
+namespace webhubworks\verifiedelements\enums;
 
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Enum representing the single source of truth for which edition unlocks which feature.
@@ -64,6 +64,6 @@ enum Feature
      */
     public function isEnabled(): bool
     {
-        return VerifiedEntries::getInstance()->is($this->requiredEdition()->handle());
+        return Plugin::getInstance()->is($this->requiredEdition()->handle());
     }
 }

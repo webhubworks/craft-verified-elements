@@ -1,8 +1,8 @@
 <?php
 
-use webhubworks\verifiedentries\base\NotifiableInterface;
-use webhubworks\verifiedentries\mail\ExpiredNotification;
-use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
+use webhubworks\verifiedelements\base\NotifiableInterface;
+use webhubworks\verifiedelements\mail\ExpiredNotification;
+use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
 
 /**
  * UNIT TESTS

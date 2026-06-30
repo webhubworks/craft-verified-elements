@@ -1,10 +1,10 @@
 <?php
 
-namespace webhubworks\verifiedentries\models;
+namespace webhubworks\verifiedelements\models;
 
 use Craft;
 use craft\elements\User;
-use webhubworks\verifiedentries\base\NotifiableInterface;
+use webhubworks\verifiedelements\base\NotifiableInterface;
 
 /**
  * This class represents an email recipient for the plugin's notifications when a User element is

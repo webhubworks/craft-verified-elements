@@ -1,15 +1,15 @@
 <?php /** @noinspection PhpUnhandledExceptionInspection */
 
-namespace webhubworks\verifiedentries\elements;
+namespace webhubworks\verifiedelements\elements;
 
 use Craft;
 use craft\elements\Entry;
 use craft\elements\User;
-use webhubworks\verifiedentries\enums\Permission;
-use webhubworks\verifiedentries\enums\ReviewerStatus;
-use webhubworks\verifiedentries\enums\VerificationStatus;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\enums\Permission;
+use webhubworks\verifiedelements\enums\ReviewerStatus;
+use webhubworks\verifiedelements\enums\VerificationStatus;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Entry subtype that powers the plugin's dashboard element index, defining its sidebar sources
@@ -38,7 +38,7 @@ class VerifiedEntry extends Entry
     /** @inheritDoc */
     protected static function defineSources(string $context = null): array
     {
-        $enabledSectionIds = VerifiedEntries::getInstance()->getPluginSettings()->getEnabledSectionIds();
+        $enabledSectionIds = Plugin::getInstance()->getPluginSettings()->getEnabledSectionIds();
         $currentUser = Craft::$app->getUser();
 
         /** @noinspection PhpUndefinedMethodInspection */
@@ -60,7 +60,7 @@ class VerifiedEntry extends Entry
             ],
             [
                 'key' => 'upcoming',
-                'label' => Craft::t(VerifiedEntries::HANDLE, 'Imminent'),
+                'label' => Craft::t(Plugin::HANDLE, 'Imminent'),
                 'criteria' => [
                     'isVerified' => true,
                     'sectionId' => $enabledSectionIds,
@@ -85,7 +85,7 @@ class VerifiedEntry extends Entry
                 ],
             ],
             [
-                'heading' => Craft::t(VerifiedEntries::HANDLE, 'Reviewer'),
+                'heading' => Craft::t(Plugin::HANDLE, 'Reviewer'),
             ],
             [
                 'key' => 'mine',

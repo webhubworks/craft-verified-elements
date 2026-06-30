@@ -1,12 +1,12 @@
 <?php /** @noinspection PhpUnused */
 
-namespace webhubworks\verifiedentries\controllers;
+namespace webhubworks\verifiedelements\controllers;
 
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\Plugin;
 use yii\web\Response;
 
 /**
@@ -32,8 +32,8 @@ class CustomDateController extends Controller
     public function actionIndex(): Response
     {
         return $this->asCpModal()
-            ->action(VerifiedEntries::HANDLE . '/custom-date/resolve-date')
-            ->contentTemplate(VerifiedEntries::HANDLE . '/_modals/_date.twig');
+            ->action(Plugin::HANDLE . '/custom-date/resolve-date')
+            ->contentTemplate(Plugin::HANDLE . '/_modals/_date.twig');
     }
 
     /**
@@ -50,7 +50,7 @@ class CustomDateController extends Controller
 
         if (! $date) {
             return $this->asFailure(
-                Craft::t(VerifiedEntries::HANDLE, 'No date provided.'),
+                Craft::t(Plugin::HANDLE, 'No date provided.'),
                 [
                     'errors' => [
                         'verifiedUntilDate' => [

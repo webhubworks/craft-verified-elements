@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\services;
+namespace webhubworks\verifiedelements\services;
 
 use Craft;
 use craft\elements\Entry;
@@ -10,14 +10,14 @@ use craft\helpers\DateTimeHelper;
 use craft\i18n\Formatter;
 use DateTime;
 use Throwable;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\enums\DateStatus;
-use webhubworks\verifiedentries\enums\Permission;
-use webhubworks\verifiedentries\enums\VerificationPeriod;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\enums\DateStatus;
+use webhubworks\verifiedelements\enums\Permission;
+use webhubworks\verifiedelements\enums\VerificationPeriod;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Construct the HTML for the "Reviewer" and "Verified until" date fields that appear in the
@@ -43,7 +43,7 @@ readonly class VerificationFieldsRenderer
         $config = [
             'id' => 'reviewerId',
             'name' => 'reviewerId',
-            'label' => Craft::t(VerifiedEntries::HANDLE, 'Reviewer'),
+            'label' => Craft::t(Plugin::HANDLE, 'Reviewer'),
             'single' => true,
             'elementType' => User::class,
             'elements' => $reviewer ? [$reviewer] : null,
@@ -149,7 +149,7 @@ readonly class VerificationFieldsRenderer
             // Tell the user how many days, months, or years away the date is
             $hint = DateTimeHelper::humanDuration($dateInterval);
             if ($period->value === $defaultPeriod) {
-                $hint .= ' (' . Craft::t(VerifiedEntries::HANDLE, 'Standard') . ')';
+                $hint .= ' (' . Craft::t(Plugin::HANDLE, 'Standard') . ')';
             }
 
             $options[] = [
@@ -200,7 +200,7 @@ readonly class VerificationFieldsRenderer
 
         if ($withCustomDate) {
             $options[] = [
-                'label' => Craft::t(VerifiedEntries::HANDLE, 'Specific Date'),
+                'label' => Craft::t(Plugin::HANDLE, 'Specific Date'),
                 'value' => VerificationPeriod::SpecificDate->value,
             ];
         }

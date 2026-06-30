@@ -1,14 +1,14 @@
 <?php
 
-namespace webhubworks\verifiedentries\services\singletons;
+namespace webhubworks\verifiedelements\services\singletons;
 
 use craft\db\Query;
 use craft\elements\User;
 use craft\helpers\Db;
-use webhubworks\verifiedentries\db\PluginQuery;
-use webhubworks\verifiedentries\db\PluginTable;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\models\SectionDefaults;
+use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\db\PluginTable;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\models\SectionDefaults;
 use yii\base\Component;
 use yii\db\Exception;
 

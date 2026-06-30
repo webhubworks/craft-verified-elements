@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\base;
+namespace webhubworks\verifiedelements\base;
 
 /**
  * Interface for recipients receiving this plugin's notifications.

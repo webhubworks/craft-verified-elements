@@ -1,13 +1,13 @@
 <?php
 
-namespace webhubworks\verifiedentries\console\controllers;
+namespace webhubworks\verifiedelements\console\controllers;
 
 use craft\console\Controller;
 use craft\log\Dispatcher;
-use webhubworks\verifiedentries\models\ExpiredEntryData;
-use webhubworks\verifiedentries\models\SystemRecipient;
-use webhubworks\verifiedentries\models\UserRecipient;
-use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
+use webhubworks\verifiedelements\models\ExpiredEntryData;
+use webhubworks\verifiedelements\models\SystemRecipient;
+use webhubworks\verifiedelements\models\UserRecipient;
+use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
 use yii\console\ExitCode;
 use yii\helpers\BaseConsole;
 

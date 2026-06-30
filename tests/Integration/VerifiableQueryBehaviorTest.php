@@ -3,8 +3,8 @@
 use craft\elements\Entry as EntryElement;
 use craft\helpers\Db;
 use markhuot\craftpest\factories\Entry;
-use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
-use webhubworks\verifiedentries\db\PluginTable;
+use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\db\PluginTable;
 
 /**
  * INTEGRATION TESTS

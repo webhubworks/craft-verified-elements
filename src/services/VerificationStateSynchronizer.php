@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\services;
+namespace webhubworks\verifiedelements\services;
 
 use Craft;
 use craft\db\Query;
@@ -8,16 +8,16 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
 use DateTime;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\db\PluginQuery;
-use webhubworks\verifiedentries\db\PluginTable;
-use webhubworks\verifiedentries\elements\VerifiedEntry;
-use webhubworks\verifiedentries\events\EventRegistrar;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\mail\ChangeNotification;
-use webhubworks\verifiedentries\models\UserRecipient;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\db\PluginTable;
+use webhubworks\verifiedelements\elements\VerifiedEntry;
+use webhubworks\verifiedelements\events\EventRegistrar;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\mail\ChangeNotification;
+use webhubworks\verifiedelements\models\UserRecipient;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
 use yii\db\Exception;
 
 /**

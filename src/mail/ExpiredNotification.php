@@ -1,15 +1,15 @@
 <?php
 
-namespace webhubworks\verifiedentries\mail;
+namespace webhubworks\verifiedelements\mail;
 
 use Craft;
 use craft\helpers\Html;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
-use webhubworks\verifiedentries\base\NotifiableInterface;
-use webhubworks\verifiedentries\base\Notification;
-use webhubworks\verifiedentries\models\ExpiredEntryData;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\base\NotifiableInterface;
+use webhubworks\verifiedelements\base\Notification;
+use webhubworks\verifiedelements\models\ExpiredEntryData;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Sends a Reviewer a digest of expired entries assigned to them, prompting them to review them.
@@ -89,7 +89,7 @@ class ExpiredNotification extends Notification
     {
         return UrlHelper::cpUrl('entries', [
             'source' => '*',
-            'filters' => VerifiedEntries::getInstance()
+            'filters' => Plugin::getInstance()
                 ->getReviewers()
                 ->getFilterParams($this->recipient->getId()),
         ]);

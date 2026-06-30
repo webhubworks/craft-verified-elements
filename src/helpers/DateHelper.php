@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\helpers;
+namespace webhubworks\verifiedelements\helpers;
 
 use Carbon\Carbon;
 use Craft;
@@ -9,8 +9,8 @@ use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use webhubworks\verifiedentries\enums\DateStatus;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\enums\DateStatus;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Helper methods for handling date/time.
@@ -123,7 +123,7 @@ class DateHelper
         if ($diff->days < 31) {
             $message = $diff->invert ? '{n} days ago' : '{n} days remaining';
 
-            return Craft::t(VerifiedEntries::HANDLE, $message, ['n' => $diff->days]);
+            return Craft::t(Plugin::HANDLE, $message, ['n' => $diff->days]);
         }
 
         return Craft::$app->getFormatter()->asDate($date, 'short');

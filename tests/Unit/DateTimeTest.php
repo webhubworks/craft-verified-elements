@@ -2,7 +2,7 @@
 
 use Carbon\Carbon;
 use craft\helpers\Db;
-use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedelements\helpers\DateHelper;
 
 /**
  * UNIT TESTS

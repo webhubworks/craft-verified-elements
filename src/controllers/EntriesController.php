@@ -1,15 +1,15 @@
 <?php /** @noinspection PhpUnused */
 
-namespace webhubworks\verifiedentries\controllers;
+namespace webhubworks\verifiedelements\controllers;
 
 use Craft;
 use craft\helpers\AdminTable;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
-use webhubworks\verifiedentries\enums\VerificationPeriod;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\services\VerificationFieldsRenderer;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\enums\VerificationPeriod;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
+use webhubworks\verifiedelements\Plugin;
 use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
@@ -35,7 +35,7 @@ class EntriesController extends Controller
      */
     public function actionIndex(): Response
     {
-        return $this->renderTemplate(VerifiedEntries::HANDLE . '/index.twig');
+        return $this->renderTemplate(Plugin::HANDLE . '/index.twig');
     }
 
     /**
@@ -46,9 +46,9 @@ class EntriesController extends Controller
     public function actionRequestPeriod(): Response
     {
         return $this->asCpModal()
-            ->action(VerifiedEntries::HANDLE . '/entries/resolve-date')
+            ->action(Plugin::HANDLE . '/entries/resolve-date')
             ->contentTemplate(
-                VerifiedEntries::HANDLE . '/_modals/_period.twig',
+                Plugin::HANDLE . '/_modals/_period.twig',
                 ['periodSelectOptions' => VerificationFieldsRenderer::periodSelectOptions(true)]
             );
     }
@@ -80,7 +80,7 @@ class EntriesController extends Controller
         }
 
         if ($date === false) {
-            return $this->asFailure(Craft::t(VerifiedEntries::HANDLE, 'Not a valid date.'));
+            return $this->asFailure(Craft::t(Plugin::HANDLE, 'Not a valid date.'));
         }
 
         return $this->asJson([
@@ -113,7 +113,7 @@ class EntriesController extends Controller
             default => SORT_ASC,
         };
 
-        [$results, $total] = VerifiedEntries::getInstance()->getReviewers()->getPaginatedEntries(
+        [$results, $total] = Plugin::getInstance()->getReviewers()->getPaginatedEntries(
             $page,
             $limit,
             $sortDir,

@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\events;
+namespace webhubworks\verifiedelements\events;
 
 use Craft;
 use craft\base\Element;
@@ -38,38 +38,38 @@ use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use DateTime;
 use Twig\TwigFilter;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\models\SystemRecipient;
-use webhubworks\verifiedentries\models\UserRecipient;
-use webhubworks\verifiedentries\services\EntrySidebarRenderer;
-use webhubworks\verifiedentries\services\ExpiredVerificationNotifier;
-use webhubworks\verifiedentries\services\VerificationFieldsRenderer;
-use webhubworks\verifiedentries\services\VerificationFieldsSetter;
-use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
-use webhubworks\verifiedentries\VerifiedEntries;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
-use webhubworks\verifiedentries\elements\VerifiedEntry;
-use webhubworks\verifiedentries\elements\actions\AssignReviewer;
-use webhubworks\verifiedentries\elements\actions\VerifyEntry;
-use webhubworks\verifiedentries\elements\conditions\ReviewerConditionRule;
-use webhubworks\verifiedentries\elements\conditions\VerifiedConditionRule;
-use webhubworks\verifiedentries\elements\conditions\VerifiedUntilDateConditionRule;
-use webhubworks\verifiedentries\enums\Permission;
-use webhubworks\verifiedentries\widgets\EntriesToReview;
-use webhubworks\verifiedentries\widgets\VerificationHealth;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\models\SystemRecipient;
+use webhubworks\verifiedelements\models\UserRecipient;
+use webhubworks\verifiedelements\services\EntrySidebarRenderer;
+use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
+use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
+use webhubworks\verifiedelements\services\VerificationFieldsSetter;
+use webhubworks\verifiedelements\services\VerificationStateSynchronizer;
+use webhubworks\verifiedelements\Plugin;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\elements\VerifiedEntry;
+use webhubworks\verifiedelements\elements\actions\AssignReviewer;
+use webhubworks\verifiedelements\elements\actions\VerifyEntry;
+use webhubworks\verifiedelements\elements\conditions\ReviewerConditionRule;
+use webhubworks\verifiedelements\elements\conditions\VerifiedConditionRule;
+use webhubworks\verifiedelements\elements\conditions\VerifiedUntilDateConditionRule;
+use webhubworks\verifiedelements\enums\Permission;
+use webhubworks\verifiedelements\widgets\EntriesToReview;
+use webhubworks\verifiedelements\widgets\VerificationHealth;
 
 /**
  * Helper class for registering the plugin's event handlers.
- * @see VerifiedEntries::init()
+ * @see Plugin::init()
  */
 readonly class EventRegistrar
 {
     public function __construct(
-        private VerifiedEntries $plugin,
-        private bool            $isCpRequest,
-        private bool            $isConsoleRequest,
+        private Plugin $plugin,
+        private bool   $isCpRequest,
+        private bool   $isConsoleRequest,
     ) {}
 
 
@@ -83,7 +83,7 @@ readonly class EventRegistrar
      * @see BaseCondition::EVENT_REGISTER_CONDITION_RULES
      * @see Gc::EVENT_RUN
      * @see UrlManager::EVENT_REGISTER_CP_URL_RULES
-     * @see VerifiedEntries::init()
+     * @see Plugin::init()
      */
     public function registerEarlyEvents(): void
     {
@@ -164,16 +164,16 @@ readonly class EventRegistrar
             static function (RegisterUrlRulesEvent $event) {
                 $currentUser = Craft::$app->getUser();
 
-                $event->rules[VerifiedEntries::HANDLE] = VerifiedEntries::HANDLE . '/entries/index';
+                $event->rules[Plugin::HANDLE] = Plugin::HANDLE . '/entries/index';
 
                 if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
-                    $event->rules[VerifiedEntries::HANDLE . '/settings'] = VerifiedEntries::HANDLE . '/settings/index';
-                    $event->rules[VerifiedEntries::HANDLE . '/settings/grouped'] = VerifiedEntries::HANDLE . '/settings/grouped';
+                    $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/index';
+                    $event->rules[Plugin::HANDLE . '/settings/grouped'] = Plugin::HANDLE . '/settings/grouped';
                 }
 
                 // User edit screen
-                $event->rules['myaccount/' . VerifiedEntries::HANDLE] = VerifiedEntries::HANDLE . '/reviewers/index';
-                $event->rules['users/<userId:\d+>/' . VerifiedEntries::HANDLE] = VerifiedEntries::HANDLE . '/reviewers/index';
+                $event->rules['myaccount/' . Plugin::HANDLE] = Plugin::HANDLE . '/reviewers/index';
+                $event->rules['users/<userId:\d+>/' . Plugin::HANDLE] = Plugin::HANDLE . '/reviewers/index';
             }
         );
     }
@@ -186,7 +186,7 @@ readonly class EventRegistrar
     public function extendTwig(): void
     {
         // define Twig constants
-        Craft::$app->getView()->getTwig()->addGlobal('pluginHandle', VerifiedEntries::HANDLE);
+        Craft::$app->getView()->getTwig()->addGlobal('pluginHandle', Plugin::HANDLE);
 
         // define custom Twig functions
         Craft::$app->getView()->getTwig()->addFilter(
@@ -227,13 +227,13 @@ readonly class EventRegistrar
             UserPermissions::EVENT_REGISTER_PERMISSIONS,
             static function (RegisterUserPermissionsEvent $event) {
                 $event->permissions[] = [
-                    'heading' => Craft::t(VerifiedEntries::HANDLE, 'Verified Entries'),
+                    'heading' => Craft::t(Plugin::HANDLE, 'Verified Entries'),
                     'permissions' => [
                         Permission::ManageVerificationSettings->value => [
-                            'label' => Craft::t(VerifiedEntries::HANDLE, 'Manage Verification Settings'),
+                            'label' => Craft::t(Plugin::HANDLE, 'Manage Verification Settings'),
                         ],
                         Permission::VerifyEntries->value => [
-                            'label' => Craft::t(VerifiedEntries::HANDLE, 'Verify entries'),
+                            'label' => Craft::t(Plugin::HANDLE, 'Verify entries'),
                         ]
                     ],
                 ];
@@ -262,8 +262,8 @@ readonly class EventRegistrar
                     return;
                 }
 
-                $event->screens[VerifiedEntries::HANDLE] = [
-                    'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified Entries'),
+                $event->screens[Plugin::HANDLE] = [
+                    'label' => Craft::t(Plugin::HANDLE, 'Verified Entries'),
                 ];
             }
         );
@@ -418,7 +418,7 @@ readonly class EventRegistrar
                 );
                 $statusHtml .= Html::tag('span', $status->label());
 
-                $event->metadata[Craft::t(VerifiedEntries::HANDLE, 'Verification')] = $statusHtml;
+                $event->metadata[Craft::t(Plugin::HANDLE, 'Verification')] = $statusHtml;
             }
         );
 
@@ -495,7 +495,7 @@ readonly class EventRegistrar
             Element::EVENT_REGISTER_SORT_OPTIONS,
             static function (RegisterElementSortOptionsEvent $event) {
                 $event->sortOptions[] = [
-                    'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified until'),
+                    'label' => Craft::t(Plugin::HANDLE, 'Verified until'),
                     'orderBy' => 'verifiedUntilDate',
                     'defaultDir' => 'desc',
                 ];
@@ -520,15 +520,15 @@ readonly class EventRegistrar
             Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
             static function (RegisterElementTableAttributesEvent $event) {
                 $event->tableAttributes['verifiedUntilDate'] = [
-                    'label' => Craft::t(VerifiedEntries::HANDLE, 'Verified until')
+                    'label' => Craft::t(Plugin::HANDLE, 'Verified until')
                 ];
 
                 $event->tableAttributes['isVerified'] = [
-                    'label' => Craft::t(VerifiedEntries::HANDLE, 'Verification'),
+                    'label' => Craft::t(Plugin::HANDLE, 'Verification'),
                 ];
 
                 $event->tableAttributes['reviewer'] = [
-                    'label' => Craft::t(VerifiedEntries::HANDLE, 'Reviewer'),
+                    'label' => Craft::t(Plugin::HANDLE, 'Reviewer'),
                 ];
             }
         );
@@ -561,7 +561,7 @@ readonly class EventRegistrar
                         else {
                             $event->html = Html::tag(
                                 'span',
-                                Craft::t(VerifiedEntries::HANDLE, 'Unassigned'),
+                                Craft::t(Plugin::HANDLE, 'Unassigned'),
                                 [
                                     'class' => 'light',
                                     'style' => ['font-style' => 'italic'],

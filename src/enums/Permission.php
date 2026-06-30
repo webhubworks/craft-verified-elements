@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\enums;
+namespace webhubworks\verifiedelements\enums;
 
 /**
  * Enum representing user permissions for verifying entries.

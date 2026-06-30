@@ -1,15 +1,15 @@
 <?php
 
-namespace webhubworks\verifiedentries\widgets;
+namespace webhubworks\verifiedelements\widgets;
 
 use Craft;
 use craft\base\Widget;
 use craft\elements\Entry;
 use craft\helpers\Cp;
 use Throwable;
-use webhubworks\verifiedentries\enums\VerificationStatus;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\enums\VerificationStatus;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Verification Health widget type
@@ -24,7 +24,7 @@ class VerificationHealth extends Widget
     /** @inheritDoc */
     public static function displayName(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, 'Verification Health');
+        return Craft::t(Plugin::HANDLE, 'Verification Health');
     }
 
     /** @inheritDoc */
@@ -51,7 +51,7 @@ class VerificationHealth extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        $settings = VerifiedEntries::getInstance()->getPluginSettings();
+        $settings = Plugin::getInstance()->getPluginSettings();
         $enabledSectionIds = $this->siteId
             ? $settings->getEnabledSectionIdsForSite($this->siteId)
             : $settings->getEnabledSectionIds();
@@ -118,7 +118,7 @@ class VerificationHealth extends Widget
 
         try {
             return Craft::$app->getView()->renderTemplate(
-                VerifiedEntries::HANDLE . '/_widgets/health.twig',
+                Plugin::HANDLE . '/_widgets/health.twig',
                 $templateVariables
             );
         }
@@ -142,7 +142,7 @@ class VerificationHealth extends Widget
         }
 
         $templateVariables = [
-            'label' => Craft::t(VerifiedEntries::HANDLE, 'Site'),
+            'label' => Craft::t(Plugin::HANDLE, 'Site'),
             'name' => 'siteId',
             'options' => $options,
             'value' => $this->siteId ? (string)$this->siteId : '',

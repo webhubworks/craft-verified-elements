@@ -1,15 +1,15 @@
 <?php
 
-namespace webhubworks\verifiedentries\services;
+namespace webhubworks\verifiedelements\services;
 
 use craft\elements\User;
-use webhubworks\verifiedentries\base\NotifiableInterface;
-use webhubworks\verifiedentries\console\controllers\CheckExpiredVerificationsController;
-use webhubworks\verifiedentries\db\PluginQuery;
-use webhubworks\verifiedentries\events\EventRegistrar;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\mail\ExpiredNotification;
-use webhubworks\verifiedentries\models\ExpiredEntryData;
+use webhubworks\verifiedelements\base\NotifiableInterface;
+use webhubworks\verifiedelements\console\controllers\CheckExpiredVerificationsController;
+use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\events\EventRegistrar;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\mail\ExpiredNotification;
+use webhubworks\verifiedelements\models\ExpiredEntryData;
 
 /**
  * Finds all entries whose verification date has passed and notifies either their assigned

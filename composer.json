@@ -1,6 +1,6 @@
 {
   "name": "webhubworks/craft-verified-entries",
-  "description": "Verified Entries is a Craft CMS plugin that enables editors to take ownership of entries, verify them periodically, and set an expiration date for validity. It helps maintain content freshness by sending reminders to review and update entries before they become outdated.",
+  "description": "Verified Elements is a Craft CMS plugin that enables editors to take ownership of entries and assets, verify them periodically, and set an expiration date for validity. It helps maintain content freshness by sending reminders to review and update entries and assets before they become outdated.",
   "type": "craft-plugin",
   "license": "proprietary",
   "support": {
@@ -22,15 +22,15 @@
   },
   "autoload": {
     "psr-4": {
-      "webhubworks\\verifiedentries\\": "src/"
+      "webhubworks\\verifiedelements\\": "src/"
     }
   },
   "extra": {
     "handle": "verified-entries",
-    "name": "Verified Entries",
+    "name": "Verified Elements",
     "developer": "webhubworks",
     "documentationUrl": "https://github.com/webhubworks/craft-verified-entries",
-    "class": "webhubworks\\verifiedentries\\VerifiedEntries"
+    "class": "webhubworks\\verifiedelements\\Plugin"
   },
   "scripts": {
     "check-cs": "ecs check --ansi",

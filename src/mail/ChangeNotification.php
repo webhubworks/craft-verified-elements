@@ -1,14 +1,14 @@
 <?php
 
-namespace webhubworks\verifiedentries\mail;
+namespace webhubworks\verifiedelements\mail;
 
 use Craft;
 use craft\elements\Entry;
 use craft\helpers\Html;
 use craft\i18n\Locale;
-use webhubworks\verifiedentries\base\NotifiableInterface;
-use webhubworks\verifiedentries\base\Notification;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\base\NotifiableInterface;
+use webhubworks\verifiedelements\base\Notification;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 
 /**
  * Sends an entry's Reviewer an email that someone has updated their entry

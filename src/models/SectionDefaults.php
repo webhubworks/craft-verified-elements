@@ -1,8 +1,8 @@
 <?php
 
-namespace webhubworks\verifiedentries\models;
+namespace webhubworks\verifiedelements\models;
 
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 /**
  * Default settings for a section (per site) that was saved in the plugin's settings page in the CP.

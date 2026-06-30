@@ -1,11 +1,11 @@
 <?php
 
-namespace webhubworks\verifiedentries\db;
+namespace webhubworks\verifiedelements\db;
 
 use craft\db\Query;
 use craft\helpers\Db;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\models\ExpiredEntryData;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\models\ExpiredEntryData;
 
 /**
  * Class for abstracting out the many complicated database queries used throughout the plugin.
@@ -23,7 +23,7 @@ abstract class PluginQuery
      * @param int $userId The Reviewer
      * @param int|null $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\singletons\Reviewers
+     * @see \webhubworks\verifiedelements\services\singletons\Reviewers
      */
     public static function sectionsByReviewer(int $userId, ?int $siteId = null): Query
     {
@@ -56,8 +56,8 @@ abstract class PluginQuery
      * @param int $userId The Reviewer
      * @param int|null $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\singletons\Reviewers
-     * @see \webhubworks\verifiedentries\models\ReviewerEntryData
+     * @see \webhubworks\verifiedelements\services\singletons\Reviewers
+     * @see \webhubworks\verifiedelements\models\ReviewerEntryData
      */
     public static function entriesByReviewer(int $userId, ?int $siteId = null): Query
     {
@@ -166,7 +166,7 @@ abstract class PluginQuery
      *
      * @param int $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\singletons\PluginSettings::getAllSectionsWithSettings
+     * @see \webhubworks\verifiedelements\services\singletons\PluginSettings::getAllSectionsWithSettings
      */
     public static function sectionsWithSettings(int $siteId): Query
     {
@@ -200,7 +200,7 @@ abstract class PluginQuery
      * @param int $sectionId
      * @param int $siteId
      * @return Query
-     * @see \webhubworks\verifiedentries\services\singletons\PluginSettings::getDefaultSettingsForSection()
+     * @see \webhubworks\verifiedelements\services\singletons\PluginSettings::getDefaultSettingsForSection()
      */
     public static function sectionDefaults(int $sectionId, int $siteId): Query
     {

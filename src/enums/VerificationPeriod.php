@@ -1,9 +1,9 @@
 <?php
 
-namespace webhubworks\verifiedentries\enums;
+namespace webhubworks\verifiedelements\enums;
 
 use DateInterval;
-use webhubworks\verifiedentries\helpers\DateHelper;
+use webhubworks\verifiedelements\helpers\DateHelper;
 
 /**
  * Enum representing the options an admin can choose in the CP for when an entry needs verification (e.g. the

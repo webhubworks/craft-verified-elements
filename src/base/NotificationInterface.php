@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\base;
+namespace webhubworks\verifiedelements\base;
 
 /**
  * All notifications should implement this class.

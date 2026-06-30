@@ -2,8 +2,8 @@
 
 use craft\helpers\Db;
 use markhuot\craftpest\factories\Entry;
-use webhubworks\verifiedentries\db\PluginQuery;
-use webhubworks\verifiedentries\db\PluginTable;
+use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\db\PluginTable;
 
 /**
  * INTEGRATION TESTS

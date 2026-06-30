@@ -2,9 +2,9 @@
 
 use craft\helpers\Db;
 use markhuot\craftpest\factories\Entry;
-use webhubworks\verifiedentries\db\PluginTable;
-use webhubworks\verifiedentries\services\VerificationFieldsSetter;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\db\PluginTable;
+use webhubworks\verifiedelements\services\VerificationFieldsSetter;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 /**
  * INTEGRATION TESTS

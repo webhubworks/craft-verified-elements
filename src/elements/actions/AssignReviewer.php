@@ -1,13 +1,13 @@
 <?php /** @noinspection JSUnresolvedReference */
 
-namespace webhubworks\verifiedentries\elements\actions;
+namespace webhubworks\verifiedelements\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
 use Throwable;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Bulk action that assigns a Reviewer to one or more entries from the element index in the CP.
@@ -21,7 +21,7 @@ class AssignReviewer extends ElementAction
     /** @inheritDoc */
     public static function displayName(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, 'Assign Reviewer');
+        return Craft::t(Plugin::HANDLE, 'Assign Reviewer');
     }
 
     /** @inheritDoc */

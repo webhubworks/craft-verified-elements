@@ -1,9 +1,9 @@
 <?php
 
-namespace webhubworks\verifiedentries\models;
+namespace webhubworks\verifiedelements\models;
 
 use craft\helpers\UrlHelper;
-use webhubworks\verifiedentries\db\PluginQuery;
+use webhubworks\verifiedelements\db\PluginQuery;
 
 /**
  * Object representing data returned from querying for all verifiable entries that have

@@ -1,10 +1,10 @@
 <?php
 
-namespace webhubworks\verifiedentries\migrations;
+namespace webhubworks\verifiedelements\migrations;
 
 use craft\db\Migration;
 use craft\db\Table as CraftTable;
-use webhubworks\verifiedentries\db\PluginTable;
+use webhubworks\verifiedelements\db\PluginTable;
 
 /**
  * Install migration.

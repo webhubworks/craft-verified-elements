@@ -3,8 +3,8 @@
 use craft\elements\User;
 use craft\models\Site;
 use Mockery\MockInterface;
-use webhubworks\verifiedentries\mail\ChangeNotification;
-use webhubworks\verifiedentries\services\VerificationStateSynchronizer;
+use webhubworks\verifiedelements\mail\ChangeNotification;
+use webhubworks\verifiedelements\services\VerificationStateSynchronizer;
 
 /**
  * UNIT TESTS

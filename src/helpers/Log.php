@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\helpers;
+namespace webhubworks\verifiedelements\helpers;
 
 use Craft;
 use craft\log\Dispatcher;
@@ -8,7 +8,7 @@ use craft\log\MonologTarget;
 use Monolog\Formatter\LineFormatter;
 use Psr\Log\LogLevel;
 use Throwable;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Use these logging functions to isolate plugin-related info/error messages into its own file.
@@ -16,8 +16,8 @@ use webhubworks\verifiedentries\VerifiedEntries;
  * Craft will still include the messages in its own logs, but also create a file named after the
  * plugin's handle so you don't have to sift through the verbose logs.
  *
- * @see VerifiedEntries::HANDLE
- * @see VerifiedEntries::init()
+ * @see Plugin::HANDLE
+ * @see Plugin::init()
  */
 class Log
 {
@@ -35,7 +35,7 @@ class Log
     {
         Craft::info(
             sprintf("[%s] [info] %s.", $target, $message),
-            VerifiedEntries::HANDLE
+            Plugin::HANDLE
         );
     }
 
@@ -53,7 +53,7 @@ class Log
     {
         Craft::warning(
             sprintf("[%s] [warning] %s.", $target, $message),
-            VerifiedEntries::HANDLE
+            Plugin::HANDLE
         );
     }
 
@@ -83,20 +83,20 @@ class Log
             );
         }
 
-        Craft::error($message, VerifiedEntries::HANDLE);
+        Craft::error($message, Plugin::HANDLE);
     }
 
     /**
      * Registers this plugin's own custom logger.
      *
      * @return void
-     * @see VerifiedEntries::init()
+     * @see Plugin::init()
      */
     public static function registerLogger(): void
     {
         Craft::getLogger()->dispatcher->targets[] = new MonologTarget([
-            'name' => VerifiedEntries::HANDLE,
-            'categories' => [VerifiedEntries::HANDLE],
+            'name' => Plugin::HANDLE,
+            'categories' => [Plugin::HANDLE],
             'level' => LogLevel::INFO,
             'logContext' => false,
             'allowLineBreaks' => false,

@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\enums;
+namespace webhubworks\verifiedelements\enums;
 
 /**
  * Enum representing the different editions of this plugin that a user can purchase to unlock

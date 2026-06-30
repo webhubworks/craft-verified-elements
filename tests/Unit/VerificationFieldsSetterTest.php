@@ -1,7 +1,7 @@
 <?php
 
 use Carbon\Carbon;
-use webhubworks\verifiedentries\services\VerificationFieldsSetter;
+use webhubworks\verifiedelements\services\VerificationFieldsSetter;
 
 /**
  * UNIT TESTS

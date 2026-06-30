@@ -1,11 +1,11 @@
 <?php
 
-namespace webhubworks\verifiedentries\migrations;
+namespace webhubworks\verifiedelements\migrations;
 
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table as CraftTable;
-use webhubworks\verifiedentries\db\PluginTable;
+use webhubworks\verifiedelements\db\PluginTable;
 
 class m260608_000000_add_multisite_support extends Migration
 {

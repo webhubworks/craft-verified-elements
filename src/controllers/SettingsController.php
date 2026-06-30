@@ -1,13 +1,13 @@
 <?php
 
-namespace webhubworks\verifiedentries\controllers;
+namespace webhubworks\verifiedelements\controllers;
 
 use Craft;
 use craft\errors\SiteNotFoundException;
 use craft\web\Controller;
-use webhubworks\verifiedentries\enums\Permission;
-use webhubworks\verifiedentries\services\VerificationFieldsRenderer;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\enums\Permission;
+use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
+use webhubworks\verifiedelements\Plugin;
 use yii\db\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
@@ -42,12 +42,12 @@ class SettingsController extends Controller
             ? Craft::$app->getSites()->getSiteByHandle($siteHandle)
             : Craft::$app->getSites()->getPrimarySite();
 
-        $sections = VerifiedEntries::getInstance()
+        $sections = Plugin::getInstance()
             ->getPluginSettings()
             ->getAllSectionsWithSettings($currentSite->id);
 
         return $this->renderTemplate(
-            VerifiedEntries::HANDLE . '/_settings.twig',
+            Plugin::HANDLE . '/_settings.twig',
             [
                 'sites' => $sites,
                 'currentSite' => $currentSite,
@@ -71,12 +71,12 @@ class SettingsController extends Controller
 
         $siteId = (int) $this->request->getRequiredBodyParam('siteId');
         $sections = $this->request->getRequiredBodyParam('sections');
-        $service = VerifiedEntries::getInstance()->getPluginSettings();
+        $service = Plugin::getInstance()->getPluginSettings();
 
         foreach ($sections as $sectionId => $settings) {
             $service->saveSectionSettings((int) $sectionId, $siteId, $settings);
         }
 
-        return $this->asSuccess(Craft::t(VerifiedEntries::HANDLE, 'Verification settings saved.'));
+        return $this->asSuccess(Craft::t(Plugin::HANDLE, 'Verification settings saved.'));
     }
 }

@@ -1,14 +1,14 @@
 <?php
 
-namespace webhubworks\verifiedentries\base;
+namespace webhubworks\verifiedelements\base;
 
 use Craft;
 use craft\elements\Entry;
 use craft\i18n\Formatter;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\mail\ChangeNotification;
-use webhubworks\verifiedentries\mail\ExpiredNotification;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\mail\ChangeNotification;
+use webhubworks\verifiedelements\mail\ExpiredNotification;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * The base class for all notification classes.
@@ -45,7 +45,7 @@ abstract class Notification implements NotificationInterface
      * @param string $category
      * @return string
      */
-    protected function t(string $message, ?array $params = null, string $category = VerifiedEntries::HANDLE): string
+    protected function t(string $message, ?array $params = null, string $category = Plugin::HANDLE): string
     {
         return Craft::t($category, $message, $params, $this->locale);
     }

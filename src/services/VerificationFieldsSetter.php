@@ -1,15 +1,15 @@
 <?php
 
-namespace webhubworks\verifiedentries\services;
+namespace webhubworks\verifiedelements\services;
 
 use craft\elements\Entry;
 use DateTime;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\db\PluginQuery;
-use webhubworks\verifiedentries\enums\VerificationPeriod;
-use webhubworks\verifiedentries\events\EventRegistrar;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\enums\VerificationPeriod;
+use webhubworks\verifiedelements\events\EventRegistrar;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 /**
  * Resolves the default Reviewer ID and "Verified until" date that should be applied to an entry's

@@ -1,15 +1,15 @@
 <?php
 
-namespace webhubworks\verifiedentries\services;
+namespace webhubworks\verifiedelements\services;
 
 use Craft;
 use craft\elements\Entry;
 use craft\helpers\Html;
 use Throwable;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\services\singletons\PluginSettings;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Constructs the HTML that gets injected into Craft's sidebar on an entry's "edit" page,
@@ -52,7 +52,7 @@ readonly class EntrySidebarRenderer
     private function buildWarningHtml(): string
     {
         $text = Craft::t(
-            VerifiedEntries::HANDLE,
+            Plugin::HANDLE,
             'Entry has expired and is due to be verified.'
         );
 
@@ -86,7 +86,7 @@ readonly class EntrySidebarRenderer
 
         try {
             return Craft::$app->getView()->renderTemplate(
-                VerifiedEntries::HANDLE . '/_sidebar.twig',
+                Plugin::HANDLE . '/_sidebar.twig',
                 $templateVariables
             );
         }

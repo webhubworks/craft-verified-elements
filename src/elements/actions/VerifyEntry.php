@@ -1,14 +1,14 @@
 <?php /** @noinspection JSUnresolvedReference */
 
-namespace webhubworks\verifiedentries\elements\actions;
+namespace webhubworks\verifiedelements\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\Entry;
 use DateTime;
 use Throwable;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Bulk action that sets a new "Verified until" date on one or more entries from the element index
@@ -23,7 +23,7 @@ class VerifyEntry extends ElementAction
     /** @inheritDoc */
     public static function displayName(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, 'Verify Entry');
+        return Craft::t(Plugin::HANDLE, 'Verify Entry');
     }
 
     /** @inheritDoc */
@@ -86,11 +86,11 @@ class VerifyEntry extends ElementAction
         );
 
         if ($successCount !== count($elements)) {
-            $this->setMessage(Craft::t(VerifiedEntries::HANDLE, 'Could not verify all entries.'));
+            $this->setMessage(Craft::t(Plugin::HANDLE, 'Could not verify all entries.'));
             return false;
         }
 
-        $this->setMessage(Craft::t(VerifiedEntries::HANDLE, 'Entries verified.'));
+        $this->setMessage(Craft::t(Plugin::HANDLE, 'Entries verified.'));
 
         return true;
     }

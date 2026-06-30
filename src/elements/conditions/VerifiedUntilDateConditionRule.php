@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\elements\conditions;
+namespace webhubworks\verifiedelements\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
@@ -10,10 +10,10 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use Throwable;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
-use webhubworks\verifiedentries\helpers\Log;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Condition rule for filtering entries by their "Verified until" date.
@@ -29,7 +29,7 @@ class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implemen
     /** @inheritDoc */
     public function getLabel(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, 'Verified until');
+        return Craft::t(Plugin::HANDLE, 'Verified until');
     }
 
     /** @inheritDoc */

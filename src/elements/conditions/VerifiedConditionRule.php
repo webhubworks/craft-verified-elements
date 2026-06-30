@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\elements\conditions;
+namespace webhubworks\verifiedelements\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
@@ -9,9 +9,9 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Condition rule for filtering entries by their Verification Status.
@@ -29,7 +29,7 @@ class VerifiedConditionRule extends BaseLightswitchConditionRule implements Elem
     /** @inheritDoc */
     public function getLabel(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, 'Verified');
+        return Craft::t(Plugin::HANDLE, 'Verified');
     }
 
     /** @inheritDoc */

@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\behaviors;
+namespace webhubworks\verifiedelements\behaviors;
 
 use Carbon\Carbon;
 use Craft;
@@ -9,9 +9,9 @@ use craft\elements\User;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use webhubworks\verifiedentries\enums\VerificationStatus;
-use webhubworks\verifiedentries\helpers\DateHelper;
-use webhubworks\verifiedentries\helpers\Log;
+use webhubworks\verifiedelements\enums\VerificationStatus;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\helpers\Log;
 use yii\base\Behavior;
 
 /**

@@ -1,6 +1,6 @@
 <?php
 
-namespace webhubworks\verifiedentries\elements\conditions;
+namespace webhubworks\verifiedelements\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
@@ -10,9 +10,9 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
-use webhubworks\verifiedentries\behaviors\VerifiableBehavior;
-use webhubworks\verifiedentries\behaviors\VerifiableQueryBehavior;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\Plugin;
 
 /**
  * Condition rule for filtering entries by their Reviewer.
@@ -34,7 +34,7 @@ class ReviewerConditionRule extends BaseElementSelectConditionRule implements El
     /** @inheritDoc */
     public function getLabel(): string
     {
-        return Craft::t(VerifiedEntries::HANDLE, 'Reviewer');
+        return Craft::t(Plugin::HANDLE, 'Reviewer');
     }
 
     /** @inheritDoc */

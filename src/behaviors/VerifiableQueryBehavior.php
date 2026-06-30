@@ -1,12 +1,12 @@
 <?php /** @noinspection PhpSameParameterValueInspection */
 
-namespace webhubworks\verifiedentries\behaviors;
+namespace webhubworks\verifiedelements\behaviors;
 
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\EntryQuery;
 use craft\helpers\Db;
-use webhubworks\verifiedentries\db\PluginTable;
+use webhubworks\verifiedelements\db\PluginTable;
 use yii\base\Behavior;
 
 /**
