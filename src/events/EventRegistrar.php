@@ -11,7 +11,6 @@ use craft\controllers\UsersController;
 use craft\db\Query;
 use craft\elements\Entry;
 use craft\elements\conditions\entries\EntryCondition;
-use craft\elements\db\EntryQuery;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineEditUserScreensEvent;
@@ -269,6 +268,48 @@ readonly class EventRegistrar
         );
     }
 
+    /**
+     * Events that define what an element is at the Model level.
+     *
+     * @param string $elementClass
+     * @param string $queryClass
+     * @return void
+     * @see Model::EVENT_DEFINE_RULES
+     * @see Model::EVENT_DEFINE_BEHAVIORS
+     * @see Query::EVENT_DEFINE_BEHAVIORS
+     */
+    public function registerBehaviors(string $elementClass, string $queryClass): void
+    {
+        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
+            return;
+        }
+
+        Event::on(
+            $elementClass,
+            Model::EVENT_DEFINE_RULES,
+            static function (DefineRulesEvent $event) {
+                $event->rules[] = [['reviewerId'], 'number', 'integerOnly' => true];
+                $event->rules[] = [['verifiedUntilDate'], DateTimeValidator::class];
+            }
+        );
+
+        Event::on(
+            $elementClass,
+            Model::EVENT_DEFINE_BEHAVIORS,
+            static function (DefineBehaviorsEvent $event) {
+                $event->behaviors[VerifiableBehavior::NAME] = VerifiableBehavior::class;
+            }
+        );
+
+        Event::on(
+            $queryClass,
+            Query::EVENT_DEFINE_BEHAVIORS,
+            static function (DefineBehaviorsEvent $event) {
+                $event->behaviors[VerifiableQueryBehavior::NAME] = VerifiableQueryBehavior::class;
+            }
+        );
+    }
+
 
     // ENTRY events
     // =============================================================================================
@@ -346,46 +387,6 @@ readonly class EventRegistrar
                 $service->saveVerificationRecord();
                 $service->ensureOtherSiteRecords();
                 $service->notifyReviewerOnChange();
-            }
-        );
-    }
-
-    /**
-     * Events that define what an entry is at the Model level.
-     *
-     * @return void
-     * @see Model::EVENT_DEFINE_RULES
-     * @see Model::EVENT_DEFINE_BEHAVIORS
-     * @see Query::EVENT_DEFINE_BEHAVIORS
-     */
-    public function registerEntryBehaviors(): void
-    {
-        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
-            return;
-        }
-
-        Event::on(
-            Entry::class,
-            Model::EVENT_DEFINE_RULES,
-            static function (DefineRulesEvent $event) {
-                $event->rules[] = [['reviewerId'], 'number', 'integerOnly' => true];
-                $event->rules[] = [['verifiedUntilDate'], DateTimeValidator::class];
-            }
-        );
-
-        Event::on(
-            Entry::class,
-            Model::EVENT_DEFINE_BEHAVIORS,
-            static function (DefineBehaviorsEvent $event) {
-                $event->behaviors[VerifiableBehavior::NAME] = VerifiableBehavior::class;
-            }
-        );
-
-        Event::on(
-            EntryQuery::class,
-            Query::EVENT_DEFINE_BEHAVIORS,
-            static function (DefineBehaviorsEvent $event) {
-                $event->behaviors[VerifiableQueryBehavior::NAME] = VerifiableQueryBehavior::class;
             }
         );
     }

@@ -4,6 +4,10 @@ namespace webhubworks\verifiedelements;
 
 use Craft;
 use craft\base\Plugin as BasePlugin;
+use craft\elements\Asset;
+use craft\elements\db\AssetQuery;
+use craft\elements\db\EntryQuery;
+use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use webhubworks\verifiedelements\enums\Edition;
 use webhubworks\verifiedelements\enums\Feature;
@@ -68,10 +72,14 @@ class Plugin extends BasePlugin
             $events->extendTwig();
 
             if (Feature::EntryVerification->isEnabled()) {
-                $events->registerEntryBehaviors();
+                $events->registerBehaviors(Entry::class, EntryQuery::class);
                 $events->registerEntryLifecycle();
                 $events->registerEntryIndexUi();
                 $events->registerEntryEditUi();
+            }
+
+            if (Feature::AssetVerification->isEnabled()) {
+                $events->registerBehaviors(Asset::class, AssetQuery::class);
             }
         });
     }
