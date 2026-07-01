@@ -7,6 +7,6 @@ namespace webhubworks\verifiedelements\db;
  */
 abstract class PluginTable
 {
-    public const ENTRIES = '{{%verifiedentries_entryattributes}}';
-    public const SECTIONS = '{{%verifiedentries_sections}}';
+    public const ATTRIBUTES = '{{%verifiedelements_attributes}}';
+    public const CONTAINERS = '{{%verifiedelements_containers}}';
 }

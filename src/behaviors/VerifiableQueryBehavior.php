@@ -46,8 +46,8 @@ class VerifiableQueryBehavior extends Behavior
 
         if (! $this->hasJoin($query, 'veea')) {
             $query->leftJoin(
-                ['veea' => PluginTable::ENTRIES],
-                '[[veea.entryId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
+                ['veea' => PluginTable::ATTRIBUTES],
+                '[[veea.elementId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
             );
         }
 
@@ -92,11 +92,11 @@ class VerifiableQueryBehavior extends Behavior
         /** @var Query $subQuery */
         $subQuery = $this->owner->subQuery;
 
-        // Join our `verifiedentries_entryattributes` table
+        // Join our `verifiedelements_attributes` table
         if (! $this->hasJoin($subQuery, 'veea')) {
             $subQuery->leftJoin(
-                ['veea' => PluginTable::ENTRIES],
-                '[[veea.entryId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
+                ['veea' => PluginTable::ATTRIBUTES],
+                '[[veea.elementId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
             );
         }
     }

@@ -30,15 +30,15 @@ abstract class PluginQuery
         $query = (new Query())
             ->select([
                 'ves.id',
-                'ves.sectionId',
+                'ves.containerId',
                 'ves.defaultPeriod',
                 's.name',
                 's.type',
                 's.handle',
                 'sites.name AS siteName',
             ])
-            ->from(['ves' => PluginTable::SECTIONS])
-            ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.sectionId]]')
+            ->from(['ves' => PluginTable::CONTAINERS])
+            ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.containerId]]')
             ->leftJoin('{{%sites}}', '[[sites.id]] = [[ves.siteId]]')
             ->where(['ves.enabled' => true])
             ->andWhere(['ves.reviewerId' => $userId]);
@@ -64,7 +64,7 @@ abstract class PluginQuery
         $query = (new Query())
             ->select([
                 'veea.id',
-                'veea.entryId',
+                'veea.elementId AS entryId',
                 'veea.siteId',
                 'veea.reviewerId',
                 'veea.verifiedUntilDate',
@@ -77,16 +77,16 @@ abstract class PluginQuery
                 'sites.handle AS siteHandle',
                 'sites.name AS siteName',
             ])
-            ->from(['veea' => PluginTable::ENTRIES])
+            ->from(['veea' => PluginTable::ATTRIBUTES])
             ->rightJoin(
                 '{{%elements}}',
-                '[[elements.id]] = [[veea.entryId]] AND [[elements.enabled]] = true AND [[elements.draftId]] IS NULL'
+                '[[elements.id]] = [[veea.elementId]] AND [[elements.enabled]] = true AND [[elements.draftId]] IS NULL'
             )
             ->leftJoin(
                 '{{%elements_sites}} es',
-                '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = [[veea.siteId]]'
+                '[[es.elementId]] = [[veea.elementId]] AND [[es.siteId]] = [[veea.siteId]]'
             )
-            ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
+            ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.elementId]]')
             ->leftJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
             ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
             ->where(['veea.reviewerId' => $userId])
@@ -113,8 +113,8 @@ abstract class PluginQuery
     public static function verifiableEntry(int $entryId, int $siteId): Query
     {
         return (new Query())
-            ->from(PluginTable::ENTRIES)
-            ->where(['entryId' => $entryId, 'siteId' => $siteId]);
+            ->from(PluginTable::ATTRIBUTES)
+            ->where(['elementId' => $entryId, 'siteId' => $siteId]);
     }
 
     /**
@@ -129,7 +129,7 @@ abstract class PluginQuery
 
         return (new Query())
             ->select([
-                'veea.entryId',
+                'veea.elementId',
                 'veea.siteId',
                 'veea.reviewerId',
                 'veea.verifiedUntilDate',
@@ -138,18 +138,18 @@ abstract class PluginQuery
                 'sections.handle AS sectionHandle',
                 'sites.handle AS siteHandle',
             ])
-            ->from(['veea' => PluginTable::ENTRIES])
-            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.entryId]]')
+            ->from(['veea' => PluginTable::ATTRIBUTES])
+            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.elementId]]')
             ->leftJoin(
                 '{{%elements_sites}} es',
-                '[[es.elementId]] = [[veea.entryId]] AND [[es.siteId]] = [[veea.siteId]]'
+                '[[es.elementId]] = [[veea.elementId]] AND [[es.siteId]] = [[veea.siteId]]'
             )
             ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
-            ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.entryId]]')
+            ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.elementId]]')
             ->innerJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
             ->innerJoin(
-                PluginTable::SECTIONS . ' ves',
-                '[[ves.sectionId]] = [[entries.sectionId]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1'
+                PluginTable::CONTAINERS . ' ves',
+                '[[ves.containerId]] = [[entries.sectionId]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1'
             )
             ->where(['<', 'veea.verifiedUntilDate', $now])
             ->andWhere(['elements.enabled' => true])
@@ -188,8 +188,8 @@ abstract class PluginQuery
                 [':siteId' => $siteId]
             )
             ->leftJoin(
-                PluginTable::SECTIONS . ' ves',
-                '[[ves.sectionId]] = [[s.id]] AND [[ves.siteId]] = :vesSiteId',
+                PluginTable::CONTAINERS . ' ves',
+                '[[ves.containerId]] = [[s.id]] AND [[ves.siteId]] = :vesSiteId',
                 [':vesSiteId' => $siteId]
             );
     }
@@ -206,15 +206,15 @@ abstract class PluginQuery
     {
         return (new Query())
             ->select([
-                'ves.sectionId AS id',
+                'ves.containerId AS id',
                 's.name',
                 's.handle',
                 'ves.siteId',
                 'ves.reviewerId',
                 'ves.defaultPeriod AS period',
             ])
-            ->from(['ves' => PluginTable::SECTIONS])
-            ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.sectionId]]')
-            ->where(['ves.sectionId' => $sectionId, 'ves.siteId' => $siteId, 'ves.enabled' => true]);
+            ->from(['ves' => PluginTable::CONTAINERS])
+            ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.containerId]]')
+            ->where(['ves.containerId' => $sectionId, 'ves.siteId' => $siteId, 'ves.enabled' => true]);
     }
 }

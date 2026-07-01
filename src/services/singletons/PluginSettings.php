@@ -3,6 +3,7 @@
 namespace webhubworks\verifiedelements\services\singletons;
 
 use craft\db\Query;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
 use webhubworks\verifiedelements\db\PluginQuery;
@@ -44,8 +45,8 @@ class PluginSettings extends Component
             $this->_enabledSectionIds = array_map(
                 'intval',
                 (new Query())
-                    ->select(['sectionId'])
-                    ->from(PluginTable::SECTIONS)
+                    ->select(['containerId'])
+                    ->from(PluginTable::CONTAINERS)
                     ->where(['enabled' => true])
                     ->distinct()
                     ->column()
@@ -67,8 +68,8 @@ class PluginSettings extends Component
         return array_map(
             'intval',
             (new Query())
-                ->select(['sectionId'])
-                ->from(PluginTable::SECTIONS)
+                ->select(['containerId'])
+                ->from(PluginTable::CONTAINERS)
                 ->where(['enabled' => true, 'siteId' => $siteId])
                 ->distinct()
                 ->column()
@@ -76,17 +77,17 @@ class PluginSettings extends Component
     }
 
     /**
-     * Checks if a section is enabled for this plugin.
+     * Checks if a section/group/volume/etc is enabled for this plugin.
      *
-     * @param int $sectionId
+     * @param int $containerId The ID for the grouping of elements (section, group, volume, etc.)
      * @param int $siteId
      * @return bool
      */
-    public function isSectionEnabledForSite(int $sectionId, int $siteId): bool
+    public function isSectionEnabledForSite(int $containerId, int $siteId): bool
     {
         return (new Query())
-            ->from(PluginTable::SECTIONS)
-            ->where(['sectionId' => $sectionId, 'siteId' => $siteId, 'enabled' => true])
+            ->from(PluginTable::CONTAINERS)
+            ->where(['containerId' => $containerId, 'siteId' => $siteId, 'enabled' => true])
             ->exists();
     }
 
@@ -148,8 +149,15 @@ class PluginSettings extends Component
 
         try {
             Db::upsert(
-                PluginTable::SECTIONS,
-                compact('sectionId', 'siteId', 'reviewerId', 'enabled', 'defaultPeriod'),
+                PluginTable::CONTAINERS,
+                [
+                    'containerId' => $sectionId,
+                    'elementType' => Entry::class,
+                    'siteId' => $siteId,
+                    'reviewerId' => $reviewerId,
+                    'enabled' => $enabled,
+                    'defaultPeriod' => $defaultPeriod,
+                ],
                 compact('reviewerId', 'enabled', 'defaultPeriod')
             );
         }

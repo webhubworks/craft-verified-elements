@@ -42,8 +42,8 @@ it('detects a subsequent save when a verification record already exists for the 
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     // Seed an existing verification record to simulate a previously-saved entry
-    Db::insert(PluginTable::ENTRIES, [
-        'entryId' => $entry->getCanonicalId(),
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
         'siteId' => $entry->siteId,
         'reviewerId' => null,
         'verifiedUntilDate' => null,

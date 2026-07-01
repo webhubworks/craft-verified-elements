@@ -24,16 +24,17 @@ it('excludes globally disabled entries but keeps enabled ones in the expired set
     $disabledEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     // The query INNER JOINs on an enabled section-settings row, so create one for this site.
-    Db::insert(PluginTable::SECTIONS, [
-        'sectionId' => $section->id,
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
         'siteId' => $enabledEntry->siteId,
+        'elementType' => \craft\elements\Entry::class,
         'enabled' => true,
     ]);
 
     // Both entries are past their verification date.
     foreach ([$enabledEntry, $disabledEntry] as $entry) {
-        Db::insert(PluginTable::ENTRIES, [
-            'entryId' => $entry->getCanonicalId(),
+        Db::insert(PluginTable::ATTRIBUTES, [
+            'elementId' => $entry->getCanonicalId(),
             'siteId' => $entry->siteId,
             'reviewerId' => null,
             'verifiedUntilDate' => '2020-01-01 00:00:00',
@@ -44,7 +45,7 @@ it('excludes globally disabled entries but keeps enabled ones in the expired set
     Db::update('{{%elements}}', ['enabled' => false], ['id' => $disabledEntry->getCanonicalId()]);
 
     $expiredIds = array_map(
-        static fn ($row) => (int) $row['entryId'],
+        static fn ($row) => (int) $row['elementId'],
         PluginQuery::expiredVerifiableEntries()->all()
     );
 
@@ -56,14 +57,15 @@ it('excludes entries that are disabled for the queried site', function () {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
-    Db::insert(PluginTable::SECTIONS, [
-        'sectionId' => $section->id,
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
         'siteId' => $entry->siteId,
+        'elementType' => \craft\elements\Entry::class,
         'enabled' => true,
     ]);
 
-    Db::insert(PluginTable::ENTRIES, [
-        'entryId' => $entry->getCanonicalId(),
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
         'siteId' => $entry->siteId,
         'reviewerId' => null,
         'verifiedUntilDate' => '2020-01-01 00:00:00',
@@ -77,7 +79,7 @@ it('excludes entries that are disabled for the queried site', function () {
     );
 
     $expiredIds = array_map(
-        static fn ($row) => (int) $row['entryId'],
+        static fn ($row) => (int) $row['elementId'],
         PluginQuery::expiredVerifiableEntries()->all()
     );
 

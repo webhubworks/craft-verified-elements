@@ -105,8 +105,8 @@ class VerificationStateSynchronizer
     public function saveVerificationRecord(): bool
     {
         try {
-            Db::upsert(PluginTable::ENTRIES, [
-                'entryId' => $this->entry->getCanonicalId(),
+            Db::upsert(PluginTable::ATTRIBUTES, [
+                'elementId' => $this->entry->getCanonicalId(),
                 'siteId' => $this->entry->siteId,
                 'reviewerId' => $this->entry->getReviewerId(),
                 'verifiedUntilDate' => Db::prepareDateForDb($this->entry->getVerifiedUntilDate()),
@@ -235,8 +235,8 @@ class VerificationStateSynchronizer
         );
 
         try {
-            Db::upsert(PluginTable::ENTRIES, [
-                'entryId' => $this->entry->getCanonicalId(),
+            Db::upsert(PluginTable::ATTRIBUTES, [
+                'elementId' => $this->entry->getCanonicalId(),
                 'siteId' => $siteId,
                 'reviewerId' => $sectionDefaults?->reviewerId,
                 'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
@@ -294,8 +294,8 @@ class VerificationStateSynchronizer
     {
         $sourceRow = (new Query())
             ->select(['reviewerId', 'verifiedUntilDate'])
-            ->from(PluginTable::ENTRIES)
-            ->where(['entryId' => $entryId])
+            ->from(PluginTable::ATTRIBUTES)
+            ->where(['elementId' => $entryId])
             ->one();
 
         if (! $sourceRow) {
@@ -307,8 +307,8 @@ class VerificationStateSynchronizer
             $verifiedUntilDate = DateHelper::toDateTime($sourceRow['verifiedUntilDate']);
         }
 
-        Db::upsert(PluginTable::ENTRIES, [
-            'entryId' => $entryId,
+        Db::upsert(PluginTable::ATTRIBUTES, [
+            'elementId' => $entryId,
             'siteId' => $siteId,
             'reviewerId' => $sourceRow['reviewerId'],
             'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),

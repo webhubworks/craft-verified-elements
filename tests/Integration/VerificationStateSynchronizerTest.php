@@ -15,7 +15,7 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
  * @see VerificationStateSynchronizer Service
  *
  * Tests that the synchronizer's DB write methods produce the correct rows in
- * verifiedentries_entryattributes against a real Craft database. Covers upsert correctness,
+ * verifiedelements_attributes against a real Craft database. Covers upsert correctness,
  * multisite record seeding, and propagation — the scenarios where mocking the DB layer would
  * hide real schema and query bugs.
  */
@@ -37,7 +37,7 @@ it('writes a verification record for the entry and site', function () {
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $entry->siteId)->one();
 
     expect($row)->not->toBeNull();
-    expect($row['entryId'])->toBe($entry->getCanonicalId());
+    expect($row['elementId'])->toBe($entry->getCanonicalId());
     expect($row['siteId'])->toBe($entry->siteId);
 });
 
@@ -168,8 +168,8 @@ it('does not overwrite an existing record for another site', function () {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
-    Db::insert(PluginTable::ENTRIES, [
-        'entryId' => $entry->getCanonicalId(),
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
         'siteId' => $siteB->id,
         'reviewerId' => null,
         'verifiedUntilDate' => '2030-06-01 00:00:00',
@@ -230,8 +230,8 @@ it('copies the source record to the propagated site when none exists there yet',
 
     // Create an entry and seed its site A record
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
-    Db::insert(PluginTable::ENTRIES, [
-        'entryId' => $entry->getCanonicalId(),
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
         'siteId' => $entry->siteId,
         'reviewerId' => $reviewer->id,
         'verifiedUntilDate' => '2026-04-01 00:00:00',
@@ -260,16 +260,16 @@ it('does not overwrite an existing record on the propagated site', function () {
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     // Seed site A record
-    Db::insert(PluginTable::ENTRIES, [
-        'entryId' => $entry->getCanonicalId(),
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
         'siteId' => $entry->siteId,
         'reviewerId' => null,
         'verifiedUntilDate' => '2026-04-01 00:00:00',
     ]);
 
     // Seed an independently-set site B record
-    Db::insert(PluginTable::ENTRIES, [
-        'entryId' => $entry->getCanonicalId(),
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
         'siteId' => $siteB->id,
         'reviewerId' => null,
         'verifiedUntilDate' => '2030-01-01 00:00:00',

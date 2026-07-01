@@ -28,7 +28,7 @@ use webhubworks\verifiedelements\services\singletons\Reviewers;
 class Plugin extends BasePlugin
 {
     public const HANDLE = 'verified-elements';
-    public string $schemaVersion = '1.0.0';
+    public string $schemaVersion = '2.0.0';
     public bool $hasCpSettings = true;
     public bool $hasCpSection = true;
 
