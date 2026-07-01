@@ -4,13 +4,25 @@ namespace webhubworks\verifiedelements\behaviors;
 
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\EntryQuery;
 use craft\helpers\Db;
 use webhubworks\verifiedelements\db\PluginTable;
 use yii\base\Behavior;
 
 /**
- * @property EntryQuery $owner
+ * This behavior attaches to every element query and surfaces this plugin's verification state on it.
+ *
+ * On prepare, it LEFT JOINs the verification attributes table (matched per element + site),
+ * so each result carries its `verifiedUntilDate` and `reviewerId`, and it registers the filter
+ * params `isVerified`, `isAssigned`, `reviewerId`, and `verifiedUntil`, which translate into
+ * WHERE clauses.
+ *
+ * The JOIN is added in two places: to the outer query on BEFORE_PREPARE, and to the subquery on
+ * AFTER_PREPARE (the subquery's `elements_sites` join isn't present until after that event fires).
+ *
+ * Nested elements (e.g. Matrix entries, which set `ownerId`) are skipped. Verification applies
+ * only to top-level elements.
+ *
+ * @property ElementQuery $owner
  */
 class VerifiableQueryBehavior extends Behavior
 {
@@ -35,9 +47,9 @@ class VerifiableQueryBehavior extends Behavior
      */
     public function beforePrepare(): void
     {
-        // Skip adding JOIN and SELECT for nested matrix entries
-        // since they aren't applicable to the plugin.
-        if ($this->owner->ownerId !== null) {
+        // If this is an entry, skip adding JOIN and SELECT for matrix entries since they're not
+        // applicable to the plugin.
+        if (isset($this->owner->ownerId)) {
             return;
         }
 
@@ -51,9 +63,6 @@ class VerifiableQueryBehavior extends Behavior
             );
         }
 
-        // Select custom columns. Craft will attempt to assign anything defined here
-        // to the Entry element when populating it! Fortunately, your Behavior can also supply
-        // properties.
         $query->addSelect([
             'veea.verifiedUntilDate',
             'veea.reviewerId',
@@ -84,8 +93,9 @@ class VerifiableQueryBehavior extends Behavior
      */
     public function afterPrepare(): void
     {
-        // Skip adding JOIN for nested matrix entries since they aren't applicable to the plugin.
-        if ($this->owner->ownerId !== null) {
+        // If this is an entry, skip adding JOIN and SELECT for matrix entries since they're not
+        // applicable to the plugin.
+        if (isset($this->owner->ownerId)) {
             return;
         }
 
@@ -102,13 +112,13 @@ class VerifiableQueryBehavior extends Behavior
     }
 
     /**
-     * Query param for filtering entries by whether their "Verified until" date field is still in
+     * Query param for filtering elements by whether their "Verified until" date field is still in
      * the future.
      *
      * @param bool $value
-     * @return EntryQuery
+     * @return ElementQuery
      */
-    public function isVerified(bool $value = true): EntryQuery
+    public function isVerified(bool $value = true): ElementQuery
     {
         $query = $this->owner;
 
@@ -129,16 +139,16 @@ class VerifiableQueryBehavior extends Behavior
     }
 
     /**
-     * Query param for filtering entries that have or haven't been assigned to a Reviewer.
+     * Query param for filtering elements that have or haven't been assigned to a Reviewer.
      *
-     * Note: an "Unassigned" entry is one with a "Verified until" date that will eventually expire,
-     * but nobody is responsible for checking it. Entries without Reviewers AND with
+     * Note: an "Unassigned" element is one with a "Verified until" date that will eventually
+     * expire, but nobody is responsible for checking it. Elements without Reviewers AND with
      * "Verified until" dates set to "Indefinitely" are neither assigned nor unassigned.
      *
      * @param bool $value
-     * @return EntryQuery
+     * @return ElementQuery
      */
-    public function isAssigned(bool $value = true): EntryQuery
+    public function isAssigned(bool $value = true): ElementQuery
     {
         $query = $this->owner;
 
@@ -154,12 +164,12 @@ class VerifiableQueryBehavior extends Behavior
     }
 
     /**
-     * Query param for filtering entries by their Reviewer (Craft User) ID.
+     * Query param for filtering elements by their Reviewer (Craft User) ID.
      *
      * @param int|array|null $value
-     * @return EntryQuery
+     * @return ElementQuery
      */
-    public function reviewerId(int|array|null $value = null): EntryQuery
+    public function reviewerId(int|array|null $value = null): ElementQuery
     {
         $query = $this->owner;
 
@@ -174,12 +184,12 @@ class VerifiableQueryBehavior extends Behavior
     }
 
     /**
-     * Query param for filtering entries by their "Verified until" date field.
+     * Query param for filtering elements by their "Verified until" date field.
      *
      * @param mixed $value
-     * @return EntryQuery
+     * @return ElementQuery
      */
-    public function verifiedUntilDate(mixed $value): EntryQuery
+    public function verifiedUntilDate(mixed $value): ElementQuery
     {
         $query = $this->owner;
 

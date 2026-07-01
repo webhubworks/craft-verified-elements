@@ -4,10 +4,9 @@ namespace webhubworks\verifiedelements\behaviors;
 
 use Carbon\Carbon;
 use Craft;
-use craft\elements\Entry;
+use craft\base\Element;
 use craft\elements\User;
 use DateTime;
-use DateTimeZone;
 use Exception;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\DateHelper;
@@ -15,10 +14,10 @@ use webhubworks\verifiedelements\helpers\Log;
 use yii\base\Behavior;
 
 /**
- * This behavior provides additional properties and methods for Craft entries that have been
+ * This behavior provides additional properties and methods for Craft elements that have been
  * enabled for verification in the plugin's settings.
  *
- * @property Entry $owner
+ * @property Element $owner
  * @property-read bool $hasVerifiedUntilDate
  * @property null|mixed|int $reviewerId
  * @property-read bool $isVerified
@@ -30,6 +29,7 @@ class VerifiableBehavior extends Behavior
 {
     public const NAME = 'verified-elements.verifiable';
 
+
     // REVIEWER (Craft User element)
     // =============================================================================================
 
@@ -38,7 +38,7 @@ class VerifiableBehavior extends Behavior
     /**
      * Get the Reviewer's ID.
      *
-     * The "Reviewer" is a Craft User who has been assigned to review the entry when its
+     * The "Reviewer" is a Craft User who has been assigned to review the element when its
      * "Verified Until" date expires.
      *
      * @return int|null
@@ -51,7 +51,7 @@ class VerifiableBehavior extends Behavior
     /**
      * Set the Reviewer's user ID.
      *
-     * The "Reviewer" is a Craft User who has been assigned to review the entry when its
+     * The "Reviewer" is a Craft User who has been assigned to review the element when its
      * "Verified Until" date expires.
      *
      * @param mixed $value
@@ -85,7 +85,7 @@ class VerifiableBehavior extends Behavior
     /**
      * Get the Reviewer's User object.
      *
-     * The "Reviewer" is a Craft User who has been assigned to review the entry when its
+     * The "Reviewer" is a Craft User who has been assigned to review the element when its
      * "Verified Until" date expires.
      *
      * NOTE that this method does NOT memorize the User, so repeated calls means a new query to
@@ -123,7 +123,7 @@ class VerifiableBehavior extends Behavior
             return;
         }
 
-        if (!DateHelper::isDateString($value)) {
+        if (! DateHelper::isDateString($value)) {
             $this->_verifiedUntilDate = null;
             return;
         }
@@ -176,7 +176,7 @@ class VerifiableBehavior extends Behavior
     }
 
     /**
-     * Returns the entry's current verification status.
+     * Returns the element's current verification status.
      *
      * @return VerificationStatus
      */
