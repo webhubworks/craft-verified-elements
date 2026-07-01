@@ -10,9 +10,9 @@ use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\helpers\DateHelper;
 
 /**
- * Object representing a single entry assigned to a Reviewer, as returned by the paginated reviewer
- * dashboard query. Hydrated from a raw query row and serialized to the shape the CP "Admin Table"
- * Vue component expects.
+ * Object representing a single element assigned to a Reviewer, as returned by the paginated
+ * reviewer dashboard query. Hydrated from a raw query row and serialized to the shape the CP
+ * "Admin Table" Vue component expects.
  *
  * @see PluginQuery::entriesByReviewer()
  * @see \webhubworks\verifiedelements\services\singletons\Reviewers::getPaginatedEntries()
@@ -20,12 +20,13 @@ use webhubworks\verifiedelements\helpers\DateHelper;
 readonly class ReviewerEntryData implements JsonSerializable
 {
     public function __construct(
-        public int     $id, // verification attribute row id (veea.id), NOT the entry id
-        public int     $entryId,
+        public string  $elementType,
+        public int     $id, // verification attribute row id (veea.id), NOT the element's id
+        public int     $elementId,
         public int     $siteId,
         public ?int    $reviewerId,
         public ?string $verifiedUntilDate, // raw DB value; null means "Indefinitely"
-        public int     $sectionId,
+        public int     $containerId,
         public string  $title,
         public string  $slug,
         public string  $dateUpdated, // raw DB value
@@ -44,12 +45,13 @@ readonly class ReviewerEntryData implements JsonSerializable
     public static function fromArray(array $row): self
     {
         return new self(
+            elementType: $row['elementType'],
             id: (int)$row['id'],
-            entryId: (int)$row['entryId'],
+            elementId: (int)$row['elementId'],
             siteId: (int)$row['siteId'],
             reviewerId: isset($row['reviewerId']) ? (int)$row['reviewerId'] : null,
             verifiedUntilDate: $row['verifiedUntilDate'] ?? null,
-            sectionId: (int)$row['sectionId'],
+            containerId: (int)$row['containerId'],
             title: $row['title'],
             slug: $row['slug'],
             dateUpdated: $row['dateUpdated'],
@@ -61,7 +63,7 @@ readonly class ReviewerEntryData implements JsonSerializable
     }
 
     /**
-     * Whether the entry's verification is still in the future. A null "Verified until" date
+     * Whether the element's verification is still in the future. A null "Verified until" date
      * ("Indefinitely") counts as NOT verified here, matching the original transform behaviour.
      *
      * @return bool
@@ -74,13 +76,13 @@ readonly class ReviewerEntryData implements JsonSerializable
     }
 
     /**
-     * Returns the URL to the entry's "edit" page in the CP, scoped to the entry's site.
+     * Returns the URL to the element's "edit" page in the CP, scoped to the element's site.
      *
      * @return string
      */
     public function getCpEditUrl(): string
     {
-        $uri = sprintf('entries/%s/%s-%s', $this->sectionHandle, $this->entryId, $this->slug);
+        $uri = sprintf('entries/%s/%s-%s', $this->sectionHandle, $this->elementId, $this->slug);
 
         return UrlHelper::cpUrl($uri, ['site' => $this->siteHandle]);
     }
@@ -96,12 +98,13 @@ readonly class ReviewerEntryData implements JsonSerializable
         $verifiedUntilDate = DateHelper::toDateTime($this->verifiedUntilDate);
 
         return [
+            'elementType' => $this->elementType,
             'id' => $this->id,
-            'entryId' => $this->entryId,
+            'elementId' => $this->elementId,
             'siteId' => $this->siteId,
             'reviewerId' => $this->reviewerId,
             'verifiedUntilDate' => DateHelper::readableVerificationDate($verifiedUntilDate),
-            'sectionId' => $this->sectionId,
+            'containerId' => $this->containerId,
             'title' => $this->title,
             'slug' => $this->slug,
             'dateUpdated' => (new Formatter())->asDate(DateHelper::toDateTime($this->dateUpdated)),

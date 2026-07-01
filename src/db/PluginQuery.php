@@ -64,11 +64,12 @@ abstract class PluginQuery
         $query = (new Query())
             ->select([
                 'veea.id',
-                'veea.elementId AS entryId',
+                'veea.elementId',
                 'veea.siteId',
                 'veea.reviewerId',
                 'veea.verifiedUntilDate',
-                'entries.sectionId',
+                'entries.sectionId AS containerId',
+                'elements.type AS elementType',
                 'es.title',
                 'es.slug',
                 'es.dateUpdated',

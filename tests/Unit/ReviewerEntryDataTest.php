@@ -1,6 +1,7 @@
 <?php
 
 use Carbon\Carbon;
+use craft\elements\Entry;
 use craft\i18n\Formatter;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\models\ReviewerEntryData;
@@ -23,12 +24,13 @@ use webhubworks\verifiedelements\models\ReviewerEntryData;
 function reviewerEntryRow(array $overrides = []): array
 {
     return array_merge([
+        'elementType' => Entry::class,
         'id' => '5',
-        'entryId' => '128',
+        'elementId' => '128',
         'siteId' => '1',
         'reviewerId' => '1',
         'verifiedUntilDate' => '2027-06-23 22:00:00',
-        'sectionId' => '1',
+        'containerId' => '1',
         'title' => 'Test 2 - EN',
         'slug' => 'test-2-en',
         'dateUpdated' => '2026-06-24 12:00:00',
@@ -47,10 +49,10 @@ it('casts id-like columns to int and keeps strings as strings', function () {
     $entry = ReviewerEntryData::fromArray(reviewerEntryRow());
 
     expect($entry->id)->toBe(5)
-        ->and($entry->entryId)->toBe(128)
+        ->and($entry->elementId)->toBe(128)
         ->and($entry->siteId)->toBe(1)
         ->and($entry->reviewerId)->toBe(1)
-        ->and($entry->sectionId)->toBe(1)
+        ->and($entry->containerId)->toBe(1)
         ->and($entry->verifiedUntilDate)->toBe('2027-06-23 22:00:00')
         ->and($entry->title)->toBe('Test 2 - EN')
         ->and($entry->siteHandle)->toBe('sandboxEn');
@@ -134,14 +136,14 @@ it('serializes to the display shape the Admin Table expects', function () {
         $json = $entry->jsonSerialize();
 
         expect($json)->toHaveKeys([
-            'id', 'entryId', 'siteId', 'reviewerId', 'verifiedUntilDate', 'sectionId',
-            'title', 'slug', 'dateUpdated', 'sectionName', 'sectionHandle', 'siteHandle',
-            'siteName', 'isVerified', 'url',
+            'elementType', 'id', 'elementId', 'siteId', 'reviewerId', 'verifiedUntilDate',
+            'containerId', 'title', 'slug', 'dateUpdated', 'sectionName', 'sectionHandle',
+            'siteHandle', 'siteName', 'isVerified', 'url',
         ]);
 
         // id-like fields serialize as ints, not numeric strings
         expect($json['id'])->toBe(5)
-            ->and($json['entryId'])->toBe(128)
+            ->and($json['elementId'])->toBe(128)
             ->and($json['reviewerId'])->toBe(1);
 
         // derived / display fields
