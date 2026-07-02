@@ -3,6 +3,9 @@
 namespace webhubworks\verifiedelements\helpers;
 
 use Craft;
+use craft\elements\Asset;
+use craft\elements\Entry;
+use craft\helpers\StringHelper;
 use craft\log\Dispatcher;
 use craft\log\MonologTarget;
 use Monolog\Formatter\LineFormatter;
@@ -19,7 +22,7 @@ use webhubworks\verifiedelements\Plugin;
  * @see Plugin::HANDLE
  * @see Plugin::init()
  */
-class Log
+abstract class Log
 {
     /**
      * Logs an informative message.
@@ -106,5 +109,30 @@ class Log
                 includeStacktraces: true
             ),
         ]);
+    }
+
+    public static function element(mixed $type, bool $plural = false, bool $capitalize = true): string
+    {
+        $type = match (true) {
+            $type instanceof Entry => Entry::class,
+            $type instanceof Asset => Asset::class,
+            default => $type,
+        };
+
+        if (! is_string($type)) {
+            return '';
+        }
+
+        $label = match ($type) {
+            Entry::class => $plural ? 'entries' : 'entry',
+            Asset::class => $plural ? 'assets' : 'asset',
+            default => $type, // unknown element types stay identifiable by their class name
+        };
+
+        if ($capitalize) {
+            return StringHelper::upperCaseFirst($label);
+        }
+
+        return $label;
     }
 }
