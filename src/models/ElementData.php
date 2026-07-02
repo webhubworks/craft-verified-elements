@@ -2,9 +2,11 @@
 
 namespace webhubworks\verifiedelements\models;
 
+use Craft;
 use craft\base\Element;
 use craft\elements\Asset;
 use craft\elements\Entry;
+use craft\elements\User;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
@@ -108,6 +110,20 @@ readonly class ElementData implements JsonSerializable
         $verifiedUntilDate = DateHelper::toDateTime($this->verifiedUntilDate);
 
         return $verifiedUntilDate instanceof DateTime && $verifiedUntilDate > DateHelper::now();
+    }
+
+    /**
+     * Returns the Craft `User` who's assigned to keep the element verified.
+     *
+     * @return User|null
+     */
+    public function getReviewer(): ?User
+    {
+        if ($this->reviewerId === null) {
+            return null;
+        }
+
+        return Craft::$app->getUsers()->getUserById($this->reviewerId);
     }
 
     /**

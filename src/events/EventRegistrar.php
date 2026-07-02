@@ -39,6 +39,7 @@ use DateTime;
 use Twig\TwigFilter;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\SystemRecipient;
 use webhubworks\verifiedelements\models\UserRecipient;
 use webhubworks\verifiedelements\services\EntrySidebarRenderer;
@@ -362,28 +363,55 @@ readonly class EventRegistrar
                 /** @var Entry|VerifiableBehavior $entry */
                 $entry = $event->sender;
 
+                // Matrix entries have no section and are never verifiable.
+                if ($entry->sectionId === null) {
+                    return;
+                }
+
+                $settings = $this->plugin->getPluginSettings();
+                if (! $settings->isSectionEnabledForSite($entry->sectionId, $entry->siteId)) {
+                    return;
+                }
+
+                // Existing drafts and revisions never sync verification state.
+                if (ElementHelper::isDraftOrRevision($entry) && ! $event->isNew) {
+                    return;
+                }
+
+                // Returns a list of sites in which this entry is enabled.
+                $supportedSiteIds = array_column(
+                    ElementHelper::supportedSitesForElement($entry),
+                    'siteId'
+                );
+
+                // The service worker that will keep the entry synced across its supported sites
+                // and handle consequences from changes to it.
                 $service = new VerificationStateSynchronizer(
-                    $entry,
-                    $this->plugin->getPluginSettings(),
+                    ElementData::fromElement($entry),
+                    $supportedSiteIds,
+                    $entry->enabled,
+                    $settings,
                     Craft::$app->getUser()->getId()
                 );
 
+                // Since this is a new entry, and the entry is still a draft/revision, write a
+                // verification record in the db for its canonical ID on the current site. No
+                // further actions are needed until the entry is officially saved.
                 if (ElementHelper::isDraftOrRevision($entry)) {
-                    if ($event->isNew && $service->isSectionEnabled()) {
-                        $service->saveVerificationRecord();
-                    }
+                    $service->saveVerificationRecord();
                     return;
                 }
 
-                if (! $service->isSectionEnabled()) {
-                    return;
-                }
-
+                // On a multi-site save, Craft re-fires AFTER_SAVE for each site this entry is
+                // enabled in when it propagates the entry's data across its site-counterparts.
+                // It's possible the record for whichever site is getting saved right now doesn't
+                // yet exist. If it doesn't, create it and exit.
                 if ($entry->propagating) {
                     $service->ensurePropagatedRecord();
                     return;
                 }
 
+                // Handle everything else for the existing entry when it's saved normally.
                 $service->saveVerificationRecord();
                 $service->ensureOtherSiteRecords();
                 $service->notifyReviewerOnChange();

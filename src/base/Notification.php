@@ -3,9 +3,7 @@
 namespace webhubworks\verifiedelements\base;
 
 use Craft;
-use craft\elements\Entry;
 use craft\i18n\Formatter;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\mail\ChangeNotification;
 use webhubworks\verifiedelements\mail\ExpiredNotification;
 use webhubworks\verifiedelements\Plugin;
@@ -48,22 +46,6 @@ abstract class Notification implements NotificationInterface
     protected function t(string $message, ?array $params = null, string $category = Plugin::HANDLE): string
     {
         return Craft::t($category, $message, $params, $this->locale);
-    }
-
-    /**
-     * Helper for ensuring important behaviors are attached to an entry.
-     *
-     * @param Entry $entry
-     * @return Entry
-     * @see VerifiableBehavior
-     */
-    protected function ensureBehavior(Entry $entry): Entry
-    {
-        if (!$entry->getBehavior(VerifiableBehavior::NAME)) {
-            $entry->attachBehavior(VerifiableBehavior::NAME, VerifiableBehavior::class);
-        }
-
-        return $entry;
     }
 
     /**

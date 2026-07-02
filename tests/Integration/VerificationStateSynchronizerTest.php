@@ -6,6 +6,7 @@ use markhuot\craftpest\factories\Entry;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
 use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\SectionDefaults;
 use webhubworks\verifiedelements\services\VerificationStateSynchronizer;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
@@ -16,8 +17,12 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
  *
  * Tests that the synchronizer's DB write methods produce the correct rows in
  * verifiedelements_attributes against a real Craft database. Covers upsert correctness,
- * multisite record seeding, and propagation — the scenarios where mocking the DB layer would
+ * multisite record seeding, and propagation - the scenarios where mocking the DB layer would
  * hide real schema and query bugs.
+ *
+ * Note: `ElementData::fromElement()` snapshots the element at construction time, so every
+ * snapshot is taken AFTER the element's fields are set, and tests that change fields between
+ * saves must build a fresh synchronizer from a fresh snapshot.
  */
 
 
@@ -25,13 +30,19 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
 // saveVerificationRecord()
 // =================================================================================================
 
-it('writes a verification record for the entry and site', function () {
+it('writes a verification record for the element and site', function () {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(30));
 
     $settings = Mockery::mock(PluginSettings::class);
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->saveVerificationRecord();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $entry->siteId)->one();
@@ -41,13 +52,19 @@ it('writes a verification record for the entry and site', function () {
     expect($row['siteId'])->toBe($entry->siteId);
 });
 
-it('upserts rather than inserts a second row when called twice for the same entry and site', function () {
+it('upserts rather than inserts a second row when called twice for the same element and site', function () {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(30));
 
     $settings = Mockery::mock(PluginSettings::class);
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [],
+        true,
+        $settings,
+        null,
+    );
 
     $synchronizer->saveVerificationRecord();
 
@@ -60,7 +77,7 @@ it('upserts rather than inserts a second row when called twice for the same entr
     expect((int)$count)->toBe(1);
 });
 
-it('overwrites the stored values when called a second time with updated fields', function () {
+it('overwrites the stored values when saved again from a fresh snapshot with updated fields', function () {
     Carbon::setTestNow('2026-01-01 00:00:00');
 
     $section = createSection();
@@ -68,11 +85,26 @@ it('overwrites the stored values when called a second time with updated fields',
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(30));
 
     $settings = Mockery::mock(PluginSettings::class);
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->saveVerificationRecord();
 
+    // ElementData is an immutable snapshot, so saving the updated date requires a fresh
+    // snapshot and a fresh synchronizer - mirroring a second save event in production.
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(90));
-    $synchronizer->saveVerificationRecord();
+    $secondSynchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [],
+        true,
+        $settings,
+        null,
+    );
+    $secondSynchronizer->saveVerificationRecord();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $entry->siteId)->one();
     $storedDate = DateHelper::toDateTime($row['verifiedUntilDate']);
@@ -83,12 +115,18 @@ it('overwrites the stored values when called a second time with updated fields',
     Carbon::setTestNow();
 });
 
-it('stores a null reviewer id when none is set on the entry', function () {
+it('stores a null reviewer id when none is set on the element', function () {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     $settings = Mockery::mock(PluginSettings::class);
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->saveVerificationRecord();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $entry->siteId)->one();
@@ -96,14 +134,20 @@ it('stores a null reviewer id when none is set on the entry', function () {
     expect($row['reviewerId'])->toBeNull();
 });
 
-it('stores the reviewer id when one is set on the entry', function () {
+it('stores the reviewer id when one is set on the element', function () {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $reviewer = getSharedReviewer();
     $entry->setReviewerId($reviewer->id);
 
     $settings = Mockery::mock(PluginSettings::class);
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->saveVerificationRecord();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $entry->siteId)->one();
@@ -123,7 +167,13 @@ it('creates a record for each other supported site', function () {
     $settings = Mockery::mock(PluginSettings::class);
     $settings->allows('getDefaultSettingsForSection')->andReturn(null);
 
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [$entry->siteId, $siteB->id],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->ensureOtherSiteRecords();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
@@ -151,7 +201,13 @@ it("seeds each site record using that site's own section defaults", function () 
     $settings = Mockery::mock(PluginSettings::class);
     $settings->allows('getDefaultSettingsForSection')->andReturn($sectionDefaults);
 
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [$entry->siteId, $siteB->id],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->ensureOtherSiteRecords();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
@@ -178,7 +234,13 @@ it('does not overwrite an existing record for another site', function () {
     $settings = Mockery::mock(PluginSettings::class);
     $settings->allows('getDefaultSettingsForSection')->andReturn(null);
 
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [$entry->siteId, $siteB->id],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->ensureOtherSiteRecords();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
@@ -194,7 +256,13 @@ it('returns true when all site records are seeded successfully', function () {
     $settings = Mockery::mock(PluginSettings::class);
     $settings->allows('getDefaultSettingsForSection')->andReturn(null);
 
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [$entry->siteId, $siteB->id],
+        true,
+        $settings,
+        null,
+    );
 
     expect($synchronizer->ensureOtherSiteRecords())->toBeTrue();
 });
@@ -203,7 +271,7 @@ it('returns true when all site records are seeded successfully', function () {
 // ensurePropagatedRecord()
 // =================================================================================================
 
-it('creates no record when no source record exists for the entry', function () {
+it('creates no record when no source record exists for the element', function () {
     $siteB = createSite('B');
     $section = createSection();
     $entryOnSiteA = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -213,7 +281,13 @@ it('creates no record when no source record exists for the entry', function () {
     $entryOnSiteB->siteId = $siteB->id;
 
     $settings = Mockery::mock(PluginSettings::class);
-    $synchronizer = new VerificationStateSynchronizer($entryOnSiteB, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entryOnSiteB),
+        [],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->ensurePropagatedRecord();
 
     $row = PluginQuery::verifiableEntry($entryOnSiteB->getCanonicalId(), $siteB->id)->one();
@@ -237,11 +311,17 @@ it('copies the source record to the propagated site when none exists there yet',
         'verifiedUntilDate' => '2026-04-01 00:00:00',
     ]);
 
-    // Simulate the entry being propagated to site B
+    // Simulate the entry being propagated to site B (the snapshot is taken after the switch)
     $entry->siteId = $siteB->id;
 
     $settings = Mockery::mock(PluginSettings::class);
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->ensurePropagatedRecord();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();
@@ -275,11 +355,17 @@ it('does not overwrite an existing record on the propagated site', function () {
         'verifiedUntilDate' => '2030-01-01 00:00:00',
     ]);
 
-    // Simulate propagation to site B
+    // Simulate propagation to site B (the snapshot is taken after the switch)
     $entry->siteId = $siteB->id;
 
     $settings = Mockery::mock(PluginSettings::class);
-    $synchronizer = new VerificationStateSynchronizer($entry, $settings, null);
+    $synchronizer = new VerificationStateSynchronizer(
+        ElementData::fromElement($entry),
+        [],
+        true,
+        $settings,
+        null,
+    );
     $synchronizer->ensurePropagatedRecord();
 
     $row = PluginQuery::verifiableEntry($entry->getCanonicalId(), $siteB->id)->one();

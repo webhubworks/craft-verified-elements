@@ -8,7 +8,6 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
 use DateTime;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
@@ -16,61 +15,40 @@ use webhubworks\verifiedelements\events\EventRegistrar;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\mail\ChangeNotification;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\UserRecipient;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
 use yii\db\Exception;
 
 /**
- * Persists an entry's verification state and notifies the assigned Reviewer when changes are
- * detected.
+ * Persists an element's verification state and notifies the assigned Reviewer when someone else
+ * saves the element.
  *
  * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
  */
 class VerificationStateSynchronizer
 {
-    /**
-     * @var Entry|VerifiableBehavior $entry
-     * @noinspection PhpDocSignatureInspection
-     */
-
     public function __construct(
-        private readonly Entry          $entry,
+        private readonly ElementData    $elementData,
+        private readonly array          $supportedSiteIds,
+        private readonly bool           $isElementEnabled,
         private readonly PluginSettings $settings,
         private readonly ?int           $currentUserId,
     ) {}
 
     /**
-     * Checks if the entry's section is currently enabled in the plugin's settings for the entry's
-     * currently-set site.
-     *
-     * @return bool If the entry's section is enabled.
-     */
-    public function isSectionEnabled(): bool
-    {
-        // Ignore matrix entries, which have no sections.
-        if ($this->entry->sectionId === null) {
-            return false;
-        }
-
-        return $this->settings->isSectionEnabledForSite(
-            $this->entry->sectionId,
-            $this->entry->siteId,
-        );
-    }
-
-    /**
-     * Ensures a verification record exists for this entry and its currently-set site without
+     * Ensures a verification record exists for this element and its currently-set site without
      * overwriting independently-set values.
      *
-     * Note: only run this during `$entry->propagate`.
+     * Note: only call this while the element is propagating ($element->propagating is true).
      *
-     * @return bool If a record exists for this entry and its currently-set site.
+     * @return bool If a record exists for this element and its currently-set site.
      */
     public function ensurePropagatedRecord(): bool
     {
         $recordAlreadyExists = PluginQuery::verifiableEntry(
-            $this->entry->getCanonicalId(),
-            $this->entry->siteId
+            $this->elementData->id,
+            $this->elementData->siteId
         )->exists();
 
         if ($recordAlreadyExists) {
@@ -79,16 +57,17 @@ class VerificationStateSynchronizer
 
         try {
             $this->copyRecordToSite(
-                $this->entry->getCanonicalId(),
-                $this->entry->siteId
+                $this->elementData->id,
+                $this->elementData->siteId
             );
         }
         catch (Exception $exception) {
             Log::error(sprintf(
-                'Error seeding verification row for entry %s "%s" on site %s',
-                $this->entry->getCanonicalId(),
-                $this->entry->title,
-                $this->entry->siteId
+                'Error seeding verification row for %s [%s] "%s" on site %s',
+                $this->elementData->type,
+                $this->elementData->id,
+                $this->elementData->title,
+                $this->elementData->siteId
             ), $exception);
 
             return false;
@@ -98,7 +77,7 @@ class VerificationStateSynchronizer
     }
 
     /**
-     * Saves the entry's current verification state to the database.
+     * Saves the element's current verification state to the database.
      *
      * @return bool If the record was saved successfully.
      */
@@ -106,50 +85,54 @@ class VerificationStateSynchronizer
     {
         try {
             Db::upsert(PluginTable::ATTRIBUTES, [
-                'elementId' => $this->entry->getCanonicalId(),
-                'siteId' => $this->entry->siteId,
-                'reviewerId' => $this->entry->getReviewerId(),
-                'verifiedUntilDate' => Db::prepareDateForDb($this->entry->getVerifiedUntilDate()),
+                'elementId' => $this->elementData->id,
+                'siteId' => $this->elementData->siteId,
+                'reviewerId' => $this->elementData->reviewerId,
+                'verifiedUntilDate' => $this->elementData->verifiedUntilDate,
             ], [
-                'reviewerId' => $this->entry->getReviewerId(),
-                'verifiedUntilDate' => Db::prepareDateForDb($this->entry->getVerifiedUntilDate()),
+                'reviewerId' => $this->elementData->reviewerId,
+                'verifiedUntilDate' => $this->elementData->verifiedUntilDate,
             ]);
         }
         catch (Exception $exception) {
             Log::error(sprintf(
-                'Error upserting "Verified Elements" details for entry %s "%s" on site %s',
-                $this->entry->getCanonicalId(),
-                $this->entry->title,
-                $this->entry->siteId
+                'Error upserting "Verified Elements" details for %s [%s] "%s" on site %s',
+                $this->elementData->type,
+                $this->elementData->id,
+                $this->elementData->title,
+                $this->elementData->siteId
             ), $exception);
 
             return false;
         }
 
-        // An entry save only busts craft\elements\Entry caches, so refresh ours explicitly.
-        Craft::$app->getElements()->invalidateCachesForElementType(VerifiedEntry::class);
+        // Saving an element in Craft only busts caches for the vanilla elements
+        // (Entry, Asset, etc.), so we need to explicitly bust the cache for the verified elements
+        // (VerifiedEntry, VerifiedAsset, etc.).
+        $verifiedElementType = match ($this->elementData->type) {
+            Entry::class => VerifiedEntry::class,
+        };
+        Craft::$app->getElements()->invalidateCachesForElementType($verifiedElementType);
 
         return true;
     }
 
     /**
-     * Ensures a verification record exists for each of the entry's other supported sites.
+     * Ensures a verification record exists for each of the element's other supported sites.
      *
-     * When an entry is first created, Craft hasn't fired propagation events yet for the other
-     * sites. So this method loops over all the other sites the entry supports and creates a
+     * When an element is first created, Craft hasn't fired propagation events yet for the other
+     * sites. So this method loops over all the other sites the element supports and creates a
      * verification record for each one that doesn't have one yet, applying that site's own
      * configured defaults rather than copying the canonical site's values.
      *
-     * @return bool If there were no errors upserting rows for the entry's other supported sites.
+     * @return bool If there were no errors upserting rows for the element's other supported sites.
      */
     public function ensureOtherSiteRecords(): bool
     {
         $errors = 0;
 
-        foreach ($this->entry->getSupportedSites() as $siteInfo) {
-            $siteId = is_array($siteInfo) ? ($siteInfo['siteId'] ?? null) : (int)$siteInfo;
-
-            if (! $siteId || $siteId === $this->entry->siteId) {
+        foreach ($this->supportedSiteIds as $siteId) {
+            if ($siteId === $this->elementData->siteId) {
                 continue;
             }
 
@@ -162,25 +145,28 @@ class VerificationStateSynchronizer
     }
 
     /**
-     * When the entry gets updated by someone other than the assigned Reviewer, send the Reviewer
+     * When the element gets updated by someone other than the assigned Reviewer, send the Reviewer
      * an email notifying them of the change.
+     *
+     * Note: this skips disabled elements and elements verified 'Indefinitely'.
      *
      * @return bool If the Reviewer was notified.
      */
     public function notifyReviewerOnChange(): bool
     {
-        if (! $this->entry->getHasVerifiedUntilDate() || ! $this->entry->enabled) {
+        if ($this->elementData->verifiedUntilDate === null || ! $this->isElementEnabled) {
             return false;
         }
 
-        $reviewer = $this->entry->getReviewer();
+        $reviewer = $this->findReviewer();
         if (! $reviewer || ! $reviewer->active) {
             Log::warning(sprintf(
-                'Entry %s "%s" on site %s "%s" has no Reviewer to notify.',
-                $this->entry->getCanonicalId(),
-                $this->entry->title,
-                $this->entry->siteId,
-                $this->entry->getSite()->name
+                '%s [%s] "%s" on site %s "%s" has no Reviewer to notify.',
+                $this->elementData->type,
+                $this->elementData->id,
+                $this->elementData->title,
+                $this->elementData->siteId,
+                $this->elementData->siteName
             ), __METHOD__);
             return false;
         }
@@ -189,7 +175,7 @@ class VerificationStateSynchronizer
             return false;
         }
 
-        // Email the Reviewer if someone else edits their assigned entry
+        // Email the Reviewer if someone else edits their assigned element
         $isSent = $this->buildChangeNotification($reviewer)->send();
 
         if (! $isSent) {
@@ -207,17 +193,17 @@ class VerificationStateSynchronizer
     // =============================================================================================
 
     /**
-     * Ensures a verification record exists for a single site supported by this entry using that
-     * site's configured defaults.
+     * Ensures a verification record exists for a single site supported by this element using
+     * that site's configured defaults.
      *
      * @param int $siteId
-     * @return bool If the record for this entry was upserted successfully for the site.
+     * @return bool If the record for this element was upserted successfully for the site.
      * @see ensureOtherSiteRecords()
      */
     private function ensureSiteRecord(int $siteId): bool
     {
         $recordAlreadyExists = PluginQuery::verifiableEntry(
-            $this->entry->getCanonicalId(),
+            $this->elementData->id,
             $siteId
         )->exists();
 
@@ -226,7 +212,7 @@ class VerificationStateSynchronizer
         }
 
         $sectionDefaults = $this->settings->getDefaultSettingsForSection(
-            $this->entry->sectionId,
+            $this->elementData->containerId,
             $siteId
         );
 
@@ -236,7 +222,7 @@ class VerificationStateSynchronizer
 
         try {
             Db::upsert(PluginTable::ATTRIBUTES, [
-                'elementId' => $this->entry->getCanonicalId(),
+                'elementId' => $this->elementData->id,
                 'siteId' => $siteId,
                 'reviewerId' => $sectionDefaults?->reviewerId,
                 'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
@@ -247,9 +233,10 @@ class VerificationStateSynchronizer
         }
         catch (Exception $exception) {
             Log::error(sprintf(
-                'Error seeding verification row for entry %s "%s" on site %s',
-                $this->entry->getCanonicalId(),
-                $this->entry->title,
+                'Error seeding verification row for %s [%s] "%s" on site %s',
+                $this->elementData->type,
+                $this->elementData->id,
+                $this->elementData->title,
                 $siteId
             ), $exception);
 
@@ -260,8 +247,9 @@ class VerificationStateSynchronizer
     }
 
     /**
-     * Returns a DateTime offset from now by the given verification period interval, or null if
-     * no period is given.
+     * Returns a DateTime that's offset from now by the given verification period interval.
+     *
+     * Null is returned if no period is given or if it can't be parsed into an interval.
      *
      * @param string|null $period
      * @return DateTime|null
@@ -282,20 +270,20 @@ class VerificationStateSynchronizer
     }
 
     /**
-     * Copies an existing verification record to a new site. Does nothing if no source record
-     * exists for the entry.
+     * Copies from the element's first existing verification record (of any site) to a new site.
+     * Does nothing if no source record exists for the element.
      *
-     * @param int $entryId
+     * @param int $elementId
      * @param int $siteId
      * @return void
      * @throws Exception
      */
-    private function copyRecordToSite(int $entryId, int $siteId): void
+    private function copyRecordToSite(int $elementId, int $siteId): void
     {
         $sourceRow = (new Query())
             ->select(['reviewerId', 'verifiedUntilDate'])
             ->from(PluginTable::ATTRIBUTES)
-            ->where(['elementId' => $entryId])
+            ->where(['elementId' => $elementId])
             ->one();
 
         if (! $sourceRow) {
@@ -308,7 +296,7 @@ class VerificationStateSynchronizer
         }
 
         Db::upsert(PluginTable::ATTRIBUTES, [
-            'elementId' => $entryId,
+            'elementId' => $elementId,
             'siteId' => $siteId,
             'reviewerId' => $sourceRow['reviewerId'],
             'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
@@ -321,11 +309,21 @@ class VerificationStateSynchronizer
     /**
      * Factory method for testing.
      *
+     * @return User|null
+     */
+    protected function findReviewer(): ?User
+    {
+        return $this->elementData->getReviewer();
+    }
+
+    /**
+     * Factory method for testing.
+     *
      * @param User $reviewer
      * @return ChangeNotification
      */
     protected function buildChangeNotification(User $reviewer): ChangeNotification
     {
-        return new ChangeNotification($this->entry, new UserRecipient($reviewer));
+        return new ChangeNotification($this->elementData, new UserRecipient($reviewer));
     }
 }

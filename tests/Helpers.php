@@ -12,6 +12,7 @@ use craft\models\Site;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\ExpiredEntryData;
 use webhubworks\verifiedelements\models\SectionDefaults;
 use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
@@ -194,18 +195,39 @@ function mockVerificationFieldsSetter(
 }
 
 /**
- * Generates a mock Craft entry for unit testing.
+ * Generate the plugin's ElementData object for unit testing.
  *
- * @param int $sectionId
+ * @param int|null $reviewerId
+ * @param string|null $verifiedUntilDate Raw DB value (UTC); null means "Indefinitely".
+ * @param int $id
  * @param int $siteId
- * @return Entry|MockInterface
+ * @param int $containerId
+ * @return ElementData
  */
-function mockEntry(int $sectionId = 1, int $siteId = 1): Entry|MockInterface
+function mockElementData(
+    ?int    $reviewerId = null,
+    ?string $verifiedUntilDate = null,
+    int     $id = 1,
+    int     $siteId = 1,
+    int     $containerId = 1,
+): ElementData
 {
-    $entry = Mockery::mock(Entry::class);
-    $entry->sectionId = $sectionId;
-    $entry->siteId = $siteId;
-    return $entry;
+    return new ElementData(
+        type: Entry::class,
+        rowId: null,
+        id: $id,
+        title: 'Test Entry',
+        siteId: $siteId,
+        siteName: 'Default',
+        siteHandle: 'default',
+        containerId: $containerId,
+        containerName: 'Test',
+        containerHandle: 'test',
+        dateUpdated: null,
+        reviewerId: $reviewerId,
+        verifiedUntilDate: $verifiedUntilDate,
+        cpEditUrl: '',
+    );
 }
 
 /**

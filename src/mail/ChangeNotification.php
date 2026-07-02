@@ -3,12 +3,12 @@
 namespace webhubworks\verifiedelements\mail;
 
 use Craft;
-use craft\elements\Entry;
 use craft\helpers\Html;
 use craft\i18n\Locale;
 use webhubworks\verifiedelements\base\NotifiableInterface;
 use webhubworks\verifiedelements\base\Notification;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\models\ElementData;
 
 /**
  * Sends an entry's Reviewer an email that someone has updated their entry
@@ -16,13 +16,13 @@ use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
  */
 class ChangeNotification extends Notification
 {
-    protected Entry|VerifiableBehavior|null $entry = null;
+    protected ElementData|null $elementData = null;
 
-    public function __construct(Entry $entry, NotifiableInterface $recipient, ?string $locale = null)
+    public function __construct(ElementData $elementData, NotifiableInterface $recipient, ?string $locale = null)
     {
         parent::__construct($recipient, $locale);
 
-        $this->entry = $this->ensureBehavior($entry);
+        $this->elementData = $elementData;
     }
 
     /** @inheritDoc */
@@ -47,15 +47,15 @@ class ChangeNotification extends Notification
     private function body(): string
     {
         $verifiedUntilDate = $this->formatter->asDate(
-            $this->entry->getVerifiedUntilDate(),
+            DateHelper::toDateTime($this->elementData->verifiedUntilDate),
             Locale::LENGTH_MEDIUM
         );
 
         $recipientName = Html::encode($this->recipient->getFriendlyName());
         $message = $this->t('email.changeNotification.body') . ':';
-        $title = Html::tag('strong', Html::encode($this->entry->title));
+        $title = Html::tag('strong', Html::encode($this->elementData->title));
         $verifiedUntil = $this->t('Verified until');
-        $link = Html::a($this->t('Show', null, 'app'), $this->entry->getCpEditUrl());
+        $link = Html::a($this->t('Show', null, 'app'), $this->elementData->cpEditUrl);
         $styles = implode(';', $this->styles());
 
         return <<<HTML
