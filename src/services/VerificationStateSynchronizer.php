@@ -64,7 +64,7 @@ class VerificationStateSynchronizer
         catch (Exception $exception) {
             Log::error(sprintf(
                 'Error seeding verification row for %s [%s] "%s" on site %s',
-                $this->elementData->type,
+                Log::element($this->elementData->type),
                 $this->elementData->id,
                 $this->elementData->title,
                 $this->elementData->siteId
@@ -96,8 +96,8 @@ class VerificationStateSynchronizer
         }
         catch (Exception $exception) {
             Log::error(sprintf(
-                'Error upserting "Verified Elements" details for %s [%s] "%s" on site %s',
-                $this->elementData->type,
+                'Error upserting verification details for %s [%s] "%s" on site %s',
+                Log::element($this->elementData->type),
                 $this->elementData->id,
                 $this->elementData->title,
                 $this->elementData->siteId
@@ -162,7 +162,7 @@ class VerificationStateSynchronizer
         if (! $reviewer || ! $reviewer->active) {
             Log::warning(sprintf(
                 '%s [%s] "%s" on site %s "%s" has no Reviewer to notify.',
-                $this->elementData->type,
+                Log::element($this->elementData->type),
                 $this->elementData->id,
                 $this->elementData->title,
                 $this->elementData->siteId,
@@ -234,7 +234,7 @@ class VerificationStateSynchronizer
         catch (Exception $exception) {
             Log::error(sprintf(
                 'Error seeding verification row for %s [%s] "%s" on site %s',
-                $this->elementData->type,
+                Log::element($this->elementData->type),
                 $this->elementData->id,
                 $this->elementData->title,
                 $siteId
