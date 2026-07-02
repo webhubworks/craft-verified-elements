@@ -5,9 +5,10 @@ namespace webhubworks\verifiedelements\models;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 /**
- * Default settings for a section (per site) that was saved in the plugin's settings page in the CP.
+ * Default settings for a container (section, volume, ...) per site, as saved on the plugin's
+ * settings page in the CP.
  */
-readonly class SectionDefaults
+readonly class ContainerDefaults
 {
     public function __construct(
         public int     $id,
@@ -21,18 +22,20 @@ readonly class SectionDefaults
     /**
      * A unique identifier for memoizing this object.
      *
-     * @param int $sectionId
+     * @param int $containerId
      * @param int $siteId
+     * @param string $elementType
      * @return string
-     * @see PluginSettings::getDefaultSettingsForSection()
+     * @see PluginSettings::getDefaultSettingsForContainer()
      */
-    public static function key(int $sectionId, int $siteId): string
+    public static function key(int $containerId, int $siteId, string $elementType): string
     {
         return implode('_', [
-            'section',
-            $sectionId,
+            $elementType,
+            'container',
+            $containerId,
             'site',
-            $siteId
+            $siteId,
         ]);
     }
 }

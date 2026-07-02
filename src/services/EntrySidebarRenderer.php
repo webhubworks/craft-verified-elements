@@ -72,6 +72,7 @@ readonly class EntrySidebarRenderer
         $dateSelectOptions = VerificationFieldsRenderer::dateSelectOptions(
             $this->entry->sectionId,
             $this->entry->siteId,
+            Entry::class,
             $this->settings,
             $this->entry->getVerifiedUntilDate()
         );

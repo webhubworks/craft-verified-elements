@@ -342,12 +342,12 @@ readonly class EventRegistrar
 
                     // Before an entry saves, set the Reviewer ID and "Verified until" date in
                     // the entry's behavior class.
-                    $service = VerificationFieldsSetter::fromEntry(
+                    $service = VerificationFieldsSetter::fromElement(
                         $entry,
                         $this->plugin->getPluginSettings()
                     );
 
-                    $service->updateEntryFields($entry);
+                    $service->updateElementFields($entry);
                 }
             );
         }

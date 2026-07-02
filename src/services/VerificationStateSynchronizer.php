@@ -211,23 +211,24 @@ class VerificationStateSynchronizer
             return true;
         }
 
-        $sectionDefaults = $this->settings->getDefaultSettingsForSection(
+        $containerDefaults = $this->settings->getDefaultSettingsForContainer(
             $this->elementData->containerId,
-            $siteId
+            $siteId,
+            $this->elementData->type
         );
 
         $verifiedUntilDate = $this->convertPeriodToDateTime(
-            $sectionDefaults?->period
+            $containerDefaults?->period
         );
 
         try {
             Db::upsert(PluginTable::ATTRIBUTES, [
                 'elementId' => $this->elementData->id,
                 'siteId' => $siteId,
-                'reviewerId' => $sectionDefaults?->reviewerId,
+                'reviewerId' => $containerDefaults?->reviewerId,
                 'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
             ], [
-                'reviewerId' => $sectionDefaults?->reviewerId,
+                'reviewerId' => $containerDefaults?->reviewerId,
                 'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
             ]);
         }

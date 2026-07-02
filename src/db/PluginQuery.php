@@ -3,6 +3,8 @@
 namespace webhubworks\verifiedelements\db;
 
 use craft\db\Query;
+use craft\elements\Asset;
+use craft\elements\Entry;
 use craft\helpers\Db;
 use webhubworks\verifiedelements\helpers\DateHelper;
 
@@ -201,26 +203,39 @@ abstract class PluginQuery
     }
 
     /**
-     * Returns a query for a section's default settings saved on the plugin's Settings CP page.
+     * Returns a query for a container's default settings saved on the plugin's Settings CP page.
+     * The container's name/handle come from the table matching its element type (sections for
+     * entries, volumes for assets); new element types add a match arm.
      *
-     * @param int $sectionId
+     * @param int $containerId
      * @param int $siteId
+     * @param string $elementType
      * @return Query
-     * @see \webhubworks\verifiedelements\services\singletons\PluginSettings::getDefaultSettingsForSection()
+     * @see \webhubworks\verifiedelements\services\singletons\PluginSettings::getDefaultSettingsForContainer()
      */
-    public static function sectionDefaults(int $sectionId, int $siteId): Query
+    public static function containerDefaults(int $containerId, int $siteId, string $elementType): Query
     {
+        $containerTable = match ($elementType) {
+            Entry::class => '{{%sections}}',
+            Asset::class => '{{%volumes}}',
+        };
+
         return (new Query())
             ->select([
                 'ves.containerId AS id',
-                's.name',
-                's.handle',
+                'c.name',
+                'c.handle',
                 'ves.siteId',
                 'ves.reviewerId',
                 'ves.defaultPeriod AS period',
             ])
             ->from(['ves' => PluginTable::CONTAINERS])
-            ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.containerId]]')
-            ->where(['ves.containerId' => $sectionId, 'ves.siteId' => $siteId, 'ves.enabled' => true]);
+            ->innerJoin(['c' => $containerTable], '[[c.id]] = [[ves.containerId]]')
+            ->where([
+                'ves.containerId' => $containerId,
+                'ves.siteId' => $siteId,
+                'ves.elementType' => $elementType,
+                'ves.enabled' => true,
+            ]);
     }
 }

@@ -13,7 +13,7 @@ use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\models\ElementData;
-use webhubworks\verifiedelements\models\SectionDefaults;
+use webhubworks\verifiedelements\models\ContainerDefaults;
 use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
 use webhubworks\verifiedelements\services\VerificationFieldsSetter;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
@@ -145,7 +145,7 @@ function mockPluginSettings(bool $sectionEnabled = true, ?int $reviewerId = null
 
     $defaults = null;
     if ($reviewerId !== null || $period !== null) {
-        $defaults = new SectionDefaults(
+        $defaults = new ContainerDefaults(
             1,
             'Test',
             'test',
@@ -155,7 +155,7 @@ function mockPluginSettings(bool $sectionEnabled = true, ?int $reviewerId = null
         );
     }
 
-    $settings->allows('getDefaultSettingsForSection')->andReturn($defaults);
+    $settings->allows('getDefaultSettingsForContainer')->andReturn($defaults);
     $settings->allows('isContainerEnabledForSite')->andReturn($sectionEnabled);
 
     return $settings;
@@ -182,6 +182,7 @@ function mockVerificationFieldsSetter(
     return new VerificationFieldsSetter(
         1,
         1,
+        Entry::class,
         $currentReviewerId,
         $currentVerifiedUntilDate,
         $isFirstSave,

@@ -2,6 +2,8 @@
 
 namespace webhubworks\verifiedelements\services;
 
+use craft\base\Element;
+use craft\elements\Asset;
 use craft\elements\Entry;
 use DateTime;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
@@ -12,8 +14,8 @@ use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 /**
- * Resolves the default Reviewer ID and "Verified until" date that should be applied to an entry's
- * verification fields before it is saved.
+ * Resolves the default Reviewer ID and "Verified until" date that should be applied to an
+ * elements's verification fields before it is saved.
  *
  * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_BEFORE_SAVE
  * @see VerifiableBehavior::setReviewerId()
@@ -25,70 +27,82 @@ class VerificationFieldsSetter
     private ?string $defaultPeriod;
 
     public function __construct(
-        int                        $sectionId,
+        int                        $containerId,
         int                        $siteId,
+        string                     $elementType,
         private readonly ?int      $currentReviewerId,
         private readonly ?DateTime $currentVerifiedUntilDate,
         private readonly bool      $isFirstSave,
         PluginSettings             $settings,
     )
     {
-        $sectionDefaults = $settings->getDefaultSettingsForSection($sectionId, $siteId);
-        $this->defaultReviewerId = $sectionDefaults?->reviewerId;
-        $this->defaultPeriod = $sectionDefaults?->period;
+        $containerDefaults = $settings->getDefaultSettingsForContainer(
+            $containerId,
+            $siteId,
+            $elementType
+        );
+
+        $this->defaultReviewerId = $containerDefaults?->reviewerId;
+        $this->defaultPeriod = $containerDefaults?->period;
     }
 
     /**
-     * Instantiate this class from an `Entry` object.
+     * Instantiate this class from a live element (with VerifiableBehavior attached).
      *
-     * @param Entry $entry
+     * @param Element|VerifiableBehavior $element
      * @param PluginSettings $settings
      * @return self
      */
-    public static function fromEntry(Entry $entry, PluginSettings $settings): self
+    public static function fromElement(Element $element, PluginSettings $settings): self
     {
-        /** @var Entry|VerifiableBehavior $entry */
+        /** @var Entry|Asset|VerifiableBehavior $element */
 
-        $canonicalId = $entry->getCanonicalId();
+        [$containerId, $elementType] = match (true) {
+            $element instanceof Entry => [$element->sectionId, Entry::class],
+            $element instanceof Asset => [$element->volumeId, Asset::class],
+        };
+
+        $canonicalId = $element->getCanonicalId();
         $isFirstSave = true;
 
         if ($canonicalId !== null) {
-            $isFirstSave = ! PluginQuery::verifiableEntry($canonicalId, $entry->siteId)->exists();
+            $isFirstSave = ! PluginQuery::verifiableEntry($canonicalId, $element->siteId)->exists();
         }
 
         return new self(
-            sectionId: $entry->sectionId,
-            siteId: $entry->siteId,
-            currentReviewerId: $entry->getReviewerId(),
-            currentVerifiedUntilDate: $entry->getVerifiedUntilDate(),
+            containerId: $containerId,
+            siteId: $element->siteId,
+            elementType: $elementType,
+            currentReviewerId: $element->getReviewerId(),
+            currentVerifiedUntilDate: $element->getVerifiedUntilDate(),
             isFirstSave: $isFirstSave,
             settings: $settings,
         );
     }
 
     /**
-     * Returns the section's default Reviewer ID to apply to the entry (via the VerifiableBehavior
+     * Returns the container's default Reviewer ID to apply to the element (via the VerifiableBehavior
      * class), or null if none should be applied.
      *
-     * Note: A default Reviewer is only applied when a verification date is set. An entry with an
-     * "Indefinite" verification date that has no Reviewer set on it is acceptable.
+     * Note: A default Reviewer is only applied when a verification date is set. An element with
+     * an "Indefinite" verification date that has no Reviewer set on it is acceptable.
      *
      * @return int|null
      */
     public function resolveReviewerId(): ?int
     {
-        // The section has no default reviewer to apply, so ignore.
+        // The container has no default reviewer to apply, so ignore.
         if (! $this->defaultReviewerId) {
             return null;
         }
 
-        // The entry already has a Reviewer assigned, so ignore.
+        // The element already has a Reviewer assigned, so ignore.
         if ($this->currentReviewerId !== null) {
             return null;
         }
 
-        // The entry has no verification date right now, no date is about to be applied in
-        // this same save, and the default period is not "Indefinitely" — so there's no
+        // The element has no verification date right now, no date is about to be applied in
+        // this same save, and the default period is not "Indefinitely,"so there's no
         // date context to assign a reviewer to.
         if (
             $this->currentVerifiedUntilDate === null &&
@@ -98,34 +112,34 @@ class VerificationFieldsSetter
             return null;
         }
 
-        // There's a default reviewer, the entry doesn't have one yet, and a verification date
-        // exists (or is about to), so apply the section's default Reviewer.
+        // There's a default reviewer, the element doesn't have one yet, and a verification date
+        // exists (or is about to), so apply the container's default Reviewer.
         return $this->defaultReviewerId;
     }
 
     /**
-     * Returns the section's default "Verified until" date value to apply to the entry (via the
+     * Returns the container's default "Verified until" date value to apply to the element (via the
      * VerifiableBehavior class), or null if none should be applied.
      *
-     * Note: A default date is only applied on the entry's first save. "Indefinitely" is a valid
+     * Note: A default date is only applied on the element's first save. "Indefinitely" is a valid
      * date-choice after that and should never be overwritten.
      *
      * @return DateTime|null
      */
     public function resolveVerificationDate(): ?DateTime
     {
-        // The entry already exists, so never apply the section's default period as the entry's
+        // The element already exists, so never apply the container's default period as the element's
         // verification date.
         if (! $this->isFirstSave) {
             return null;
         }
 
-        // The entry already has a verification date set on it, so ignore.
+        // The element already has a verification date set on it, so ignore.
         if ($this->currentVerifiedUntilDate !== null) {
             return null;
         }
 
-        // The section's plugin settings has no default period configured, so ignore.
+        // The container's plugin settings has no default period configured, so ignore.
         if (! $this->defaultPeriod) {
             return null;
         }
@@ -143,30 +157,30 @@ class VerificationFieldsSetter
             return null;
         }
 
-        // It's the first save, there's no existing date, the section has a valid default period,
+        // It's the first save, there's no existing date, the container has a valid default period,
         // and it parsed cleanly. Return the default verification date.
         return DateHelper::now()->add($dateInterval);
     }
 
     /**
-     * Update an entry's "Reviewer" and "Verified until" fields before saving it.
+     * Update an element's "Reviewer" and "Verified until" fields before saving it.
      *
-     * @param Entry $entry
-     * @return Entry
+     * @param Element $element
+     * @return Element
      * @see VerifiableBehavior
      */
-    public function updateEntryFields(Entry $entry): Entry
+    public function updateElementFields(Element $element): Element
     {
-        /** @var Entry|VerifiableBehavior $entry */
+        /** @var Element|VerifiableBehavior $element */
 
         if ($reviewerId = $this->resolveReviewerId()) {
-            $entry->setReviewerId($reviewerId);
+            $element->setReviewerId($reviewerId);
         }
 
         if ($date = $this->resolveVerificationDate()) {
-            $entry->setVerifiedUntilDate($date);
+            $element->setVerifiedUntilDate($date);
         }
 
-        return $entry;
+        return $element;
     }
 }

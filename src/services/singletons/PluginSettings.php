@@ -9,7 +9,7 @@ use craft\helpers\Db;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
 use webhubworks\verifiedelements\helpers\Log;
-use webhubworks\verifiedelements\models\SectionDefaults;
+use webhubworks\verifiedelements\models\ContainerDefaults;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -27,16 +27,16 @@ class PluginSettings extends Component
     private array $_enabledContainerIds = [];
 
     /**
-     * Previously-queried default settings for a section per site.
+     * Previously-queried default settings for a container per site.
      *
-     * @var SectionDefaults[]|null[]
-     * @see getDefaultSettingsForSection
+     * @var ContainerDefaults[]|null[]
+     * @see getDefaultSettingsForContainer
      */
-    private array $sectionDefaults = [];
+    private array $containerDefaults = [];
 
     /**
-     * Returns the IDs of containers (sections for entries, volumes for assets, ...) that have been
-     * enabled in this plugin's settings, optionally scoped to one site.
+     * Returns the IDs of containers (sections, volumes, etc.) that have been enabled in this
+     * plugin's settings, optionally scoped to one site.
      *
      * Results are memoized per (element type, site) combination, so repeated calls in a request
      * don't re-query the database.
@@ -64,6 +64,43 @@ class PluginSettings extends Component
         }
 
         return $this->_enabledContainerIds[$key] = array_map('intval', $query->column());
+    }
+
+    /**
+     * Returns the default configuration for a specific container (section, volume, etc.) that
+     * this plugin is applied to.
+     *
+     * @param int $containerId
+     * @param int $siteId
+     * @param string $elementType
+     * @return ContainerDefaults|null
+     */
+    public function getDefaultSettingsForContainer(int $containerId, int $siteId, string $elementType): ?ContainerDefaults
+    {
+        $key = ContainerDefaults::key($containerId, $siteId, $elementType);
+
+        if (array_key_exists($key, $this->containerDefaults)) {
+            return $this->containerDefaults[$key];
+        }
+
+        $defaults = PluginQuery::containerDefaults(
+            $containerId,
+            $siteId,
+            $elementType
+        )->one();
+
+        if (! $defaults) {
+            return $this->containerDefaults[$key] = null;
+        }
+
+        return $this->containerDefaults[$key] = new ContainerDefaults(
+            id: $defaults['id'],
+            name: $defaults['name'],
+            handle: $defaults['handle'],
+            siteId: $defaults['siteId'],
+            reviewerId: $defaults['reviewerId'],
+            period: $defaults['period'],
+        );
     }
 
     /**
@@ -163,37 +200,5 @@ class PluginSettings extends Component
         }
 
         return true;
-    }
-
-    /**
-     * Returns default configuration for a specific section (channels, structures, singles) that
-     * this plugin is applied to.
-     *
-     * @param int $sectionId
-     * @param int $siteId
-     * @return SectionDefaults|null
-     */
-    public function getDefaultSettingsForSection(int $sectionId, int $siteId): ?SectionDefaults
-    {
-        $key = SectionDefaults::key($sectionId, $siteId);
-
-        if (array_key_exists($key, $this->sectionDefaults)) {
-            return $this->sectionDefaults[$key];
-        }
-
-        $defaults = PluginQuery::sectionDefaults($sectionId, $siteId)->one();
-
-        if (! $defaults) {
-            return $this->sectionDefaults[$key] = null;
-        }
-
-        return $this->sectionDefaults[$key] = new SectionDefaults(
-            id: $defaults['id'],
-            name: $defaults['name'],
-            handle: $defaults['handle'],
-            siteId: $defaults['siteId'],
-            reviewerId: $defaults['reviewerId'],
-            period: $defaults['period'],
-        );
     }
 }

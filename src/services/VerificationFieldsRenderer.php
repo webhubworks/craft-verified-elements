@@ -71,6 +71,7 @@ readonly class VerificationFieldsRenderer
         $dateSelectOptions = self::dateSelectOptions(
             $this->entry->sectionId,
             $this->entry->siteId,
+            Entry::class,
             $this->settings,
             $this->entry->getVerifiedUntilDate(),
         );
@@ -109,23 +110,29 @@ readonly class VerificationFieldsRenderer
      * called "Verified until" where you choose a date that indicates when the entry needs to be
      * reviewed.
      *
-     * @param int $sectionId
+     * @param int $containerId
      * @param int $siteId
+     * @param string $elementType
      * @param PluginSettings $settings
      * @param DateTime|null $currentUntilDate The field's currently selected value
      * @return array The dropdown field's options
      * @see VerificationPeriod
      */
     public static function dateSelectOptions(
-        int            $sectionId,
+        int            $containerId,
         int            $siteId,
+        string         $elementType,
         PluginSettings $settings,
         ?DateTime      $currentUntilDate
     ): array
     {
         $formatter = new Formatter();
-        $sectionDefaults = $settings->getDefaultSettingsForSection($sectionId, $siteId);
-        $defaultPeriod = $sectionDefaults?->period;
+        $containerDefaults = $settings->getDefaultSettingsForContainer(
+            $containerId,
+            $siteId,
+            $elementType
+        );
+        $defaultPeriod = $containerDefaults?->period;
 
         $options = [];
 

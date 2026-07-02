@@ -7,7 +7,7 @@ use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\models\ElementData;
-use webhubworks\verifiedelements\models\SectionDefaults;
+use webhubworks\verifiedelements\models\ContainerDefaults;
 use webhubworks\verifiedelements\services\VerificationStateSynchronizer;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
@@ -165,7 +165,7 @@ it('creates a record for each other supported site', function () {
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+    $settings->allows('getDefaultSettingsForContainer')->andReturn(null);
 
     $synchronizer = new VerificationStateSynchronizer(
         ElementData::fromElement($entry),
@@ -189,7 +189,7 @@ it("seeds each site record using that site's own section defaults", function () 
     $reviewer = getSharedReviewer();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
-    $sectionDefaults = new SectionDefaults(
+    $containerDefaults = new ContainerDefaults(
         $section->id,
         $section->name,
         $section->handle,
@@ -199,7 +199,7 @@ it("seeds each site record using that site's own section defaults", function () 
     );
 
     $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getDefaultSettingsForSection')->andReturn($sectionDefaults);
+    $settings->allows('getDefaultSettingsForContainer')->andReturn($containerDefaults);
 
     $synchronizer = new VerificationStateSynchronizer(
         ElementData::fromElement($entry),
@@ -232,7 +232,7 @@ it('does not overwrite an existing record for another site', function () {
     ]);
 
     $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+    $settings->allows('getDefaultSettingsForContainer')->andReturn(null);
 
     $synchronizer = new VerificationStateSynchronizer(
         ElementData::fromElement($entry),
@@ -254,7 +254,7 @@ it('returns true when all site records are seeded successfully', function () {
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+    $settings->allows('getDefaultSettingsForContainer')->andReturn(null);
 
     $synchronizer = new VerificationStateSynchronizer(
         ElementData::fromElement($entry),

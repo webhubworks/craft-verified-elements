@@ -10,14 +10,15 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
  * INTEGRATION TESTS
  * @see VerificationFieldsSetter Service
  *
- * Tests the fromEntry() factory method's live database lookup that determines whether an entry
- * is being saved for the first time. Verifies correct isFirstSave detection with and without an
- * existing verification record, and confirms graceful handling of entries with no canonical ID yet.
+ * Tests the fromElement() factory method's live database lookup that determines whether an
+ * element is being saved for the first time. Verifies correct isFirstSave detection with and
+ * without an existing verification record, and confirms graceful handling of elements with no
+ * canonical ID yet.
  */
 
 
 
-// VerificationFieldsSetter::fromEntry()
+// VerificationFieldsSetter::fromElement()
 // =================================================================================================
 
 it('detects the first save when no verification record exists for the entry and site', function () {
@@ -25,14 +26,14 @@ it('detects the first save when no verification record exists for the entry and 
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+    $settings->allows('getDefaultSettingsForContainer')->andReturn(null);
 
-    $setter = VerificationFieldsSetter::fromEntry($entry, $settings);
+    $setter = VerificationFieldsSetter::fromElement($entry, $settings);
 
     // isFirstSave is private, so we verify its effect: resolveVerificationDate() returns null
     // when there is no default period, which is only reached if isFirstSave is true and then
     // short-circuits on the missing defaultPeriod check. The meaningful assertion is that
-    // fromEntry() constructs without error and resolveReviewerId() returns null too.
+    // fromElement() constructs without error and resolveReviewerId() returns null too.
     expect($setter->resolveReviewerId())->toBeNull();
     expect($setter->resolveVerificationDate())->toBeNull();
 });
@@ -50,12 +51,12 @@ it('detects a subsequent save when a verification record already exists for the 
     ]);
 
     $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+    $settings->allows('getDefaultSettingsForContainer')->andReturn(null);
 
-    $setter = VerificationFieldsSetter::fromEntry($entry, $settings);
+    $setter = VerificationFieldsSetter::fromElement($entry, $settings);
 
     // When isFirstSave is false, resolveVerificationDate() always returns null regardless
-    // of any configured default period — the early return on line 1 of the method fires.
+    // of any configured default period - the early return on line 1 of the method fires.
     // We verify this by confirming null is returned even if we had a default period set,
     // which would otherwise produce a date on a first save.
     expect($setter->resolveVerificationDate())->toBeNull();
@@ -69,10 +70,10 @@ it('treats a new entry with a null canonical id as a first save', function () {
     $entry->id = null;
 
     $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getDefaultSettingsForSection')->andReturn(null);
+    $settings->allows('getDefaultSettingsForContainer')->andReturn(null);
 
-    // fromEntry() guards against null canonical ID — it should not throw
-    $setter = VerificationFieldsSetter::fromEntry($entry, $settings);
+    // fromElement() guards against null canonical ID - it should not throw
+    $setter = VerificationFieldsSetter::fromElement($entry, $settings);
 
     expect($setter)->toBeInstanceOf(VerificationFieldsSetter::class);
 });
