@@ -52,9 +52,7 @@ class VerificationHealth extends Widget
     public function getBodyHtml(): ?string
     {
         $settings = Plugin::getInstance()->getPluginSettings();
-        $enabledSectionIds = $this->siteId
-            ? $settings->getEnabledSectionIdsForSite($this->siteId)
-            : $settings->getEnabledSectionIds();
+        $enabledSectionIds = $settings->getEnabledContainerIds(Entry::class, $this->siteId);
 
         $site = $this->siteId ?: '*';
 

@@ -38,7 +38,9 @@ class VerifiedEntry extends Entry
     /** @inheritDoc */
     protected static function defineSources(string $context = null): array
     {
-        $enabledSectionIds = Plugin::getInstance()->getPluginSettings()->getEnabledSectionIds();
+        $enabledSectionIds = Plugin::getInstance()
+            ->getPluginSettings()
+            ->getEnabledContainerIds(Entry::class);
         $currentUser = Craft::$app->getUser();
 
         /** @noinspection PhpUndefinedMethodInspection */

@@ -369,7 +369,12 @@ readonly class EventRegistrar
                 }
 
                 $settings = $this->plugin->getPluginSettings();
-                if (! $settings->isSectionEnabledForSite($entry->sectionId, $entry->siteId)) {
+                $isSectionEnabledForSite = $settings->isContainerEnabledForSite(
+                    $entry->sectionId,
+                    $entry->siteId,
+                    Entry::class
+                );
+                if (! $isSectionEnabledForSite) {
                     return;
                 }
 
@@ -467,9 +472,10 @@ readonly class EventRegistrar
                 }
 
                 $settings = $this->plugin->getPluginSettings();
-                $isSectionEnabled = $settings->isSectionEnabledForSite(
+                $isSectionEnabled = $settings->isContainerEnabledForSite(
                     $entry->sectionId,
-                    $entry->siteId
+                    $entry->siteId,
+                    Entry::class
                 );
                 if (! $isSectionEnabled) {
                     return;

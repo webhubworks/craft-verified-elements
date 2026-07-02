@@ -156,7 +156,7 @@ function mockPluginSettings(bool $sectionEnabled = true, ?int $reviewerId = null
     }
 
     $settings->allows('getDefaultSettingsForSection')->andReturn($defaults);
-    $settings->allows('isSectionEnabledForSite')->andReturn($sectionEnabled);
+    $settings->allows('isContainerEnabledForSite')->andReturn($sectionEnabled);
 
     return $settings;
 }

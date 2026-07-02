@@ -15,12 +15,16 @@ use yii\db\Exception;
 
 /**
  * Singleton to handle related plugin settings' actions.
- *
- * @property-read int[] $enabledSectionIds
  */
 class PluginSettings extends Component
 {
-    private ?array $_enabledSectionIds = null;
+    /**
+     * Previously-queried enabled container IDs, keyed by element type + site.
+     *
+     * @var array<string, int[]>
+     * @see getEnabledContainerIds
+     */
+    private array $_enabledContainerIds = [];
 
     /**
      * Previously-queried default settings for a section per site.
@@ -31,63 +35,55 @@ class PluginSettings extends Component
     private array $sectionDefaults = [];
 
     /**
-     * Returns an array of IDs for sections (channels, structures, singles) that have been
-     * enabled in this plugin's settings.
+     * Returns the IDs of containers (sections for entries, volumes for assets, ...) that have been
+     * enabled in this plugin's settings, optionally scoped to one site.
      *
-     * The returned array gets memorized, so you can call this as many times as you want in a
-     * request and it won't re-query the database.
+     * Results are memoized per (element type, site) combination, so repeated calls in a request
+     * don't re-query the database.
      *
+     * @param string $elementType
+     * @param int|null $siteId Limits the check to one site; null checks across all sites.
      * @return int[]
      */
-    public function getEnabledSectionIds(): array
+    public function getEnabledContainerIds(string $elementType, ?int $siteId = null): array
     {
-        if ($this->_enabledSectionIds === null) {
-            $this->_enabledSectionIds = array_map(
-                'intval',
-                (new Query())
-                    ->select(['containerId'])
-                    ->from(PluginTable::CONTAINERS)
-                    ->where(['enabled' => true])
-                    ->distinct()
-                    ->column()
-            );
+        $key = $elementType . ':' . ($siteId ?? 'all');
+
+        if (array_key_exists($key, $this->_enabledContainerIds)) {
+            return $this->_enabledContainerIds[$key];
         }
 
-        return $this->_enabledSectionIds;
+        $query = (new Query())
+            ->select(['containerId'])
+            ->from(PluginTable::CONTAINERS)
+            ->where(['enabled' => true, 'elementType' => $elementType])
+            ->distinct();
+
+        if ($siteId !== null) {
+            $query->andWhere(['siteId' => $siteId]);
+        }
+
+        return $this->_enabledContainerIds[$key] = array_map('intval', $query->column());
     }
 
     /**
-     * Returns an array of IDs for sections (channels, structures, singles) that have been
-     * enabled in this plugin's settings, filtered by a specific site.
-     *
-     * @param int $siteId
-     * @return array
-     */
-    public function getEnabledSectionIdsForSite(int $siteId): array
-    {
-        return array_map(
-            'intval',
-            (new Query())
-                ->select(['containerId'])
-                ->from(PluginTable::CONTAINERS)
-                ->where(['enabled' => true, 'siteId' => $siteId])
-                ->distinct()
-                ->column()
-        );
-    }
-
-    /**
-     * Checks if a section/group/volume/etc is enabled for this plugin.
+     * Checks if a container (section/group/volume/etc) is enabled for this plugin.
      *
      * @param int $containerId The ID for the grouping of elements (section, group, volume, etc.)
      * @param int $siteId
+     * @param string $elementType
      * @return bool
      */
-    public function isSectionEnabledForSite(int $containerId, int $siteId): bool
+    public function isContainerEnabledForSite(int $containerId, int $siteId, string $elementType): bool
     {
         return (new Query())
             ->from(PluginTable::CONTAINERS)
-            ->where(['containerId' => $containerId, 'siteId' => $siteId, 'enabled' => true])
+            ->where([
+                'containerId' => $containerId,
+                'siteId' => $siteId,
+                'elementType' => $elementType,
+                'enabled' => true,
+            ])
             ->exists();
     }
 
