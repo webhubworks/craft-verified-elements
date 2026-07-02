@@ -4,10 +4,12 @@ namespace webhubworks\verifiedelements\enums;
 
 use Craft;
 use craft\enums\Color;
+use DateTime;
+use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\Plugin;
 
 /**
- * Enum representing the verification status of an entry assigned to a Reviewer.
+ * Enum representing the verification status of an element assigned to a Reviewer.
  */
 enum VerificationStatus: string
 {
@@ -38,5 +40,30 @@ enum VerificationStatus: string
     public function cssColor(): string
     {
         return 'var(--' . $this->color()->value . '-500)';
+    }
+
+    public function isVerified(): bool
+    {
+        return $this !== self::Expired;
+    }
+
+    /**
+     * Resolves the status for a "Verified until" date.
+     *
+     * @param DateTime|null $verifiedUntilDate
+     * @return self
+     */
+    public static function fromDate(?DateTime $verifiedUntilDate): self
+    {
+        // An "Indefinitely" date (null) is considered "verified".
+        if ($verifiedUntilDate === null) {
+            return self::Verified;
+        }
+
+        if ($verifiedUntilDate <= DateHelper::now()) {
+            return self::Expired;
+        }
+
+        return self::Verified;
     }
 }

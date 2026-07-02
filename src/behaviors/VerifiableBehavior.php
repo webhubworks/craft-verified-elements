@@ -182,17 +182,7 @@ class VerifiableBehavior extends Behavior
      */
     public function getVerificationStatus(): VerificationStatus
     {
-        // An "Indefinitely" date is considered "verified".
-        if ($this->_verifiedUntilDate === null) {
-            return VerificationStatus::Verified;
-        }
-
-        $now = DateHelper::now();
-        if ($this->_verifiedUntilDate <= $now) {
-            return VerificationStatus::Expired;
-        }
-
-        return VerificationStatus::Verified;
+        return VerificationStatus::fromDate($this->getVerifiedUntilDate());
     }
 
     /**

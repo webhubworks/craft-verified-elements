@@ -10,9 +10,9 @@ use craft\elements\User;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use DateTime;
 use JsonSerializable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\DateHelper;
 
 /**
@@ -107,9 +107,9 @@ readonly class ElementData implements JsonSerializable
      */
     public function isVerified(): bool
     {
-        $verifiedUntilDate = DateHelper::toDateTime($this->verifiedUntilDate);
+        $date = DateHelper::toDateTime($this->verifiedUntilDate);
 
-        return $verifiedUntilDate instanceof DateTime && $verifiedUntilDate > DateHelper::now();
+        return VerificationStatus::fromDate($date)->isVerified();
     }
 
     /**
@@ -148,7 +148,7 @@ readonly class ElementData implements JsonSerializable
             'reviewerId' => $this->reviewerId,
             'verifiedUntilDate' => DateHelper::readableVerificationDate(DateHelper::toDateTime($this->verifiedUntilDate)),
             'isVerified' => $this->isVerified() ? 'Verified' : 'Expired',
-            'cpEditUrl' => $this->cpEditUrl,
+            'url' => $this->cpEditUrl,
         ];
     }
 
