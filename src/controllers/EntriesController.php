@@ -89,7 +89,7 @@ class EntriesController extends Controller
     }
 
     /**
-     * Returns paginated and sorted entry data for the admin table.
+     * Returns paginated and sorted element data for the admin table.
      *
      * @param int|null $userId
      * @return Response
@@ -101,11 +101,13 @@ class EntriesController extends Controller
 
         $page = (int)$this->request->getParam('page', 1);
         $limit = (int)$this->request->getParam('per_page', 100);
+
         $orderBy = match ($this->request->getParam('sort.0.field')) {
-            '__slot:handle' => 'sectionHandle',
-            'isVerified' => 'verifiedUntilDate',
+            '__slot:title' => 'title',
+            'isVerified', 'verifiedUntilDate' => 'verifiedUntilDate',
+            'dateUpdated' => 'dateUpdated',
             'siteName' => 'siteName',
-            default => 'sectionName',
+            default => 'containerName',
         };
 
         $sortDir = match ($this->request->getParam('sort.0.direction')) {
@@ -113,7 +115,7 @@ class EntriesController extends Controller
             default => SORT_ASC,
         };
 
-        [$results, $total] = Plugin::getInstance()->getReviewers()->getPaginatedEntries(
+        [$results, $total] = Plugin::getInstance()->getReviewers()->getPaginatedElements(
             $page,
             $limit,
             $sortDir,

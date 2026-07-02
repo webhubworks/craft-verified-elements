@@ -42,7 +42,7 @@
 
 <h2>{{ 'Assigned Entries'|t(pluginHandle) }}</h2>
 <div class="tableview" style="overflow-x: auto; overflow-y: hidden; ">
-    <div id="entries-vue-admin-table"></div>
+    <div id="elements-vue-admin-table"></div>
 </div>
 
 {% set emptyMessage = 'There are currently no entries assigned to you.'|t(pluginHandle) %}
@@ -65,14 +65,14 @@
             {% if isMultiSite %}
                 { name: 'siteName', title: 'Site', sortField: true },
             {% endif %}
-            { name: 'sectionName', title: Craft.t('app', 'Section'), sortField: true },
+            { name: 'containerName', title: Craft.t('app', 'Section'), sortField: true },
             { name: 'verifiedUntilDate', title: 'Verified until', sortField: true },
             { name: 'dateUpdated', title: Craft.t('app', 'Date Updated'), sortField: true },
         ];
 
         let config = {
             columns,
-            container: '#entries-vue-admin-table',
+            container: '#elements-vue-admin-table',
             emptyMessage: '{{ emptyMessage }}',
             tableDataEndpoint: 'verified-elements/entries/table-data?userId={{ userId }}',
             fullPane: false,

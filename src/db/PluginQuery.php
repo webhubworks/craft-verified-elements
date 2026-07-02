@@ -5,8 +5,6 @@ namespace webhubworks\verifiedelements\db;
 use craft\db\Query;
 use craft\helpers\Db;
 use webhubworks\verifiedelements\helpers\DateHelper;
-use webhubworks\verifiedelements\models\ElementData;
-use webhubworks\verifiedelements\models\ExpiredEntryData;
 
 /**
  * Class for abstracting out the many complicated database queries used throughout the plugin.
@@ -58,26 +56,26 @@ abstract class PluginQuery
      * @param int|null $siteId
      * @return Query
      * @see \webhubworks\verifiedelements\services\singletons\Reviewers
-     * @see \webhubworks\verifiedelements\models\ReviewerEntryData
+     * @see \webhubworks\verifiedelements\models\ElementData
      */
     public static function entriesByReviewer(int $userId, ?int $siteId = null): Query
     {
         $query = (new Query())
             ->select([
-                'veea.id',
-                'veea.elementId',
+                'elements.type',
+                'veea.id AS rowId',
+                'veea.elementId AS id',
                 'veea.siteId',
                 'veea.reviewerId',
                 'veea.verifiedUntilDate',
                 'entries.sectionId AS containerId',
-                'elements.type AS elementType',
+                'sections.name AS containerName',
+                'sections.handle AS containerHandle',
                 'es.title',
                 'es.slug',
                 'es.dateUpdated',
-                'sections.name AS sectionName',
-                'sections.handle AS sectionHandle',
-                'sites.handle AS siteHandle',
                 'sites.name AS siteName',
+                'sites.handle AS siteHandle',
             ])
             ->from(['veea' => PluginTable::ATTRIBUTES])
             ->rightJoin(
@@ -123,7 +121,7 @@ abstract class PluginQuery
      * Returns a query for all verifiable entries that have verification dates in the past.
      *
      * @return Query
-     * @see ElementData Populate this object with the results of the query
+     * @see \webhubworks\verifiedelements\models\ElementData Populate this object with the results of the query
      */
     public static function expiredVerifiableEntries(): Query
     {

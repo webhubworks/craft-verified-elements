@@ -13,7 +13,7 @@ use webhubworks\verifiedelements\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedelements\enums\DateStatus;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
-use webhubworks\verifiedelements\models\ReviewerEntryData;
+use webhubworks\verifiedelements\models\ElementData;
 use yii\base\Component;
 
 /**
@@ -61,7 +61,7 @@ class Reviewers extends Component
     }
 
     /**
-     * Get all entries assigned to a Reviewer, but paginate the results.
+     * Get all elements assigned to a Reviewer, but paginate the results.
      *
      * @param int $page
      * @param int $limit
@@ -69,9 +69,9 @@ class Reviewers extends Component
      * @param string $orderBy
      * @param int|null $userId
      * @param int|null $siteId
-     * @return array{0: ReviewerEntryData[], 1: int} A tuple of [page of entries, total count across all pages]
+     * @return array{0: ElementData[], 1: int} A tuple of [page of elements, total count across all pages]
      */
-    public function getPaginatedEntries(
+    public function getPaginatedElements(
         int    $page,
         int    $limit,
         int    $sortDir = SORT_ASC,
@@ -93,10 +93,10 @@ class Reviewers extends Component
         $query->limit($limit);
         $query->offset($offset);
 
-        /** @var ReviewerEntryData[] $entries */
-        $entries = array_map(ReviewerEntryData::fromArray(...), $query->all());
+        /** @var ElementData[] $elements */
+        $elements = array_map(ElementData::fromArray(...), $query->all());
 
-        return [$entries, $total];
+        return [$elements, $total];
     }
 
     /**

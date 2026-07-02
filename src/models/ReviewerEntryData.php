@@ -15,7 +15,7 @@ use webhubworks\verifiedelements\helpers\DateHelper;
  * "Admin Table" Vue component expects.
  *
  * @see PluginQuery::entriesByReviewer()
- * @see \webhubworks\verifiedelements\services\singletons\Reviewers::getPaginatedEntries()
+ * @see \webhubworks\verifiedelements\services\singletons\Reviewers::getPaginatedElements()
  */
 readonly class ReviewerEntryData implements JsonSerializable
 {
