@@ -88,7 +88,7 @@ class VerifiableBehavior extends Behavior
      * The "Reviewer" is a Craft User who has been assigned to review the element when its
      * "Verified Until" date expires.
      *
-     * NOTE that this method does NOT memorize the User, so repeated calls means a new query to
+     * NOTE that this method does NOT memoize the User, so repeated calls means a new query to
      * the database. If you call this, save it to a variable for reuse.
      *
      * @return User|null

@@ -19,7 +19,7 @@ readonly class SectionDefaults
     ) {}
 
     /**
-     * A unique identifier for memorizing this object.
+     * A unique identifier for memoizing this object.
      *
      * @param int $sectionId
      * @param int $siteId
