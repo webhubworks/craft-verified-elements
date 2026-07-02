@@ -4,7 +4,8 @@ namespace webhubworks\verifiedelements\console\controllers;
 
 use craft\console\Controller;
 use craft\log\Dispatcher;
-use webhubworks\verifiedelements\models\ExpiredEntryData;
+use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\SystemRecipient;
 use webhubworks\verifiedelements\models\UserRecipient;
 use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
@@ -12,7 +13,7 @@ use yii\console\ExitCode;
 use yii\helpers\BaseConsole;
 
 /**
- * Check for expired entries and notify their reviewers.
+ * Check for expired elements and notify their assigned reviewers.
  */
 class CheckExpiredVerificationsController extends Controller
 {
@@ -26,8 +27,8 @@ class CheckExpiredVerificationsController extends Controller
     }
 
     /**
-     * Reports on all entries whose "Verified until" date is in the past and notifies reviewers
-     * or the system's default email (for unassigned entries) about what needs to be reviewed.
+     * Reports on all elements whose "Verified until" date is in the past and notifies reviewers
+     * or the system's default email (for unassigned elements) about what needs to be reviewed.
      *
      * @return int
      */
@@ -40,45 +41,45 @@ class CheckExpiredVerificationsController extends Controller
     }
 
     /**
-     * Queries for all assigned entries whose "Verified until" date is in the past, groups them by the
-     * Craft User assigned to review them, and sends each reviewer a digest of those entries,
-     * prompting them to review the expired entries.
+     * Queries for all assigned elements whose "Verified until" date is in the past, groups them by the
+     * Craft User assigned to review them, and sends each reviewer a digest of those elements,
+     * prompting them to review the expired elements.
      *
      * @return int
      */
     public function actionReviewer(): int
     {
-        $this->stdout("Checking verification dates of entries with assigned reviewers..." . PHP_EOL, BaseConsole::FG_BLUE);
+        $this->stdout("Checking verification dates of elements with assigned reviewers..." . PHP_EOL, BaseConsole::FG_BLUE);
 
-        if (! $this->service->hasExpiredEntriesByReviewer()) {
-            $this->stdout('No expired entries.' . PHP_EOL, BaseConsole::FG_GREEN);
+        if (! $this->service->hasExpiredElementsByReviewer()) {
+            $this->stdout('No expired elements.' . PHP_EOL, BaseConsole::FG_GREEN);
 
             return ExitCode::OK;
         }
 
         $this->stdout('---' . PHP_EOL);
 
-        foreach ($this->service->getExpiredEntriesByReviewer() as $reviewerId => $expiredEntries) {
+        foreach ($this->service->getExpiredElementsByReviewer() as $reviewerId => $expiredElements) {
 
             // 1. Find the Reviewer
             $reviewer = $this->service->getReviewer($reviewerId);
             if (! $reviewer) {
                 $this->stdout(sprintf(
-                        "User %s not found or inactive — skipping.",
+                        "User %s not found or inactive. Skipping.",
                         $reviewerId
                     ) . PHP_EOL, BaseConsole::FG_RED);
-                $this->service->reassignEntriesToUnassigned($reviewerId);
+                $this->service->reassignElementsToUnassigned($reviewerId);
                 continue;
             }
 
             $this->stdout(sprintf(
-                    'User %s "%s" has %s expired entries to review:',
+                    'User %s "%s" has %s expired elements to review:',
                     $reviewer->id,
                     $reviewer->name,
-                    count($expiredEntries)
+                    count($expiredElements)
                 ) . PHP_EOL);
 
-            $this->listEntriesInConsole($expiredEntries);
+            $this->listElementsInConsole($expiredElements);
 
 
             // 2. Notify the Reviewer
@@ -86,7 +87,7 @@ class CheckExpiredVerificationsController extends Controller
 
             $isSent = $this->service->notifyRecipient(
                 new UserRecipient($reviewer),
-                $expiredEntries
+                $expiredElements
             );
 
             if ($isSent) {
@@ -103,28 +104,28 @@ class CheckExpiredVerificationsController extends Controller
     }
 
     /**
-     * Queries for all unassigned entries whose "Verified until" date is in the past and sends a
-     * digest to the system's default email, prompting a review of the unassigned and expired entries.
+     * Queries for all unassigned elements whose "Verified until" date is in the past and sends a
+     * digest to the system's default email, prompting a review of the unassigned and expired elements.
      *
      * @return int
      */
     public function actionUnassigned(): int
     {
-        $this->stdout("Checking verification dates of unassigned entries..." . PHP_EOL, BaseConsole::FG_BLUE);
+        $this->stdout("Checking verification dates of unassigned elements..." . PHP_EOL, BaseConsole::FG_BLUE);
 
-        if (! $this->service->hasUnassignedExpiredEntries()) {
-            $this->stdout('No expired unassigned entries.' . PHP_EOL, BaseConsole::FG_GREEN);
+        if (! $this->service->hasUnassignedExpiredElements()) {
+            $this->stdout('No expired unassigned elements.' . PHP_EOL, BaseConsole::FG_GREEN);
 
             return ExitCode::OK;
         }
 
         $this->stdout('---' . PHP_EOL);
         $this->stdout(sprintf(
-                'There are %s expired entries without assigned reviewers that need to be reviewed:',
-                count($this->service->getUnassignedExpiredEntries())
+                'There are %s expired elements without assigned reviewers that need to be reviewed:',
+                count($this->service->getUnassignedExpiredElements())
             ) . PHP_EOL);
 
-        $this->listEntriesInConsole($this->service->getUnassignedExpiredEntries());
+        $this->listElementsInConsole($this->service->getUnassignedExpiredElements());
 
 
         // 1. Notify the system admin
@@ -132,7 +133,7 @@ class CheckExpiredVerificationsController extends Controller
 
         $isSent = $this->service->notifyRecipient(
             new SystemRecipient(),
-            $this->service->getUnassignedExpiredEntries()
+            $this->service->getUnassignedExpiredElements()
         );
 
         if ($isSent) {
@@ -152,20 +153,21 @@ class CheckExpiredVerificationsController extends Controller
     // =============================================================================================
 
     /**
-     * @param ExpiredEntryData[] $entries
+     * @param ElementData[] $elements
      * @return void
      */
-    private function listEntriesInConsole(array $entries): void
+    private function listElementsInConsole(array $elements): void
     {
         $index = 0;
-        foreach ($entries as $entry) {
+        foreach ($elements as $elementData) {
             $this->stdout(sprintf(
-                    '[%s] Entry %s "%s" on site "%s" expired on %s.',
+                    '[%s] %s %s "%s" on site "%s" expired on %s.',
                     ++$index,
-                    $entry->id,
-                    $entry->title,
-                    $entry->siteHandle,
-                    $entry->verifiedUntilDate
+                    Log::element($elementData->type),
+                    $elementData->id,
+                    $elementData->title,
+                    $elementData->siteHandle,
+                    $elementData->verifiedUntilDate
                 ) . PHP_EOL, BaseConsole::FG_YELLOW);
         }
     }

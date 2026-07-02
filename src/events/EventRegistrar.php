@@ -108,22 +108,22 @@ readonly class EventRegistrar
 
                 $service = new ExpiredVerificationNotifier(Dispatcher::TARGET_WEB);
 
-                foreach ($service->getExpiredEntriesByReviewer() as $reviewerId => $expiredEntries) {
+                foreach ($service->getExpiredElementsByReviewer() as $reviewerId => $expiredElements) {
 
                     // 1. Find the Reviewer
                     if (! $reviewer = $service->getReviewer($reviewerId)) {
                         Log::warning(
-                            "Reviewer $reviewerId not found or inactive — skipping expired notification.",
+                            "Reviewer $reviewerId not found or inactive. Skipping expired notification.",
                             __METHOD__
                         );
-                        $service->reassignEntriesToUnassigned($reviewerId);
+                        $service->reassignElementsToUnassigned($reviewerId);
                         continue;
                     }
 
                     // 2. Notify the Reviewer
                     $isSent = $service->notifyRecipient(
                         new UserRecipient($reviewer),
-                        $expiredEntries
+                        $expiredElements
                     );
 
                     if (! $isSent) {
@@ -134,7 +134,7 @@ readonly class EventRegistrar
                     }
                 }
 
-                if (! $service->hasUnassignedExpiredEntries()) {
+                if (! $service->hasUnassignedExpiredElements()) {
                     return;
                 }
 
@@ -142,7 +142,7 @@ readonly class EventRegistrar
                 $recipient = new SystemRecipient();
                 $isSent = $service->notifyRecipient(
                     $recipient,
-                    $service->getUnassignedExpiredEntries()
+                    $service->getUnassignedExpiredElements()
                 );
 
                 if (! $isSent) {

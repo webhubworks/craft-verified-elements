@@ -51,7 +51,7 @@ readonly class ElementData implements JsonSerializable
             type: $row['type'],
             rowId: isset($row['rowId']) ? (int)$row['rowId'] : null,
             id: (int)$row['id'],
-            title: $row['title'],
+            title: (string)($row['title'] ?? ''),
             siteId: (int)$row['siteId'],
             siteName: $row['siteName'],
             siteHandle: $row['siteHandle'],

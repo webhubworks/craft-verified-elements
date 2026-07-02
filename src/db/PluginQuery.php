@@ -5,6 +5,7 @@ namespace webhubworks\verifiedelements\db;
 use craft\db\Query;
 use craft\helpers\Db;
 use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\ExpiredEntryData;
 
 /**
@@ -122,7 +123,7 @@ abstract class PluginQuery
      * Returns a query for all verifiable entries that have verification dates in the past.
      *
      * @return Query
-     * @see ExpiredEntryData Populate this object with the results of the query
+     * @see ElementData Populate this object with the results of the query
      */
     public static function expiredVerifiableEntries(): Query
     {
@@ -130,13 +131,19 @@ abstract class PluginQuery
 
         return (new Query())
             ->select([
-                'veea.elementId',
+                'elements.type',
+                'veea.id AS rowId',
+                'veea.elementId AS id',
                 'veea.siteId',
                 'veea.reviewerId',
                 'veea.verifiedUntilDate',
-                'entries.sectionId',
+                'entries.sectionId AS containerId',
+                'sections.name AS containerName',
+                'sections.handle AS containerHandle',
                 'es.title',
-                'sections.handle AS sectionHandle',
+                'es.slug',
+                'es.dateUpdated',
+                'sites.name AS siteName',
                 'sites.handle AS siteHandle',
             ])
             ->from(['veea' => PluginTable::ATTRIBUTES])

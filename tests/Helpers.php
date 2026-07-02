@@ -13,7 +13,6 @@ use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\models\ElementData;
-use webhubworks\verifiedelements\models\ExpiredEntryData;
 use webhubworks\verifiedelements\models\SectionDefaults;
 use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
 use webhubworks\verifiedelements\services\VerificationFieldsSetter;
@@ -121,13 +120,13 @@ function cleanUpUsers(): void
  */
 class TestableExpiredVerificationNotifier extends ExpiredVerificationNotifier
 {
-    protected function setExpiredEntries(): void {}
+    protected function setExpiredElements(): void {}
 
     public function seed(array $byReviewer, array $unassigned): void
     {
         $reflection = new ReflectionClass(ExpiredVerificationNotifier::class);
-        $reflection->getProperty('expiredEntriesByReviewerId')->setValue($this, $byReviewer);
-        $reflection->getProperty('expiredUnassignedEntries')->setValue($this, $unassigned);
+        $reflection->getProperty('expiredElementsByReviewerId')->setValue($this, $byReviewer);
+        $reflection->getProperty('expiredUnassignedElements')->setValue($this, $unassigned);
     }
 }
 
@@ -230,25 +229,6 @@ function mockElementData(
     );
 }
 
-/**
- * Generate the plugin's ExpiredEntryData object for unit testing.
- *
- * @param int|null $reviewerId
- * @return ExpiredEntryData
- */
-function mockExpiredEntry(?int $reviewerId = 1): ExpiredEntryData
-{
-    return new ExpiredEntryData(
-        100,
-        1,
-        $reviewerId,
-        '2020-01-01 00:00:00',
-        1,
-        'Test Entry',
-        'testSection',
-        'default',
-    );
-}
 
 
 

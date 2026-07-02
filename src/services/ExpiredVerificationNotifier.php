@@ -9,10 +9,10 @@ use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\events\EventRegistrar;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\mail\ExpiredNotification;
-use webhubworks\verifiedelements\models\ExpiredEntryData;
+use webhubworks\verifiedelements\models\ElementData;
 
 /**
- * Finds all entries whose verification date has passed and notifies either their assigned
+ * Finds all elements whose verification date has passed and notifies either their assigned
  * Reviewers or the system email (if no Reviewer is assigned).
  *
  * @see CheckExpiredVerificationsController
@@ -25,62 +25,62 @@ class ExpiredVerificationNotifier
     ) {}
 
     /**
-     * @var array<int, ExpiredEntryData[]>|null
+     * @var array<int, ElementData[]>|null
      */
-    private ?array $expiredEntriesByReviewerId = null;
+    private ?array $expiredElementsByReviewerId = null;
 
     /**
-     * @var ExpiredEntryData[]|null
+     * @var ElementData[]|null
      */
-    private ?array $expiredUnassignedEntries = null;
+    private ?array $expiredUnassignedElements = null;
 
     /**
-     * Returns true if there are expired entries with Reviewers assigned to them.
+     * Returns true if there are expired elements with Reviewers assigned to them.
      *
      * @return bool
      */
-    public function hasExpiredEntriesByReviewer(): bool
+    public function hasExpiredElementsByReviewer(): bool
     {
-        return ! empty($this->getExpiredEntriesByReviewer());
+        return ! empty($this->getExpiredElementsByReviewer());
     }
 
     /**
-     * Returns true if there are expired entries with no Reviewer assigned.
+     * Returns true if there are expired elements with no Reviewer assigned.
      *
      * @return bool
      */
-    public function hasUnassignedExpiredEntries(): bool
+    public function hasUnassignedExpiredElements(): bool
     {
-        return ! empty($this->getUnassignedExpiredEntries());
+        return ! empty($this->getUnassignedExpiredElements());
     }
 
     /**
-     * Returns an array of ExpiredEntryData objects for entries with a verification date in the past,
-     * but group the entries by their Reviewer user ID.
+     * Returns an array of ElementData objects for elements with a verification date in the past,
+     * but group the elements by their Reviewer user ID.
      *
-     * @return array<int, ExpiredEntryData[]>
+     * @return array<int, ElementData[]>
      */
-    public function getExpiredEntriesByReviewer(): array
+    public function getExpiredElementsByReviewer(): array
     {
-        if ($this->expiredEntriesByReviewerId === null) {
-            $this->setExpiredEntries();
+        if ($this->expiredElementsByReviewerId === null) {
+            $this->setExpiredElements();
         }
 
-        return $this->expiredEntriesByReviewerId;
+        return $this->expiredElementsByReviewerId;
     }
 
     /**
-     * Return an array of ExpiredEntryData objects for entries without a Reviewer assigned to them.
+     * Return an array of ElementData objects for elements without a Reviewer assigned to them.
      *
-     * @return ExpiredEntryData[]
+     * @return ElementData[]
      */
-    public function getUnassignedExpiredEntries(): array
+    public function getUnassignedExpiredElements(): array
     {
-        if ($this->expiredUnassignedEntries === null) {
-            $this->setExpiredEntries();
+        if ($this->expiredUnassignedElements === null) {
+            $this->setExpiredElements();
         }
 
-        return $this->expiredUnassignedEntries;
+        return $this->expiredUnassignedElements;
     }
 
     /**
@@ -98,12 +98,12 @@ class ExpiredVerificationNotifier
      * Sends an expired verification digest email to the given recipient.
      *
      * @param NotifiableInterface $recipient
-     * @param array $expiredEntries
+     * @param array $expiredElements
      * @return bool If the email was successfully sent.
      */
-    public function notifyRecipient(NotifiableInterface $recipient, array $expiredEntries): bool
+    public function notifyRecipient(NotifiableInterface $recipient, array $expiredElements): bool
     {
-        $isSent = $this->buildExpiredNotification($expiredEntries, $recipient)->send();
+        $isSent = $this->buildExpiredNotification($expiredElements, $recipient)->send();
 
         if (! $isSent) {
             Log::warning(
@@ -116,21 +116,21 @@ class ExpiredVerificationNotifier
     }
 
     /**
-     * In the event a Reviewer can't be found when handling their expired entries (perhaps their
+     * In the event a Reviewer can't be found when handling their expired elements (perhaps their
      * user account was deleted, deactivated, etc.), transfer them to the "unassigned" array so
-     * they get handled when those entries are reported to the system admin.
+     * they get handled when those elements are reported to the system admin.
      *
      * @param int $reviewerId
-     * @return bool If the entries were successfully reassigned.
+     * @return bool If the elements were successfully reassigned.
      */
-    public function reassignEntriesToUnassigned(int $reviewerId): bool
+    public function reassignElementsToUnassigned(int $reviewerId): bool
     {
-        $orphanedEntries = $this->getExpiredEntriesByReviewer()[$reviewerId] ?? [];
-        if (empty($orphanedEntries)) {
+        $orphanedElements = $this->getExpiredElementsByReviewer()[$reviewerId] ?? [];
+        if (empty($orphanedElements)) {
             return false;
         }
 
-        array_push($this->expiredUnassignedEntries, ...$orphanedEntries);
+        array_push($this->expiredUnassignedElements, ...$orphanedElements);
 
         return true;
     }
@@ -140,37 +140,37 @@ class ExpiredVerificationNotifier
     // =============================================================================================
 
     /**
-     * Queries for all expired entries and populates the internal reviewer
-     * and unassigned entry arrays.
+     * Queries for all expired elements and populates the internal reviewer and unassigned element
+     * arrays.
      *
      * @return void
      */
-    protected function setExpiredEntries(): void
+    protected function setExpiredElements(): void
     {
-        $this->expiredEntriesByReviewerId = [];
-        $this->expiredUnassignedEntries = [];
+        $this->expiredElementsByReviewerId = [];
+        $this->expiredUnassignedElements = [];
 
         foreach (PluginQuery::expiredVerifiableEntries()->all() as $record) {
-            $entry = ExpiredEntryData::fromArray($record);
+            $elementData = ElementData::fromArray($record);
 
-            if ($entry->reviewerId === null) {
-                $this->expiredUnassignedEntries[] = $entry;
+            if ($elementData->reviewerId === null) {
+                $this->expiredUnassignedElements[] = $elementData;
                 continue;
             }
 
-            $this->expiredEntriesByReviewerId[$entry->reviewerId][] = $entry;
+            $this->expiredElementsByReviewerId[$elementData->reviewerId][] = $elementData;
         }
     }
 
     /**
      * Factory method for testing.
      *
-     * @param array $expiredEntries
+     * @param array $expiredElements
      * @param NotifiableInterface $recipient
      * @return ExpiredNotification
      */
-    protected function buildExpiredNotification(array $expiredEntries, NotifiableInterface $recipient): ExpiredNotification
+    protected function buildExpiredNotification(array $expiredElements, NotifiableInterface $recipient): ExpiredNotification
     {
-        return new ExpiredNotification($expiredEntries, $recipient);
+        return new ExpiredNotification($expiredElements, $recipient);
     }
 }

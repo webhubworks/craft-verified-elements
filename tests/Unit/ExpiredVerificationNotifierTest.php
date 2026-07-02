@@ -8,75 +8,75 @@ use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
  * UNIT TESTS
  * @see ExpiredVerificationNotifier Service
  *
- * Tests the orchestration logic that groups expired entries by reviewer and dispatches
- * notifications. The expired entry data and mail transport are both mocked, isolating the
+ * Tests the orchestration logic that groups expired elements by reviewer and dispatches
+ * notifications. The expired element data and mail transport are both mocked, isolating the
  * grouping, recipient resolution, and notification dispatch decisions from any real database
  * or mail state.
  */
 
 
-// hasExpiredEntriesByReviewer()
+// hasExpiredElementsByReviewer()
 // =================================================================================================
 
-it('returns false when there are no expired entries assigned to a reviewer', function () {
+it('returns false when there are no expired elements assigned to a reviewer', function () {
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed([], []);
 
-    expect($notifier->hasExpiredEntriesByReviewer())->toBeFalse();
+    expect($notifier->hasExpiredElementsByReviewer())->toBeFalse();
 });
 
-it('returns true when there are expired entries assigned to a reviewer', function () {
+it('returns true when there are expired elements assigned to a reviewer', function () {
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed(
-        [42 => [mockExpiredEntry(42)]],
+        [42 => [mockElementData(reviewerId: 42, verifiedUntilDate: '2020-01-01 00:00:00')]],
         [],
     );
 
-    expect($notifier->hasExpiredEntriesByReviewer())->toBeTrue();
+    expect($notifier->hasExpiredElementsByReviewer())->toBeTrue();
 });
 
 
-// hasUnassignedExpiredEntries()
+// hasUnassignedExpiredElements()
 // =================================================================================================
 
-it('returns false when there are no unassigned expired entries', function () {
+it('returns false when there are no unassigned expired elements', function () {
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed([], []);
 
-    expect($notifier->hasUnassignedExpiredEntries())->toBeFalse();
+    expect($notifier->hasUnassignedExpiredElements())->toBeFalse();
 });
 
-it('returns true when there are unassigned expired entries', function () {
+it('returns true when there are unassigned expired elements', function () {
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed(
         [],
-        [mockExpiredEntry(null)],
+        [mockElementData(reviewerId: null, verifiedUntilDate: '2020-01-01 00:00:00')],
     );
 
-    expect($notifier->hasUnassignedExpiredEntries())->toBeTrue();
+    expect($notifier->hasUnassignedExpiredElements())->toBeTrue();
 });
 
 
-// reassignEntriesToUnassigned()
+// reassignElementsToUnassigned()
 // =================================================================================================
 
-it('returns false when the reviewer ID has no entries', function () {
+it('returns false when the reviewer ID has no elements', function () {
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed([], []);
 
-    expect($notifier->reassignEntriesToUnassigned(99))->toBeFalse();
+    expect($notifier->reassignElementsToUnassigned(99))->toBeFalse();
 });
 
-it('returns true and moves entries to unassigned when reviewer is found', function () {
-    $entry = mockExpiredEntry(42);
+it('returns true and moves elements to unassigned when reviewer is found', function () {
+    $elementData = mockElementData(reviewerId: 42, verifiedUntilDate: '2020-01-01 00:00:00');
     $notifier = new TestableExpiredVerificationNotifier('web');
     $notifier->seed(
-        [42 => [$entry]],
+        [42 => [$elementData]],
         [],
     );
 
-    expect($notifier->reassignEntriesToUnassigned(42))->toBeTrue();
-    expect($notifier->getUnassignedExpiredEntries())->toContain($entry);
+    expect($notifier->reassignElementsToUnassigned(42))->toBeTrue();
+    expect($notifier->getUnassignedExpiredElements())->toContain($elementData);
 });
 
 

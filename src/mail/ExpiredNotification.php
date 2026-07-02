@@ -8,27 +8,28 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use webhubworks\verifiedelements\base\NotifiableInterface;
 use webhubworks\verifiedelements\base\Notification;
-use webhubworks\verifiedelements\models\ExpiredEntryData;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\Plugin;
 
 /**
- * Sends a Reviewer a digest of expired entries assigned to them, prompting them to review them.
+ * Sends a Reviewer a digest of expired elements assigned to them, prompting them to review them.
  */
 class ExpiredNotification extends Notification
 {
-    /** @var ExpiredEntryData[] */
-    protected array $entries = [];
+    /** @var ElementData[] */
+    protected array $elements = [];
 
-    public function __construct(array $entries, NotifiableInterface $recipient, ?string $locale = null)
+    public function __construct(array $elements, NotifiableInterface $recipient, ?string $locale = null)
     {
         parent::__construct($recipient, $locale);
-        $this->entries = $entries;
+        $this->elements = $elements;
     }
 
     /** @inheritDoc */
     public function send(): bool
     {
-        if (empty($this->entries)) {
+        if (empty($this->elements)) {
             return false;
         }
 
@@ -47,7 +48,7 @@ class ExpiredNotification extends Notification
     {
         return $this->t(
             'email.expiredNotification.subject',
-            ['count' => count($this->entries)]
+            ['count' => count($this->elements)]
         );
     }
 
@@ -56,7 +57,7 @@ class ExpiredNotification extends Notification
         $recipientName = Html::encode($this->recipient->getFriendlyName());
         $intro = $this->t('email.expiredNotification.body') . ':';
         $viewAll = Html::a($this->t('View all'), $this->viewAllUrl());
-        $listItems = implode('', array_map(fn($entry) => $this->listItem($entry), $this->entries));
+        $listItems = implode('', array_map(fn($elementData) => $this->listItem($elementData), $this->elements));
         $styles = implode(';', $this->styles());
 
         return <<<HTML
@@ -69,12 +70,15 @@ class ExpiredNotification extends Notification
             HTML;
     }
 
-    private function listItem(ExpiredEntryData $entry): string
+    private function listItem(ElementData $elementData): string
     {
-        $title = Html::tag('strong', Html::encode($entry->title));
+        $title = Html::tag('strong', Html::encode($elementData->title));
         $verifiedUntil = $this->t('Verified until');
-        $verifiedUntilDate = $this->formatter->asDate($entry->verifiedUntilDate, Locale::LENGTH_MEDIUM);
-        $link = Html::a($this->t('Edit', null, 'app'), $entry->getCpEditUrl());
+        $verifiedUntilDate = $this->formatter->asDate(
+            DateHelper::toDateTime($elementData->verifiedUntilDate),
+            Locale::LENGTH_MEDIUM
+        );
+        $link = Html::a($this->t('Edit', null, 'app'), $elementData->cpEditUrl);
 
         return Html::tag('li', sprintf(
             '"%s": %s %s. [%s]',
