@@ -18,40 +18,6 @@ abstract class PluginQuery
     // =============================================================================================
 
     /**
-     * Returns a query for all sections (channels, structures, singles) assigned to a reviewer.
-     *
-     * @param int $userId The Reviewer
-     * @param int|null $siteId
-     * @return Query
-     * @see \webhubworks\verifiedelements\services\singletons\Reviewers
-     */
-    public static function sectionsByReviewer(int $userId, ?int $siteId = null): Query
-    {
-        $query = (new Query())
-            ->select([
-                'ves.id',
-                'ves.containerId',
-                'ves.defaultPeriod',
-                's.name',
-                's.type',
-                's.handle',
-                'sites.name AS siteName',
-            ])
-            ->from(['ves' => PluginTable::CONTAINERS])
-            ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.containerId]]')
-            ->leftJoin('{{%sites}}', '[[sites.id]] = [[ves.siteId]]')
-            ->where(['ves.enabled' => true])
-            ->andWhere(['ves.reviewerId' => $userId])
-            ->andWhere(['ves.elementType' => ElementType::Entry->value]);
-
-        if ($siteId !== null) {
-            $query->andWhere(['ves.siteId' => $siteId]);
-        }
-
-        return $query;
-    }
-
-    /**
      * Returns a query for all elements (of the given element types) assigned to a reviewer,
      * ready for ordering and pagination.
      *

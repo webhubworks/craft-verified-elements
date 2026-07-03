@@ -3,7 +3,6 @@
 return [
     'Asset has expired and is due to be verified.' => 'Die Datei ist abgelaufen und muss überprüft werden.',
     'Assign Reviewer' => 'Reviewer zuweisen',
-    'Assigned Entries' => 'Zugewiesene Einträge',
     'Assigned' => 'Zugewiesen',
     'Could not assign a Reviewer to all elements.' => 'Der Reviewer konnte nicht allen Elementen zugewiesen werden.',
     'Could not set verification date.' => 'Verifizierungsdatum konnte nicht übernommen werden.',
@@ -28,6 +27,7 @@ return [
     'Specific Date' => 'Bestimmtes Datum',
     'Standard' => 'Standard',
     'Subscription Plan' => 'Abonnement',
+    'There are currently no assets assigned to you.' => 'Derzeit sind Ihnen keine Dateien zugewiesen.',
     'There are currently no entries assigned to you.' => 'Derzeit sind Ihnen keine Einträge zugewiesen.',
     'Total' => 'Gesamt',
     'Unassigned' => 'Unbestimmt',
@@ -43,7 +43,6 @@ return [
     'Verify for' => 'Verfizieren für',
     'Verify' => 'Verifizieren',
     'View all' => 'Alle anzeigen',
-    "You're the default reviewer for entries in these sections" => 'Sie sind der Standard-Prüfer für Einträge in diesen Sektionen.',
     'email.changeNotification.body.asset' => 'Eine Datei, die Sie überprüfen sollen, wurde aktualisiert. Bitte nehmen Sie sich einen Moment Zeit, um die letzten Änderungen zu überprüfen',
     'email.changeNotification.body.entry' => 'Ein Eintrag, den Sie überprüfen sollen, wurde aktualisiert. Bitte nehmen Sie sich einen Moment Zeit, um die letzten Änderungen zu überprüfen',
     'email.changeNotification.subject.asset' => 'Eine Datei wurde aktualisiert',

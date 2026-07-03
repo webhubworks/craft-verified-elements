@@ -178,6 +178,24 @@ enum ElementType: string
     }
 
     /**
+     * Resolves a URI segment (e.g. an `elementType` query param) back to its registry case.
+     *
+     * @param string $uriSegment
+     * @return self
+     * @see uriSegment()
+     */
+    public static function fromUriSegment(string $uriSegment): self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->uriSegment() === $uriSegment) {
+                return $case;
+            }
+        }
+
+        throw new \ValueError(sprintf('Unknown element type URI segment: %s', $uriSegment));
+    }
+
+    /**
      * Returns the plugin's element subtype that powers the dashboard element index for this type.
      *
      * @return string

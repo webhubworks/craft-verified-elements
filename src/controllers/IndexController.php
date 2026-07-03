@@ -8,6 +8,7 @@ use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
@@ -116,15 +117,31 @@ class IndexController extends Controller
      * Returns paginated and sorted element data for the admin table.
      *
      * @param int|null $userId
+     * @param string|null $elementType URI segment ('entries', 'assets'); null includes every
+     * element type the current edition enables.
      * @return Response
      * @throws BadRequestHttpException
      */
-    public function actionTableData(?int $userId = null): Response
+    public function actionTableData(?int $userId = null, ?string $elementType = null): Response
     {
         $this->requireAcceptsJson();
 
         $page = (int)$this->request->getParam('page', 1);
         $limit = (int)$this->request->getParam('per_page', 100);
+
+        $elementTypes = ElementType::enabledTypes();
+        if ($elementType !== null) {
+            $requestedType = ElementType::fromUriSegment($elementType)->value;
+            $elementTypes = in_array($requestedType, $elementTypes, true) ? [$requestedType] : [];
+        }
+
+        // The requested element type isn't enabled in this edition, so there's nothing to list.
+        if (empty($elementTypes)) {
+            return $this->asJson([
+                'pagination' => AdminTable::paginationLinks($page, 0, $limit),
+                'data' => [],
+            ]);
+        }
 
         $orderBy = match ($this->request->getParam('sort.0.field')) {
             '__slot:title' => 'title',
@@ -145,6 +162,7 @@ class IndexController extends Controller
             $sortDir,
             $orderBy,
             $userId,
+            elementTypes: $elementTypes,
         );
 
         $pagination = AdminTable::paginationLinks($page, $total, $limit);

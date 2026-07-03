@@ -5,6 +5,8 @@ namespace webhubworks\verifiedelements\controllers;
 use craft\web\Controller;
 use craft\controllers\EditUserTrait;
 use craft\web\CpScreenResponseBehavior;
+use webhubworks\verifiedelements\enums\ElementType;
+use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\Plugin;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -38,14 +40,29 @@ class ReviewersController extends Controller
     {
         $user = $this->editedUser($userId);
 
+        $showEntriesTab = Feature::EntryVerification->isEnabled();
+        $showAssetsTab = Feature::AssetVerification->isEnabled();
+
+        // Default to the first available tab; ignore requests for tabs the edition disables.
+        $defaultElementType = $showEntriesTab
+            ? ElementType::Entry->uriSegment()
+            : ElementType::Asset->uriSegment();
+        $selectedElementType = $this->request->getQueryParam('elementType', $defaultElementType);
+
+        if ($selectedElementType === ElementType::Asset->uriSegment() && ! $showAssetsTab) {
+            $selectedElementType = $defaultElementType;
+        }
+
         /** @var Response|CpScreenResponseBehavior $response */
         $response = $this->asEditUserScreen($user, Plugin::HANDLE);
 
         return $response->contentTemplate(
             Plugin::HANDLE . '/_user.twig',
             [
-                'sections' => Plugin::getInstance()->getReviewers()->getSections($userId),
                 'userId' => $user->id,
+                'selectedElementType' => $selectedElementType,
+                'showEntriesTab' => $showEntriesTab,
+                'showAssetsTab' => $showAssetsTab,
             ]
         );
     }

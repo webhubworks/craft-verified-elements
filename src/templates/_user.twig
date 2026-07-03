@@ -3,49 +3,60 @@
 {% do view.registerTranslations('app', [
     'Name',
     'Section',
+    'Volume',
     'Date Updated',
 ]) %}
 
 {% set isMultiSite = craft.app.sites.allSites|filter(s => s.enabled)|length > 1 %}
+{% set isEntriesTab = selectedElementType == 'entries' %}
 
-<h2>{{ 'Sections'|t('app') }}</h2>
-
-{% if sections|length %}
-    <p>{{ "You're the default reviewer for entries in these sections"|t(pluginHandle) }}:</p>
-    <table id="sections" class="data fullwidth">
-        <thead>
-        <th scope="col">{{ 'Name'|t('app') }}</th>
-        {% if isMultiSite %}<th scope="col">{{ 'Site'|t('app') }}</th>{% endif %}
-        <th scope="col">{{ 'Default Period'|t(pluginHandle) }}</th>
-        </thead>
-        <tbody>
-        {% for section in sections %}
-            <tr>
-                <th scope="row" data-title="{{ 'Name'|t('app') }}">
-                    <a href="{{ cpUrl('entries/' ~ section.handle) }}">{{ section.name }}</a>
-                </th>
-                {% if isMultiSite %}<td>{{ section.siteName }}</td>{% endif %}
-                <td>
-                    {{ section.defaultPeriod }}
-                </td>
-            </tr>
-
-        {% endfor %}
-        </tbody>
-    </table>
-{% else %}
-    <div class="zilch">
-        <p>{{ 'No sections are available.'|t('app') }}</p>
-    </div>
+{% set tabs = {} %}
+{% if showEntriesTab %}
+    {% set tabs = tabs|merge({
+        entries: {
+            label: 'Entries'|t('app'),
+            url: url(craft.app.request.pathInfo, {elementType: 'entries'}),
+        },
+    }) %}
 {% endif %}
-<hr />
+{% if showAssetsTab %}
+    {% set tabs = tabs|merge({
+        assets: {
+            label: 'Assets'|t('app'),
+            url: url(craft.app.request.pathInfo, {elementType: 'assets'}),
+        },
+    }) %}
+{% endif %}
 
-<h2>{{ 'Assigned Entries'|t(pluginHandle) }}</h2>
-<div class="tableview" style="overflow-x: auto; overflow-y: hidden; ">
+{% if tabs|length > 1 %}
+    {% include '_includes/tabs' with {
+        tabs: tabs,
+        selectedTab: selectedElementType,
+    } only %}
+
+    {# The content pane's default 24px top padding pushes the tabs down; let them sit flush
+       against the pane's top edge. Registered here, this only applies to this screen. #}
+    {% css %}
+        #content.content-pane {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+    {% endcss %}
+{% endif %}
+
+{# The negative side margins counteract the content pane's 24px padding - the same trick
+   Craft's own .pane-tabs uses - so the table stretches to the pane's edges. #}
+<div class="tableview" style="overflow-x: auto; overflow-y: hidden; margin: 18px -18px 0;">
     <div id="elements-vue-admin-table"></div>
 </div>
 
-{% set emptyMessage = 'There are currently no entries assigned to you.'|t(pluginHandle) %}
+{% if isEntriesTab %}
+    {% set emptyMessage = 'There are currently no entries assigned to you.'|t(pluginHandle) %}
+    {% set containerColumnTitle = 'Section' %}
+{% else %}
+    {% set emptyMessage = 'There are currently no assets assigned to you.'|t(pluginHandle) %}
+    {% set containerColumnTitle = 'Volume' %}
+{% endif %}
 
 {% js %}
     (() => {
@@ -65,7 +76,7 @@
             {% if isMultiSite %}
                 { name: 'siteName', title: 'Site', sortField: true },
             {% endif %}
-            { name: 'containerName', title: Craft.t('app', 'Section'), sortField: true },
+            { name: 'containerName', title: Craft.t('app', '{{ containerColumnTitle }}'), sortField: true },
             { name: 'verifiedUntilDate', title: 'Verified until', sortField: true },
             { name: 'dateUpdated', title: Craft.t('app', 'Date Updated'), sortField: true },
         ];
@@ -74,7 +85,7 @@
             columns,
             container: '#elements-vue-admin-table',
             emptyMessage: '{{ emptyMessage }}',
-            tableDataEndpoint: 'verified-elements/index/table-data?userId={{ userId }}',
+            tableDataEndpoint: 'verified-elements/index/table-data?userId={{ userId }}&elementType={{ selectedElementType }}',
             fullPane: false,
         };
 
