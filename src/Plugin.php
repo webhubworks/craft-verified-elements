@@ -132,6 +132,14 @@ class Plugin extends BasePlugin
             ];
         }
 
+        // Point the plugin's top-level nav link at the first available subpage, whichever that
+        // is in the current edition, so the URL matches a subnav item and it highlights. With
+        // no subpages at all, the link falls back to the plugin's landing route.
+        if (! empty($nav['subnav'])) {
+            $firstSubnavItem = reset($nav['subnav']);
+            $nav['url'] = $firstSubnavItem['url'];
+        }
+
         return $nav;
     }
 
