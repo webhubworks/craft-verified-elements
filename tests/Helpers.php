@@ -266,17 +266,17 @@ function pestHandle(string $type, ?string $name = null): string
 
 
 /**
- * Helper for ensuring entries have the behavior class that the plugin normally directs Craft to
- * attach to all entries.
+ * Helper for ensuring elements have the behavior class that the plugin normally directs Craft to
+ * attach to all supported element types.
  *
- * @param Entry $entry
- * @return Entry|VerifiableBehavior
+ * @param craft\base\Element $element
+ * @return craft\base\Element|VerifiableBehavior
  */
-function withVerifiableBehavior(Entry $entry): Entry|VerifiableBehavior
+function withVerifiableBehavior(craft\base\Element $element): craft\base\Element|VerifiableBehavior
 {
-    $entry->attachBehavior(VerifiableBehavior::NAME, VerifiableBehavior::class);
+    $element->attachBehavior(VerifiableBehavior::NAME, VerifiableBehavior::class);
 
-    return $entry;
+    return $element;
 }
 
 /**
