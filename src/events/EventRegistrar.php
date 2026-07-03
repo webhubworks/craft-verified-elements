@@ -46,7 +46,7 @@ use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\SystemRecipient;
 use webhubworks\verifiedelements\models\UserRecipient;
-use webhubworks\verifiedelements\services\EntrySidebarRenderer;
+use webhubworks\verifiedelements\services\CpEditSidebarRenderer;
 use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
 use webhubworks\verifiedelements\services\VerificationFieldsSetter;
@@ -491,7 +491,7 @@ readonly class EventRegistrar
                     return;
                 }
 
-                $event->html .= (new EntrySidebarRenderer($entry, $settings))->buildHtml();
+                $event->html .= (new CpEditSidebarRenderer($entry, $settings))->buildHtml();
             }
         );
 

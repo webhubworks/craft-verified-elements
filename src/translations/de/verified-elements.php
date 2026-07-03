@@ -2,6 +2,7 @@
 
 return [
     "You're the default reviewer for entries in these sections" => 'Sie sind der Standard-Prüfer für Einträge in diesen Sektionen.',
+    'Asset has expired and is due to be verified.' => 'Die Datei ist abgelaufen und muss überprüft werden.',
     'Assign Reviewer' => 'Reviewer zuweisen',
     'Assigned Entries' => 'Zugewiesene Einträge',
     'Assigned' => 'Zugewiesen',
@@ -33,6 +34,8 @@ return [
     'Verified Elements' => 'Verifizierung',
     'Verified until' => 'Verifiziert bis',
     'Verified' => 'Verifiziert',
+    'Verify Asset' => 'Datei verifizieren',
+    'Verify assets' => 'Dateien verifizieren',
     'Verify Entry' => 'Eintrag verifizieren',
     'Verify entries' => 'Einträge verifizieren',
     'Verify for' => 'Verfizieren für',

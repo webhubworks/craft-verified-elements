@@ -3,7 +3,7 @@
 namespace webhubworks\verifiedelements\services;
 
 use Craft;
-use craft\elements\Entry;
+use craft\base\Element;
 use craft\elements\User;
 use craft\helpers\Cp;
 use craft\helpers\DateTimeHelper;
@@ -12,6 +12,7 @@ use DateTime;
 use Throwable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\enums\DateStatus;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\helpers\DateHelper;
@@ -21,14 +22,14 @@ use webhubworks\verifiedelements\Plugin;
 
 /**
  * Construct the HTML for the "Reviewer" and "Verified until" date fields that appear in the
- * sidebar of an entry's "edit" page in the CP.
+ * sidebar of an element's "edit" page in the CP.
  */
 readonly class VerificationFieldsRenderer
 {
-    /** @var Entry|VerifiableBehavior $entry */
+    /** @var Element|VerifiableBehavior $element */
 
     public function __construct(
-        private Entry          $entry,
+        private Element        $element,
         private bool           $canVerifyEntries,
         private PluginSettings $settings
     ) {}
@@ -38,7 +39,7 @@ readonly class VerificationFieldsRenderer
      */
     public function buildReviewerFieldHtml(): string
     {
-        $reviewer = $this->entry->getReviewer();
+        $reviewer = $this->element->getReviewer();
 
         $config = [
             'id' => 'reviewerId',
@@ -68,12 +69,14 @@ readonly class VerificationFieldsRenderer
      */
     public function buildVerifiedUntilDateFieldHtml(): string
     {
+        $elementType = ElementType::fromElement($this->element);
+
         $dateSelectOptions = self::dateSelectOptions(
-            $this->entry->sectionId,
-            $this->entry->siteId,
-            Entry::class,
+            $elementType->containerId($this->element),
+            $this->element->siteId,
+            $elementType->value,
             $this->settings,
-            $this->entry->getVerifiedUntilDate(),
+            $this->element->getVerifiedUntilDate(),
         );
 
         $config = [
@@ -261,10 +264,10 @@ readonly class VerificationFieldsRenderer
      */
     private function getVerifiedUntilDateValue(): false|string
     {
-        if (! $this->entry->getVerifiedUntilDate()) {
+        if (! $this->element->getVerifiedUntilDate()) {
             return false;
         }
 
-        return $this->entry->getVerifiedUntilDate()->format('Y-m-d');
+        return $this->element->getVerifiedUntilDate()->format('Y-m-d');
     }
 }

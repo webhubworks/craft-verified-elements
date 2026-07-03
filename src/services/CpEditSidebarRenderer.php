@@ -3,26 +3,27 @@
 namespace webhubworks\verifiedelements\services;
 
 use Craft;
-use craft\elements\Entry;
+use craft\base\Element;
 use craft\helpers\Html;
 use Throwable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
 use webhubworks\verifiedelements\Plugin;
 
 /**
- * Constructs the HTML that gets injected into Craft's sidebar on an entry's "edit" page,
+ * Constructs the HTML that gets injected into Craft's sidebar on an element's "edit" page,
  * exposing the verification fields provided by this plugin.
  *
  * @see src/templates/_sidebar.twig
  */
-readonly class EntrySidebarRenderer
+readonly class CpEditSidebarRenderer
 {
-    /** @var Entry|VerifiableBehavior $entry */
+    /** @var Element|VerifiableBehavior $element */
 
     public function __construct(
-        private Entry $entry,
+        private Element $element,
         private PluginSettings $settings
     ) {}
 
@@ -33,7 +34,7 @@ readonly class EntrySidebarRenderer
     {
         $html = '';
 
-        if (! $this->entry->getIsVerified()) {
+        if (! $this->element->getIsVerified()) {
             $html .= $this->buildWarningHtml();
         }
 
@@ -47,14 +48,16 @@ readonly class EntrySidebarRenderer
     // =============================================================================================
 
     /**
-     * @return string The warning message for when an entry has expired.
+     * @return string The warning message for when an element has expired.
      */
     private function buildWarningHtml(): string
     {
-        $text = Craft::t(
-            Plugin::HANDLE,
-            'Entry has expired and is due to be verified.'
-        );
+        // Full sentences per element type (not one string with the label interpolated) so
+        // translations stay grammatically correct.
+        $text = match (ElementType::fromElement($this->element)) {
+            ElementType::Entry => Craft::t(Plugin::HANDLE, 'Entry has expired and is due to be verified.'),
+            ElementType::Asset => Craft::t(Plugin::HANDLE, 'Asset has expired and is due to be verified.'),
+        };
 
         return Html::tag(
             'div',
@@ -69,19 +72,21 @@ readonly class EntrySidebarRenderer
      */
     private function buildSidebarHtml(): string
     {
+        $elementType = ElementType::fromElement($this->element);
+
         $dateSelectOptions = VerificationFieldsRenderer::dateSelectOptions(
-            $this->entry->sectionId,
-            $this->entry->siteId,
-            Entry::class,
+            $elementType->containerId($this->element),
+            $this->element->siteId,
+            $elementType->value,
             $this->settings,
-            $this->entry->getVerifiedUntilDate()
+            $this->element->getVerifiedUntilDate()
         );
 
         $templateVariables = [
             'addOptionFn' => VerificationFieldsRenderer::jsFunctionToAddCustomDate(),
-            'verifiedUntilDate' => $this->entry->getVerifiedUntilDate(),
-            'isVerified' => $this->entry->getIsVerified(),
-            'reviewer' => $this->entry->getReviewer(),
+            'verifiedUntilDate' => $this->element->getVerifiedUntilDate(),
+            'isVerified' => $this->element->getIsVerified(),
+            'reviewer' => $this->element->getReviewer(),
             'dateSelectOptions' => $dateSelectOptions,
         ];
 
@@ -92,7 +97,10 @@ readonly class EntrySidebarRenderer
             );
         }
         catch (Throwable $exception) {
-            Log::error('Error rendering sidebar HTML for entries', $exception);
+            Log::error(sprintf(
+                'Error rendering sidebar HTML for %s',
+                Log::element($this->element, plural: true, capitalize: false)
+            ), $exception);
             return '';
         }
     }
