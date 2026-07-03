@@ -61,9 +61,12 @@ enum Feature
 
     /**
      * Whether the plugin's current edition unlocks this feature.
+     *
+     * Note: the `>=` operator is required - Craft's `Plugin::is()` defaults to an EXACT edition
+     * match, which would lock lower-tier features out of higher editions.
      */
     public function isEnabled(): bool
     {
-        return Plugin::getInstance()->is($this->requiredEdition()->handle());
+        return Plugin::getInstance()->is($this->requiredEdition()->handle(), '>=');
     }
 }
