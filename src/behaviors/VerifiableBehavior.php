@@ -29,6 +29,11 @@ class VerifiableBehavior extends Behavior
 {
     public const NAME = 'verified-elements.verifiable';
 
+    /**
+     * @var bool Whether an asset's alt text was edited.
+     */
+    public bool $altChanged = false;
+
 
     // REVIEWER (Craft User element)
     // =============================================================================================

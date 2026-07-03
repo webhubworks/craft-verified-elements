@@ -80,6 +80,7 @@ class Plugin extends BasePlugin
 
             if (Feature::AssetVerification->isEnabled()) {
                 $events->registerBehaviors(Asset::class, AssetQuery::class);
+                $events->registerAssetLifecycle();
             }
         });
     }

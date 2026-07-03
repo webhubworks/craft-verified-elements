@@ -9,6 +9,8 @@ use craft\base\Model;
 use craft\base\conditions\BaseCondition;
 use craft\controllers\UsersController;
 use craft\db\Query;
+use craft\db\Table;
+use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\events\DefineAttributeHtmlEvent;
@@ -319,8 +321,8 @@ readonly class EventRegistrar
      * Events that run during CRUD operations on entries.
      *
      * @return void
-     * @see Element::EVENT_BEFORE_SAVE
-     * @see Element::EVENT_AFTER_SAVE
+     * @see Entry::EVENT_BEFORE_SAVE
+     * @see Entry::EVENT_AFTER_SAVE
      */
     public function registerEntryLifecycle(): void
     {
@@ -612,4 +614,139 @@ readonly class EventRegistrar
 
     // ASSET events
     // =============================================================================================
+
+    /**
+     * Events that run during CRUD operations on assets.
+     *
+     * @return void
+     * @see Asset::EVENT_BEFORE_SAVE
+     * @see Asset::EVENT_AFTER_SAVE
+     */
+    public function registerAssetLifecycle(): void
+    {
+        if ($this->isCpRequest || $this->isConsoleRequest) {
+            Event::on(
+                Asset::class,
+                Element::EVENT_BEFORE_SAVE,
+                function (ModelEvent $event) {
+                    /** @var Asset|VerifiableBehavior $asset */
+                    $asset = $event->sender;
+
+                    // Skip for propagation, folders, and temporary uploads (no volume yet).
+                    if (
+                        $asset->propagating ||
+                        $asset->isFolder ||
+                        $asset->volumeId === null
+                    ) {
+                        return;
+                    }
+
+                    // Before an asset saves, set the Reviewer ID and "Verified until" date in
+                    // the asset's behavior class.
+                    $service = VerificationFieldsSetter::fromElement(
+                        $asset,
+                        $this->plugin->getPluginSettings()
+                    );
+
+                    $service->updateElementFields($asset);
+
+                    // A new asset has no stored alt text to compare against.
+                    if ($event->isNew) {
+                        return;
+                    }
+
+                    // Assets never mark dirty attributes, so detect an alt-text change by
+                    // comparing the incoming value against the stored one, and stash the result
+                    // on the behavior for AFTER_SAVE to read. The live per-site value lives in
+                    // `assets_sites`; `assets.alt` is only a canonical fallback.
+                    $storedAlt = (new Query())
+                        ->select('alt')
+                        ->from(Table::ASSETS_SITES)
+                        ->where([
+                            'assetId' => $asset->id,
+                            'siteId' => $asset->siteId,
+                        ])
+                        ->scalar();
+
+                    // No row for this site yet, so there's no stored value.
+                    if ($storedAlt === false) {
+                        $storedAlt = null;
+                    }
+
+                    $asset->altChanged = $asset->alt !== $storedAlt;
+                }
+            );
+        }
+
+        if (! $this->isCpRequest) {
+            return;
+        }
+
+        Event::on(
+            Asset::class,
+            Element::EVENT_AFTER_SAVE,
+            function (ModelEvent $event) {
+                /** @var Asset|VerifiableBehavior $asset */
+                $asset = $event->sender;
+
+                // Folders and temporary uploads (no volume yet) are never verifiable.
+                if ($asset->isFolder || $asset->volumeId === null) {
+                    return;
+                }
+
+                $settings = $this->plugin->getPluginSettings();
+                $isVolumeEnabledForSite = $settings->isContainerEnabledForSite(
+                    $asset->volumeId,
+                    $asset->siteId,
+                    Asset::class
+                );
+                if (! $isVolumeEnabledForSite) {
+                    return;
+                }
+
+                // Note: assets have no drafts or revisions, so the entry lifecycle's
+                // draft/revision handling has no asset equivalent.
+
+                // Returns a list of sites in which this asset is enabled.
+                $supportedSiteIds = array_column(
+                    ElementHelper::supportedSitesForElement($asset),
+                    'siteId'
+                );
+
+                // The service worker that will keep the asset synced across its supported sites
+                // and handle consequences from changes to it.
+                $service = new VerificationStateSynchronizer(
+                    ElementData::fromElement($asset),
+                    $supportedSiteIds,
+                    $asset->enabled,
+                    $settings,
+                    Craft::$app->getUser()->getId()
+                );
+
+                // On a multi-site save, Craft re-fires AFTER_SAVE for each site this asset is
+                // enabled in when it propagates the asset's data across its site-counterparts.
+                // It's possible the record for whichever site is getting saved right now doesn't
+                // yet exist. If it doesn't, create it and exit.
+                if ($asset->propagating) {
+                    $service->ensurePropagatedRecord();
+                    return;
+                }
+
+                $service->saveVerificationRecord();
+                $service->ensureOtherSiteRecords();
+
+                // Assets also fire saves for moves, renames, focal-point changes, and indexing.
+                // Only a file replacement or an alt-text change is a content change the Reviewer
+                // should hear about.
+
+                $isContentChange =
+                    $asset->getScenario() === Asset::SCENARIO_REPLACE ||
+                    $asset->altChanged;
+
+                if ($isContentChange) {
+                    $service->notifyReviewerOnChange();
+                }
+            }
+        );
+    }
 }
