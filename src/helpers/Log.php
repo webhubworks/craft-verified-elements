@@ -3,14 +3,13 @@
 namespace webhubworks\verifiedelements\helpers;
 
 use Craft;
-use craft\elements\Asset;
-use craft\elements\Entry;
-use craft\helpers\StringHelper;
+use craft\base\Element;
 use craft\log\Dispatcher;
 use craft\log\MonologTarget;
 use Monolog\Formatter\LineFormatter;
 use Psr\Log\LogLevel;
 use Throwable;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\Plugin;
 
 /**
@@ -111,28 +110,30 @@ abstract class Log
         ]);
     }
 
+    /**
+     * Returns a human-readable label for an element type (or instance) in log messages.
+     *
+     * Unknown element types stay identifiable by their class name; non-string garbage
+     * becomes an empty string. This method must never throw - it runs on logging paths.
+     *
+     * @param mixed $type An element instance or FQCN
+     * @param bool $plural
+     * @param bool $capitalize
+     * @return string
+     * @see ElementType::label()
+     */
     public static function element(mixed $type, bool $plural = false, bool $capitalize = true): string
     {
-        $type = match (true) {
-            $type instanceof Entry => Entry::class,
-            $type instanceof Asset => Asset::class,
-            default => $type,
+        $elementType = match (true) {
+            $type instanceof Element => ElementType::tryFromElement($type),
+            is_string($type) => ElementType::tryFrom($type),
+            default => null,
         };
 
-        if (! is_string($type)) {
-            return '';
+        if ($elementType !== null) {
+            return $elementType->label($plural, $capitalize);
         }
 
-        $label = match ($type) {
-            Entry::class => $plural ? 'entries' : 'entry',
-            Asset::class => $plural ? 'assets' : 'asset',
-            default => $type, // unknown element types stay identifiable by their class name
-        };
-
-        if ($capitalize) {
-            return StringHelper::upperCaseFirst($label);
-        }
-
-        return $label;
+        return is_string($type) ? $type : '';
     }
 }

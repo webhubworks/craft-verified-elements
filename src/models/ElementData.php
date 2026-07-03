@@ -12,6 +12,7 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use JsonSerializable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\DateHelper;
 
@@ -75,15 +76,12 @@ readonly class ElementData implements JsonSerializable
     {
         /** @var VerifiableBehavior $element */
 
-        [$container, $type] = match (true) {
-            $element instanceof Entry => [$element->getSection(), Entry::class],
-            $element instanceof Asset => [$element->getVolume(), Asset::class],
-        };
-
+        $elementType = ElementType::fromElement($element);
+        $container = $elementType->container($element);
         $site = $element->getSite();
 
         return new self(
-            type: $type,
+            type: $elementType->value,
             rowId: null,
             id: $element->getCanonicalId(),
             title: (string)$element->title,

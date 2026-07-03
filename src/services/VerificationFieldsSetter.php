@@ -3,11 +3,10 @@
 namespace webhubworks\verifiedelements\services;
 
 use craft\base\Element;
-use craft\elements\Asset;
-use craft\elements\Entry;
 use DateTime;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\events\EventRegistrar;
 use webhubworks\verifiedelements\helpers\DateHelper;
@@ -55,12 +54,9 @@ class VerificationFieldsSetter
      */
     public static function fromElement(Element $element, PluginSettings $settings): self
     {
-        /** @var Entry|Asset|VerifiableBehavior $element */
+        /** @var Element|VerifiableBehavior $element */
 
-        [$containerId, $elementType] = match (true) {
-            $element instanceof Entry => [$element->sectionId, Entry::class],
-            $element instanceof Asset => [$element->volumeId, Asset::class],
-        };
+        $elementType = ElementType::fromElement($element);
 
         $canonicalId = $element->getCanonicalId();
         $isFirstSave = true;
@@ -70,9 +66,9 @@ class VerificationFieldsSetter
         }
 
         return new self(
-            containerId: $containerId,
+            containerId: $elementType->containerId($element),
             siteId: $element->siteId,
-            elementType: $elementType,
+            elementType: $elementType->value,
             currentReviewerId: $element->getReviewerId(),
             currentVerifiedUntilDate: $element->getVerifiedUntilDate(),
             isFirstSave: $isFirstSave,
