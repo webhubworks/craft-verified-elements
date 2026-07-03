@@ -3,14 +3,15 @@
 namespace webhubworks\verifiedelements\elements\actions;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementAction;
-use craft\elements\Entry;
 use Throwable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\Plugin;
 
 /**
- * Bulk action that assigns a Reviewer to one or more entries from the element index in the CP.
+ * Bulk action that assigns a Reviewer to one or more elements from the element index in the CP.
  *
  * @property-read null|string $triggerHtml
  */
@@ -27,7 +28,7 @@ class AssignReviewer extends ElementAction
     /** @inheritDoc */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type, $canPermission) => <<<JS
             (() => {
                 new Craft.ElementActionTrigger({
                     type: $type,
@@ -42,12 +43,12 @@ class AssignReviewer extends ElementAction
 
                     activate: (selectedItems, elementIndex) => {
                       elementIndex.setIndexBusy();
-                      
+
                       Craft.createElementSelectorModal('craft\\\\elements\\\\User', {
                           multiSelect: false,
                           criteria: {
                               'status': 'active',
-                              'can': 'verified-elements:verifyEntries', // this value must match what's in the Permission enum
+                              'can': $canPermission,
                           },
                           onSelect: ([user]) => {
                               elementIndex.submitAction($type, { reviewerId: user.id })
@@ -59,7 +60,7 @@ class AssignReviewer extends ElementAction
                     },
                 });
             })();
-        JS, [static::class]);
+        JS, [static::class, Permission::VerifyEntries->value]);
 
         return null;
     }
@@ -70,13 +71,13 @@ class AssignReviewer extends ElementAction
         $elements = $query->all();
         $elementsService = Craft::$app->getElements();
 
-        $savedEntries = array_filter(
+        $savedElements = array_filter(
             $elements,
-            function (Entry $entry) use ($elementsService) {
+            function (Element $element) use ($elementsService) {
                 try {
-                    /** @var Entry|VerifiableBehavior $entry */
-                    $entry->setReviewerId($this->reviewerId);
-                    $elementsService->saveElement($entry);
+                    /** @var Element|VerifiableBehavior $element */
+                    $element->setReviewerId($this->reviewerId);
+                    $elementsService->saveElement($element);
                     return true;
                 } catch (Throwable) {
                     return false;
@@ -84,12 +85,12 @@ class AssignReviewer extends ElementAction
             }
         );
 
-        if (count($savedEntries) !== count($elements)) {
-            $this->setMessage('Could not assign Reviewer to all entries.');
+        if (count($savedElements) !== count($elements)) {
+            $this->setMessage(Craft::t(Plugin::HANDLE, 'Could not assign a Reviewer to all elements.'));
             return false;
         }
 
-        $this->setMessage('Entries assigned.');
+        $this->setMessage(Craft::t(Plugin::HANDLE, 'Elements assigned.'));
         return true;
     }
 }

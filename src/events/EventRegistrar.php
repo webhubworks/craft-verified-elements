@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Entry;
+use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\entries\EntryCondition;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineBehaviorsEvent;
@@ -56,7 +57,7 @@ use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\elements\actions\AssignReviewer;
-use webhubworks\verifiedelements\elements\actions\VerifyEntry;
+use webhubworks\verifiedelements\elements\actions\VerifyElement;
 use webhubworks\verifiedelements\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedUntilDateConditionRule;
@@ -95,15 +96,29 @@ readonly class EventRegistrar
             return;
         }
 
-        Event::on(
-            EntryCondition::class,
-            BaseCondition::EVENT_REGISTER_CONDITION_RULES,
-            static function (RegisterConditionRulesEvent $event) {
-                $event->conditionRules[] = VerifiedConditionRule::class;
-                $event->conditionRules[] = VerifiedUntilDateConditionRule::class;
-                $event->conditionRules[] = ReviewerConditionRule::class;
-            }
-        );
+        if (Feature::EntryVerification->isEnabled()) {
+            Event::on(
+                EntryCondition::class,
+                BaseCondition::EVENT_REGISTER_CONDITION_RULES,
+                static function (RegisterConditionRulesEvent $event) {
+                    $event->conditionRules[] = VerifiedConditionRule::class;
+                    $event->conditionRules[] = VerifiedUntilDateConditionRule::class;
+                    $event->conditionRules[] = ReviewerConditionRule::class;
+                }
+            );
+        }
+
+        if (Feature::AssetVerification->isEnabled()) {
+            Event::on(
+                AssetCondition::class,
+                BaseCondition::EVENT_REGISTER_CONDITION_RULES,
+                static function (RegisterConditionRulesEvent $event) {
+                    $event->conditionRules[] = VerifiedConditionRule::class;
+                    $event->conditionRules[] = VerifiedUntilDateConditionRule::class;
+                    $event->conditionRules[] = ReviewerConditionRule::class;
+                }
+            );
+        }
 
         Event::on(
             Gc::class,
@@ -322,6 +337,107 @@ readonly class EventRegistrar
     }
 
 
+    /**
+     * Events that affect how verifiable elements appear and behave in the CP's element indexes.
+     *
+     * @param string $elementClass
+     * @return void
+     * @see Element::EVENT_REGISTER_SORT_OPTIONS
+     * @see Element::EVENT_REGISTER_ACTIONS
+     * @see Element::EVENT_REGISTER_TABLE_ATTRIBUTES
+     * @see Element::EVENT_DEFINE_ATTRIBUTE_HTML
+     */
+    public function registerIndexUi(string $elementClass): void
+    {
+        if (! $this->isCpRequest) {
+            return;
+        }
+
+        Event::on(
+            $elementClass,
+            Element::EVENT_REGISTER_SORT_OPTIONS,
+            static function (RegisterElementSortOptionsEvent $event) {
+                $event->sortOptions[] = [
+                    'label' => Craft::t(Plugin::HANDLE, 'Verified until'),
+                    'orderBy' => 'verifiedUntilDate',
+                    'defaultDir' => 'desc',
+                ];
+            }
+        );
+
+        Event::on(
+            $elementClass,
+            Element::EVENT_REGISTER_ACTIONS,
+            static function (RegisterElementActionsEvent $event) {
+                $currentUser = Craft::$app->getUser();
+
+                if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+                    $event->actions[] = VerifyElement::class;
+                    $event->actions[] = AssignReviewer::class;
+                }
+            }
+        );
+
+        Event::on(
+            $elementClass,
+            Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
+            static function (RegisterElementTableAttributesEvent $event) {
+                $event->tableAttributes['verifiedUntilDate'] = [
+                    'label' => Craft::t(Plugin::HANDLE, 'Verified until')
+                ];
+
+                $event->tableAttributes['isVerified'] = [
+                    'label' => Craft::t(Plugin::HANDLE, 'Verification'),
+                ];
+
+                $event->tableAttributes['reviewer'] = [
+                    'label' => Craft::t(Plugin::HANDLE, 'Reviewer'),
+                ];
+            }
+        );
+
+        Event::on(
+            $elementClass,
+            Element::EVENT_DEFINE_ATTRIBUTE_HTML,
+            static function (DefineAttributeHtmlEvent $event) {
+                /** @var Element|VerifiableBehavior $element */
+                $element = $event->sender;
+
+                switch ($event->attribute) {
+                    case "isVerified":
+                        $status = $element->getVerificationStatus();
+                        $event->html = Cp::statusLabelHtml([
+                            'color' => $status->color(),
+                            'label' => $status->label(),
+                        ]);
+                        break;
+
+                    case "verifiedUntilDate":
+                        $event->html = DateHelper::readableVerificationDate($element->getVerifiedUntilDate());
+                        break;
+
+                    case "reviewer":
+                        $reviewer = $element->getReviewer();
+                        if ($reviewer) {
+                            $event->html = Cp::elementChipHtml($reviewer);
+                        }
+                        else {
+                            $event->html = Html::tag(
+                                'span',
+                                Craft::t(Plugin::HANDLE, 'Unassigned'),
+                                [
+                                    'class' => 'light',
+                                    'style' => ['font-style' => 'italic'],
+                                ]
+                            );
+                        }
+                        break;
+                }
+            }
+        );
+    }
+
+
     // ENTRY events
     // =============================================================================================
 
@@ -519,106 +635,6 @@ readonly class EventRegistrar
             }
         );
     }
-
-    /**
-     * Events that affect how entries appear and behave in the CP's element index.
-     *
-     * @return void
-     * @see Element::EVENT_REGISTER_SORT_OPTIONS
-     * @see Element::EVENT_REGISTER_ACTIONS
-     * @see Element::EVENT_REGISTER_TABLE_ATTRIBUTES
-     * @see Element::EVENT_DEFINE_ATTRIBUTE_HTML
-     */
-    public function registerEntryIndexUi(): void
-    {
-        if (! $this->isCpRequest) {
-            return;
-        }
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_REGISTER_SORT_OPTIONS,
-            static function (RegisterElementSortOptionsEvent $event) {
-                $event->sortOptions[] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verified until'),
-                    'orderBy' => 'verifiedUntilDate',
-                    'defaultDir' => 'desc',
-                ];
-            }
-        );
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_REGISTER_ACTIONS,
-            static function (RegisterElementActionsEvent $event) {
-                $currentUser = Craft::$app->getUser();
-
-                if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value)) {
-                    $event->actions[] = VerifyEntry::class;
-                    $event->actions[] = AssignReviewer::class;
-                }
-            }
-        );
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
-            static function (RegisterElementTableAttributesEvent $event) {
-                $event->tableAttributes['verifiedUntilDate'] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verified until')
-                ];
-
-                $event->tableAttributes['isVerified'] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verification'),
-                ];
-
-                $event->tableAttributes['reviewer'] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Reviewer'),
-                ];
-            }
-        );
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_DEFINE_ATTRIBUTE_HTML,
-            static function (DefineAttributeHtmlEvent $event) {
-                /** @var Entry|VerifiableBehavior $entry */
-                $entry = $event->sender;
-
-                switch ($event->attribute) {
-                    case "isVerified":
-                        $status = $entry->getVerificationStatus();
-                        $event->html = Cp::statusLabelHtml([
-                            'color' => $status->color(),
-                            'label' => $status->label(),
-                        ]);
-                        break;
-
-                    case "verifiedUntilDate":
-                        $event->html = DateHelper::readableVerificationDate($entry->getVerifiedUntilDate());
-                        break;
-
-                    case "reviewer":
-                        $reviewer = $entry->getReviewer();
-                        if ($reviewer) {
-                            $event->html = Cp::elementChipHtml($reviewer);
-                        }
-                        else {
-                            $event->html = Html::tag(
-                                'span',
-                                Craft::t(Plugin::HANDLE, 'Unassigned'),
-                                [
-                                    'class' => 'light',
-                                    'style' => ['font-style' => 'italic'],
-                                ]
-                            );
-                        }
-                        break;
-                }
-            }
-        );
-    }
-
 
     // ASSET events
     // =============================================================================================

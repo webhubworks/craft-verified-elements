@@ -3,27 +3,27 @@
 namespace webhubworks\verifiedelements\elements\actions;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementAction;
-use craft\elements\Entry;
 use DateTime;
 use Throwable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\Plugin;
 
 /**
- * Bulk action that sets a new "Verified until" date on one or more entries from the element index
+ * Bulk action that sets a new "Verified until" date on one or more elements from the element index
  * in the CP.
  *
  * @property-read null|string $triggerHtml
  */
-class VerifyEntry extends ElementAction
+class VerifyElement extends ElementAction
 {
     public string|DateTime|null $date = null;
 
     /** @inheritDoc */
     public static function displayName(): string
     {
-        return Craft::t(Plugin::HANDLE, 'Verify Entry');
+        return Craft::t(Plugin::HANDLE, 'Verify');
     }
 
     /** @inheritDoc */
@@ -72,11 +72,11 @@ class VerifyEntry extends ElementAction
         $successCount = count(
             array_filter(
                 $elements,
-                function (Entry $entry) use ($elementsService) {
-                    /** @var Entry|VerifiableBehavior $entry */
+                function (Element $element) use ($elementsService) {
+                    /** @var Element|VerifiableBehavior $element */
                     try {
-                        $entry->setVerifiedUntilDate($this->date);
-                        $elementsService->saveElement($entry);
+                        $element->setVerifiedUntilDate($this->date);
+                        $elementsService->saveElement($element);
                         return true;
                     } catch (Throwable) {
                         return false;
@@ -86,11 +86,11 @@ class VerifyEntry extends ElementAction
         );
 
         if ($successCount !== count($elements)) {
-            $this->setMessage(Craft::t(Plugin::HANDLE, 'Could not verify all entries.'));
+            $this->setMessage(Craft::t(Plugin::HANDLE, 'Could not verify all elements.'));
             return false;
         }
 
-        $this->setMessage(Craft::t(Plugin::HANDLE, 'Entries verified.'));
+        $this->setMessage(Craft::t(Plugin::HANDLE, 'Elements verified.'));
 
         return true;
     }

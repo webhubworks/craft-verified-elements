@@ -74,13 +74,14 @@ class Plugin extends BasePlugin
             if (Feature::EntryVerification->isEnabled()) {
                 $events->registerBehaviors(Entry::class, EntryQuery::class);
                 $events->registerEntryLifecycle();
-                $events->registerEntryIndexUi();
+                $events->registerIndexUi(Entry::class);
                 $events->registerEntryEditUi();
             }
 
             if (Feature::AssetVerification->isEnabled()) {
                 $events->registerBehaviors(Asset::class, AssetQuery::class);
                 $events->registerAssetLifecycle();
+                $events->registerIndexUi(Asset::class);
                 $events->registerAssetEditUi();
             }
         });
