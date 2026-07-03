@@ -757,4 +757,103 @@ readonly class EventRegistrar
             }
         );
     }
+
+    /**
+     * Events that affect an asset's "Edit" page in the CP.
+     *
+     * @return void
+     * @see Element::EVENT_DEFINE_METADATA
+     * @see Element::EVENT_DEFINE_SIDEBAR_HTML
+     * @see Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML
+     */
+    public function registerAssetEditUi(): void
+    {
+        if (! $this->isCpRequest) {
+            return;
+        }
+
+        Event::on(
+            Asset::class,
+            Element::EVENT_DEFINE_METADATA,
+            static function (DefineMetadataEvent $event) {
+                /** @var Asset|VerifiableBehavior $asset */
+                $asset = $event->sender;
+
+                // Folders and temporary uploads (no volume yet) are never verifiable.
+                if ($asset->isFolder || $asset->volumeId === null) {
+                    return;
+                }
+
+                $status = $asset->getVerificationStatus();
+                $statusHtml = Cp::statusIndicatorHtml(
+                    $status->handle(),
+                    ['color' => $status->color()]
+                );
+                $statusHtml .= Html::tag('span', $status->label());
+
+                $event->metadata[Craft::t(Plugin::HANDLE, 'Verification')] = $statusHtml;
+            }
+        );
+
+        Event::on(
+            Asset::class,
+            Element::EVENT_DEFINE_SIDEBAR_HTML,
+            function (DefineHtmlEvent $event) {
+                $currentUser = Craft::$app->getUser();
+                if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+                    return;
+                }
+
+                /** @var Asset|VerifiableBehavior $asset */
+                $asset = $event->sender;
+
+                // Folders and temporary uploads (no volume yet) are never verifiable.
+                if ($asset->isFolder || $asset->volumeId === null) {
+                    return;
+                }
+
+                $settings = $this->plugin->getPluginSettings();
+                $isVolumeEnabled = $settings->isContainerEnabledForSite(
+                    $asset->volumeId,
+                    $asset->siteId,
+                    Asset::class
+                );
+                if (! $isVolumeEnabled) {
+                    return;
+                }
+
+                $event->html .= (new CpEditSidebarRenderer($asset, $settings))->buildHtml();
+            }
+        );
+
+        Event::on(
+            Asset::class,
+            Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML,
+            function (DefineAttributeHtmlEvent $event) {
+                /** @var Asset|VerifiableBehavior $asset */
+                $asset = $event->sender;
+
+                // Folders and temporary uploads (no volume yet) are never verifiable.
+                if ($asset->isFolder || $asset->volumeId === null) {
+                    return;
+                }
+
+                $currentUser = Craft::$app->getUser();
+                $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
+
+                $service = new VerificationFieldsRenderer(
+                    $asset,
+                    $canVerifyEntries,
+                    $this->plugin->getPluginSettings()
+                );
+
+                if ($event->attribute === 'reviewer') {
+                    $event->html = $service->buildReviewerFieldHtml();
+                }
+                elseif ($event->attribute === 'verifiedUntilDate') {
+                    $event->html = $service->buildVerifiedUntilDateFieldHtml();
+                }
+            }
+        );
+    }
 }
