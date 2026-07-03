@@ -183,14 +183,22 @@ readonly class EventRegistrar
             static function (RegisterUrlRulesEvent $event) {
                 $currentUser = Craft::$app->getUser();
 
-                $event->rules[Plugin::HANDLE] = Plugin::HANDLE . '/entries/index';
-
-                if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
-                    $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/index';
-                    $event->rules[Plugin::HANDLE . '/settings/grouped'] = Plugin::HANDLE . '/settings/grouped';
+                // Show the plugin's "Entries" page in the CP
+                if (Feature::EntryVerification->isEnabled()) {
+                    $event->rules[Plugin::HANDLE] = Plugin::HANDLE . '/index/entries';
                 }
 
-                // User edit screen
+                // Show the plugin's "Assets" page in the CP
+                if (Feature::AssetVerification->isEnabled()) {
+                    $event->rules[Plugin::HANDLE . '/assets'] = Plugin::HANDLE . '/index/assets';
+                }
+
+                // Expose the plugin's settings pages
+                if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
+                    $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/index';
+                }
+
+                // Current user's account "Verified Elements" page showing their assigned elements to review
                 $event->rules['myaccount/' . Plugin::HANDLE] = Plugin::HANDLE . '/reviewers/index';
                 $event->rules['users/<userId:\d+>/' . Plugin::HANDLE] = Plugin::HANDLE . '/reviewers/index';
             }

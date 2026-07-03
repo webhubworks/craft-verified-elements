@@ -45,7 +45,7 @@ class VerifyElement extends ElementAction
                     activate: (selectedItems, elementIndex) => {
                       elementIndex.setIndexBusy();
                       
-                      const modal = new Craft.CpModal('verified-elements/entries/request-period');
+                      const modal = new Craft.CpModal('verified-elements/index/request-period');
                       
                       modal.on('submit', ({response}) => {
                           elementIndex.submitAction($type, response.data);

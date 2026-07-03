@@ -111,10 +111,19 @@ class Plugin extends BasePlugin
         $nav = parent::getCpNavItem();
         $currentUser = Craft::$app->getUser();
 
-        $nav['subnav']['overview'] = [
-            'label' => Craft::t('app', 'Dashboard'),
-            'url' => self::HANDLE,
-        ];
+        if (Feature::EntryVerification->isEnabled()) {
+            $nav['subnav']['entries'] = [
+                'label' => Craft::t('app', 'Entries'),
+                'url' => self::HANDLE,
+            ];
+        }
+
+        if (Feature::AssetVerification->isEnabled()) {
+            $nav['subnav']['assets'] = [
+                'label' => Craft::t('app', 'Assets'),
+                'url' => self::HANDLE . '/assets',
+            ];
+        }
 
         if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
             $nav['subnav']['settings'] = [

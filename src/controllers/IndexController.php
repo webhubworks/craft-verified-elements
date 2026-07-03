@@ -6,6 +6,8 @@ use Craft;
 use craft\helpers\AdminTable;
 use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
+use webhubworks\verifiedelements\elements\VerifiedAsset;
+use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
@@ -15,9 +17,9 @@ use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
 
 /**
- * Handles rendering and data endpoints for the Verified Elements index and entry verification modals.
+ * Handles rendering and data endpoints for the Verified Elements indexes and the verification modals.
  */
-class EntriesController extends Controller
+class IndexController extends Controller
 {
     protected array|int|bool $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
@@ -29,13 +31,35 @@ class EntriesController extends Controller
     }
 
     /**
-     * Renders the Verified Elements index page.
+     * Renders the Verified Elements index page for entries.
      *
      * @return Response
      */
-    public function actionIndex(): Response
+    public function actionEntries(): Response
     {
-        return $this->renderTemplate(Plugin::HANDLE . '/index.twig');
+        return $this->renderTemplate(
+            Plugin::HANDLE . '/index.twig',
+            [
+                'elementType' => VerifiedEntry::class,
+                'selectedSubnavItem' => 'entries',
+            ]
+        );
+    }
+
+    /**
+     * Renders the Verified Elements index page for assets.
+     *
+     * @return Response
+     */
+    public function actionAssets(): Response
+    {
+        return $this->renderTemplate(
+            Plugin::HANDLE . '/index.twig',
+            [
+                'elementType' => VerifiedAsset::class,
+                'selectedSubnavItem' => 'assets',
+            ]
+        );
     }
 
     /**
@@ -46,7 +70,7 @@ class EntriesController extends Controller
     public function actionRequestPeriod(): Response
     {
         return $this->asCpModal()
-            ->action(Plugin::HANDLE . '/entries/resolve-date')
+            ->action(Plugin::HANDLE . '/index/resolve-date')
             ->contentTemplate(
                 Plugin::HANDLE . '/_modals/_period.twig',
                 ['periodSelectOptions' => VerificationFieldsRenderer::periodSelectOptions(true)]
