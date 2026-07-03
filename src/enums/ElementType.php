@@ -164,6 +164,20 @@ enum ElementType: string
     }
 
     /**
+     * Returns the URI segment used for this type's index pages in the plugin's CP section,
+     * e.g. the 'entries' in `verified-elements/entries`.
+     *
+     * @return string
+     */
+    public function uriSegment(): string
+    {
+        return match ($this) {
+            self::Entry => 'entries',
+            self::Asset => 'assets',
+        };
+    }
+
+    /**
      * Returns the plugin's element subtype that powers the dashboard element index for this type.
      *
      * @return string

@@ -3,7 +3,7 @@
 namespace webhubworks\verifiedelements\services\singletons;
 
 use Craft;
-use craft\elements\conditions\entries\EntryCondition;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\Entry;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
@@ -102,14 +102,16 @@ class Reviewers extends Component
     }
 
     /**
-     * Returns URL query params that filter the entry index to show a reviewer's expired entries.
+     * Returns URL query params that filter an element index to show a reviewer's expired elements.
      *
      * @param int|null $reviewerId
+     * @param string $elementType
      * @return string The URL query params
      */
-    public function getFilterParams(?int $reviewerId = null): string
+    public function getFilterParams(?int $reviewerId = null, string $elementType = Entry::class): string
     {
-        $condition = new EntryCondition(Entry::class);
+        /** @var ElementCondition $condition */
+        $condition = $elementType::createCondition();
 
         $verifiedRule = new VerifiedConditionRule();
         $verifiedRule->value = false;

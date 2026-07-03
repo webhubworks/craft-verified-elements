@@ -63,6 +63,11 @@ it('maps each type to its feature gate', function () {
     expect(ElementType::Asset->feature())->toBe(Feature::AssetVerification);
 });
 
+it('maps each type to its plugin index URI segment', function () {
+    expect(ElementType::Entry->uriSegment())->toBe('entries');
+    expect(ElementType::Asset->uriSegment())->toBe('assets');
+});
+
 it('maps each type to its DB tables and container column', function () {
     expect(ElementType::Entry->elementTable())->toBe('{{%entries}}');
     expect(ElementType::Entry->containerTable())->toBe('{{%sections}}');

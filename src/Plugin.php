@@ -114,7 +114,7 @@ class Plugin extends BasePlugin
         if (Feature::EntryVerification->isEnabled()) {
             $nav['subnav']['entries'] = [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => self::HANDLE,
+                'url' => self::HANDLE . '/entries',
             ];
         }
 
