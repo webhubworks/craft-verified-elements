@@ -12,6 +12,7 @@ use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedelements\enums\DateStatus;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\models\ElementData;
 use yii\base\Component;
@@ -86,7 +87,8 @@ class Reviewers extends Component
 
         $offset = ($page - 1) * $limit;
 
-        $query = PluginQuery::entriesByReviewer($userId, $siteId)->orderBy([$orderBy => $sortDir]);
+        $query = PluginQuery::elementsByReviewer($userId, ElementType::enabledTypes(), $siteId)
+            ->orderBy([$orderBy => $sortDir]);
 
         $total = $query->count();
 

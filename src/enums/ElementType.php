@@ -3,6 +3,7 @@
 namespace webhubworks\verifiedelements\enums;
 
 use craft\base\Element;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\helpers\StringHelper;
@@ -87,6 +88,78 @@ enum ElementType: string
         return match ($this) {
             self::Entry => $element->getSection(),
             self::Asset => $element->getVolume(),
+        };
+    }
+
+    /**
+     * Returns the feature gate that controls this element type.
+     *
+     * @return Feature
+     */
+    public function feature(): Feature
+    {
+        return match ($this) {
+            self::Entry => Feature::EntryVerification,
+            self::Asset => Feature::AssetVerification,
+        };
+    }
+
+    /**
+     * Returns the FQCNs of the element types whose features are enabled in the plugin's current
+     * edition.
+     *
+     * @return string[]
+     */
+    public static function enabledTypes(): array
+    {
+        $enabledCases = array_filter(
+            self::cases(),
+            static fn(self $elementType) => $elementType->feature()->isEnabled()
+        );
+
+        return array_map(
+            static fn(self $elementType) => $elementType->value,
+            array_values($enabledCases)
+        );
+    }
+
+    /**
+     * Returns the DB table holding this element type's own rows.
+     *
+     * @return string
+     */
+    public function elementTable(): string
+    {
+        return match ($this) {
+            self::Entry => Table::ENTRIES,
+            self::Asset => Table::ASSETS,
+        };
+    }
+
+    /**
+     * Returns the DB table holding this element type's containers (sections, volumes, ...).
+     *
+     * @return string
+     */
+    public function containerTable(): string
+    {
+        return match ($this) {
+            self::Entry => Table::SECTIONS,
+            self::Asset => Table::VOLUMES,
+        };
+    }
+
+    /**
+     * Returns the column on this element type's own table that stores the container ID.
+     *
+     * @return string
+     * @see elementTable()
+     */
+    public function containerIdColumn(): string
+    {
+        return match ($this) {
+            self::Entry => 'sectionId',
+            self::Asset => 'volumeId',
         };
     }
 

@@ -6,6 +6,7 @@ use craft\elements\User;
 use webhubworks\verifiedelements\base\NotifiableInterface;
 use webhubworks\verifiedelements\console\controllers\CheckExpiredVerificationsController;
 use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\events\EventRegistrar;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\mail\ExpiredNotification;
@@ -150,7 +151,7 @@ class ExpiredVerificationNotifier
         $this->expiredElementsByReviewerId = [];
         $this->expiredUnassignedElements = [];
 
-        foreach (PluginQuery::expiredVerifiableEntries()->all() as $record) {
+        foreach (PluginQuery::expiredVerifiableElements(ElementType::enabledTypes())->all() as $record) {
             $elementData = ElementData::fromArray($record);
 
             if ($elementData->reviewerId === null) {

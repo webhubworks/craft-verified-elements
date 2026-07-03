@@ -3,9 +3,8 @@
 namespace webhubworks\verifiedelements\db;
 
 use craft\db\Query;
-use craft\elements\Asset;
-use craft\elements\Entry;
 use craft\helpers\Db;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\helpers\DateHelper;
 
 /**
@@ -52,53 +51,56 @@ abstract class PluginQuery
     }
 
     /**
-     * Returns a query for all entries assigned to a reviewer.
+     * Returns a query for all elements (of the given element types) assigned to a reviewer,
+     * ready for ordering and pagination.
+     *
+     * The per-type queries are combined with UNION ALL and wrapped as a subquery, because Yii
+     * applies `orderBy`/`limit` to the first subquery only when they're set on a query that
+     * carries unions - ordering and pagination must happen outside the union.
      *
      * @param int $userId The Reviewer
+     * @param string[] $elementTypes Element FQCNs (at least one), e.g. `[Entry::class, Asset::class]`
      * @param int|null $siteId
      * @return Query
      * @see \webhubworks\verifiedelements\services\singletons\Reviewers
      * @see \webhubworks\verifiedelements\models\ElementData
      */
+    public static function elementsByReviewer(int $userId, array $elementTypes, ?int $siteId = null): Query
+    {
+        $queries = array_map(
+            static fn(string $elementType) => self::reviewerElements(
+                ElementType::from($elementType),
+                $userId,
+                $siteId
+            ),
+            $elementTypes
+        );
+
+        return self::unionAll($queries);
+    }
+
+    /**
+     * Returns a query for all entries assigned to a reviewer.
+     *
+     * @param int $userId The Reviewer
+     * @param int|null $siteId
+     * @return Query
+     */
     public static function entriesByReviewer(int $userId, ?int $siteId = null): Query
     {
-        $query = (new Query())
-            ->select([
-                'elements.type',
-                'veea.id AS rowId',
-                'veea.elementId AS id',
-                'veea.siteId',
-                'veea.reviewerId',
-                'veea.verifiedUntilDate',
-                'entries.sectionId AS containerId',
-                'sections.name AS containerName',
-                'sections.handle AS containerHandle',
-                'es.title',
-                'es.slug',
-                'es.dateUpdated',
-                'sites.name AS siteName',
-                'sites.handle AS siteHandle',
-            ])
-            ->from(['veea' => PluginTable::ATTRIBUTES])
-            ->rightJoin(
-                '{{%elements}}',
-                '[[elements.id]] = [[veea.elementId]] AND [[elements.enabled]] = true AND [[elements.draftId]] IS NULL'
-            )
-            ->leftJoin(
-                '{{%elements_sites}} es',
-                '[[es.elementId]] = [[veea.elementId]] AND [[es.siteId]] = [[veea.siteId]]'
-            )
-            ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.elementId]]')
-            ->leftJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
-            ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
-            ->where(['veea.reviewerId' => $userId])
-            ->andWhere('elements.canonicalId IS null');
+        return self::reviewerElements(ElementType::Entry, $userId, $siteId);
+    }
 
-        if ($siteId !== null) {
-            $query->andWhere(['veea.siteId' => $siteId]);
-        }
-
-        return $query;
+    /**
+     * Returns a query for all assets assigned to a reviewer.
+     *
+     * @param int $userId The Reviewer
+     * @param int|null $siteId
+     * @return Query
+     */
+    public static function assetsByReviewer(int $userId, ?int $siteId = null): Query
+    {
+        return self::reviewerElements(ElementType::Asset, $userId, $siteId);
     }
 
 
@@ -120,49 +122,41 @@ abstract class PluginQuery
     }
 
     /**
-     * Returns a query for all verifiable entries that have verification dates in the past.
+     * Returns a query for all verifiable elements (of the given element types) that have
+     * verification dates in the past.
      *
+     * @param string[] $elementTypes Element FQCNs (at least one), e.g. `[Entry::class, Asset::class]`
      * @return Query
      * @see \webhubworks\verifiedelements\models\ElementData Populate this object with the results of the query
      */
+    public static function expiredVerifiableElements(array $elementTypes): Query
+    {
+        $queries = array_map(
+            static fn(string $elementType) => self::expiredElements(ElementType::from($elementType)),
+            $elementTypes
+        );
+
+        return self::unionAll($queries);
+    }
+
+    /**
+     * Returns a query for all verifiable entries that have verification dates in the past.
+     *
+     * @return Query
+     */
     public static function expiredVerifiableEntries(): Query
     {
-        $now = Db::prepareDateForDb(DateHelper::now());
+        return self::expiredElements(ElementType::Entry);
+    }
 
-        return (new Query())
-            ->select([
-                'elements.type',
-                'veea.id AS rowId',
-                'veea.elementId AS id',
-                'veea.siteId',
-                'veea.reviewerId',
-                'veea.verifiedUntilDate',
-                'entries.sectionId AS containerId',
-                'sections.name AS containerName',
-                'sections.handle AS containerHandle',
-                'es.title',
-                'es.slug',
-                'es.dateUpdated',
-                'sites.name AS siteName',
-                'sites.handle AS siteHandle',
-            ])
-            ->from(['veea' => PluginTable::ATTRIBUTES])
-            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.elementId]]')
-            ->leftJoin(
-                '{{%elements_sites}} es',
-                '[[es.elementId]] = [[veea.elementId]] AND [[es.siteId]] = [[veea.siteId]]'
-            )
-            ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
-            ->leftJoin('{{%entries}}', '[[entries.id]] = [[veea.elementId]]')
-            ->innerJoin('{{%sections}}', '[[sections.id]] = [[entries.sectionId]]')
-            ->innerJoin(
-                PluginTable::CONTAINERS . ' ves',
-                '[[ves.containerId]] = [[entries.sectionId]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1'
-            )
-            ->where(['<', 'veea.verifiedUntilDate', $now])
-            ->andWhere(['elements.enabled' => true])
-            ->andWhere(['es.enabled' => true])
-            ->andWhere('elements.canonicalId IS null');
+    /**
+     * Returns a query for all verifiable assets that have verification dates in the past.
+     *
+     * @return Query
+     */
+    public static function expiredVerifiableAssets(): Query
+    {
+        return self::expiredElements(ElementType::Asset);
     }
 
 
@@ -205,7 +199,7 @@ abstract class PluginQuery
     /**
      * Returns a query for a container's default settings saved on the plugin's Settings CP page.
      * The container's name/handle come from the table matching its element type (sections for
-     * entries, volumes for assets); new element types add a match arm.
+     * entries, volumes for assets).
      *
      * @param int $containerId
      * @param int $siteId
@@ -215,10 +209,7 @@ abstract class PluginQuery
      */
     public static function containerDefaults(int $containerId, int $siteId, string $elementType): Query
     {
-        $containerTable = match ($elementType) {
-            Entry::class => '{{%sections}}',
-            Asset::class => '{{%volumes}}',
-        };
+        $containerTable = ElementType::from($elementType)->containerTable();
 
         return (new Query())
             ->select([
@@ -237,5 +228,164 @@ abstract class PluginQuery
                 'ves.elementType' => $elementType,
                 'ves.enabled' => true,
             ]);
+    }
+
+
+    // PRIVATE HELPERS
+    // =============================================================================================
+    //
+    // The builders below parameterize FACTS (table names, the container-id column, the FQCN),
+    // never LOGIC. If a future element type needs genuinely different query logic - an extra
+    // filter, a different join topology - give that type its own concrete method instead of
+    // adding conditionals here. All per-type queries must select the same column list in the
+    // same order: ElementData::fromArray() and UNION ALL both depend on it.
+    //
+    // Conditions that vary per type use array syntax (auto-named params), never named params -
+    // a UNION merges both subqueries' params, and identical names would silently collide.
+
+    /**
+     * Returns a query for all elements of one type assigned to a reviewer.
+     *
+     * @param ElementType $elementType
+     * @param int $userId The Reviewer
+     * @param int|null $siteId
+     * @return Query
+     * @see \webhubworks\verifiedelements\models\ElementData
+     */
+    private static function reviewerElements(ElementType $elementType, int $userId, ?int $siteId): Query
+    {
+        $containerIdColumn = $elementType->containerIdColumn();
+
+        $query = (new Query())
+            ->select([
+                'elements.type',
+                'veea.id AS rowId',
+                'veea.elementId AS id',
+                'veea.siteId',
+                'veea.reviewerId',
+                'veea.verifiedUntilDate',
+                sprintf('elementRecord.%s AS containerId', $containerIdColumn),
+                'container.name AS containerName',
+                'container.handle AS containerHandle',
+                'es.title',
+                'es.slug',
+                'es.dateUpdated',
+                'sites.name AS siteName',
+                'sites.handle AS siteHandle',
+            ])
+            ->from(['veea' => PluginTable::ATTRIBUTES])
+            ->rightJoin(
+                '{{%elements}}',
+                '[[elements.id]] = [[veea.elementId]] AND [[elements.enabled]] = true AND [[elements.draftId]] IS NULL'
+            )
+            ->leftJoin(
+                '{{%elements_sites}} es',
+                '[[es.elementId]] = [[veea.elementId]] AND [[es.siteId]] = [[veea.siteId]]'
+            )
+            ->leftJoin(
+                ['elementRecord' => $elementType->elementTable()],
+                '[[elementRecord.id]] = [[veea.elementId]]'
+            )
+            ->leftJoin(
+                ['container' => $elementType->containerTable()],
+                sprintf('[[container.id]] = [[elementRecord.%s]]', $containerIdColumn)
+            )
+            ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
+            ->where(['veea.reviewerId' => $userId])
+            ->andWhere(['elements.type' => $elementType->value])
+            ->andWhere('elements.canonicalId IS null');
+
+        if ($siteId !== null) {
+            $query->andWhere(['veea.siteId' => $siteId]);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Returns a query for all verifiable elements of one type with verification dates in the
+     * past, limited to containers that are enabled in the plugin's settings.
+     *
+     * @param ElementType $elementType
+     * @return Query
+     * @see \webhubworks\verifiedelements\models\ElementData
+     */
+    private static function expiredElements(ElementType $elementType): Query
+    {
+        $now = Db::prepareDateForDb(DateHelper::now());
+        $containerIdColumn = $elementType->containerIdColumn();
+
+        return (new Query())
+            ->select([
+                'elements.type',
+                'veea.id AS rowId',
+                'veea.elementId AS id',
+                'veea.siteId',
+                'veea.reviewerId',
+                'veea.verifiedUntilDate',
+                sprintf('elementRecord.%s AS containerId', $containerIdColumn),
+                'container.name AS containerName',
+                'container.handle AS containerHandle',
+                'es.title',
+                'es.slug',
+                'es.dateUpdated',
+                'sites.name AS siteName',
+                'sites.handle AS siteHandle',
+            ])
+            ->from(['veea' => PluginTable::ATTRIBUTES])
+            ->leftJoin('{{%elements}}', '[[elements.id]] = [[veea.elementId]]')
+            ->leftJoin(
+                '{{%elements_sites}} es',
+                '[[es.elementId]] = [[veea.elementId]] AND [[es.siteId]] = [[veea.siteId]]'
+            )
+            ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
+            ->leftJoin(
+                ['elementRecord' => $elementType->elementTable()],
+                '[[elementRecord.id]] = [[veea.elementId]]'
+            )
+            ->innerJoin(
+                ['container' => $elementType->containerTable()],
+                sprintf('[[container.id]] = [[elementRecord.%s]]', $containerIdColumn)
+            )
+            ->innerJoin(
+                ['ves' => PluginTable::CONTAINERS],
+                sprintf(
+                    '[[ves.containerId]] = [[elementRecord.%s]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1',
+                    $containerIdColumn
+                )
+            )
+            ->where(['<', 'veea.verifiedUntilDate', $now])
+            ->andWhere(['ves.elementType' => $elementType->value])
+            ->andWhere(['elements.type' => $elementType->value])
+            ->andWhere(['elements.enabled' => true])
+            ->andWhere(['es.enabled' => true])
+            ->andWhere('elements.canonicalId IS null');
+    }
+
+    /**
+     * Combines per-type queries with UNION ALL, wrapped as a subquery so the caller's
+     * `orderBy`/`limit`/`offset` apply across the whole result set.
+     *
+     * All queries must select the same column list in the same order.
+     *
+     * @param Query[] $queries At least one query
+     * @return Query
+     */
+    private static function unionAll(array $queries): Query
+    {
+        $unionQuery = array_shift($queries);
+
+        // A single query needs no union wrapper.
+        if (empty($queries)) {
+            return $unionQuery;
+        }
+
+        foreach ($queries as $query) {
+            $unionQuery->union($query, true);
+        }
+
+        return (new Query())
+            ->select('*')
+            ->from(['elements_union' => $unionQuery]);
     }
 }

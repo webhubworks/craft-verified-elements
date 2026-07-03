@@ -6,6 +6,7 @@ use craft\elements\User;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\ElementType;
+use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\helpers\Log;
 
 /**
@@ -55,6 +56,20 @@ it("reads the container ID off the element's type-specific attribute", function 
 it('maps each type to its verified element subtype', function () {
     expect(ElementType::Entry->verifiedElementClass())->toBe(VerifiedEntry::class);
     expect(ElementType::Asset->verifiedElementClass())->toBe(VerifiedAsset::class);
+});
+
+it('maps each type to its feature gate', function () {
+    expect(ElementType::Entry->feature())->toBe(Feature::EntryVerification);
+    expect(ElementType::Asset->feature())->toBe(Feature::AssetVerification);
+});
+
+it('maps each type to its DB tables and container column', function () {
+    expect(ElementType::Entry->elementTable())->toBe('{{%entries}}');
+    expect(ElementType::Entry->containerTable())->toBe('{{%sections}}');
+    expect(ElementType::Entry->containerIdColumn())->toBe('sectionId');
+    expect(ElementType::Asset->elementTable())->toBe('{{%assets}}');
+    expect(ElementType::Asset->containerTable())->toBe('{{%volumes}}');
+    expect(ElementType::Asset->containerIdColumn())->toBe('volumeId');
 });
 
 it('builds singular, plural, and capitalized labels', function () {
