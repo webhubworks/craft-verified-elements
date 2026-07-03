@@ -41,7 +41,8 @@ abstract class PluginQuery
             ->innerJoin('{{%sections}} s', '[[s.id]] = [[ves.containerId]]')
             ->leftJoin('{{%sites}}', '[[sites.id]] = [[ves.siteId]]')
             ->where(['ves.enabled' => true])
-            ->andWhere(['ves.reviewerId' => $userId]);
+            ->andWhere(['ves.reviewerId' => $userId])
+            ->andWhere(['ves.elementType' => ElementType::Entry->value]);
 
         if ($siteId !== null) {
             $query->andWhere(['ves.siteId' => $siteId]);
@@ -191,9 +192,41 @@ abstract class PluginQuery
             )
             ->leftJoin(
                 PluginTable::CONTAINERS . ' ves',
-                '[[ves.containerId]] = [[s.id]] AND [[ves.siteId]] = :vesSiteId',
-                [':vesSiteId' => $siteId]
+                '[[ves.containerId]] = [[s.id]] AND [[ves.siteId]] = :vesSiteId AND [[ves.elementType]] = :entryType',
+                [':vesSiteId' => $siteId, ':entryType' => ElementType::Entry->value]
             );
+    }
+
+    /**
+     * Returns a query for volumes that have settings.
+     *
+     * Volumes have no site dimension in Craft, so the caller passes one representative site
+     * (the primary site) to read from - the save path writes identical rows for every site.
+     *
+     * @param int $siteId
+     * @return Query
+     * @see \webhubworks\verifiedelements\services\singletons\PluginSettings::getAllVolumesWithSettings
+     * @see \webhubworks\verifiedelements\services\singletons\PluginSettings::saveVolumeSettings
+     */
+    public static function volumesWithSettings(int $siteId): Query
+    {
+        return (new Query())
+            ->select([
+                'v.id',
+                'v.uid',
+                'v.name',
+                'v.handle',
+                'ves.reviewerId',
+                'ves.enabled',
+                'ves.defaultPeriod'
+            ])
+            ->from(['v' => '{{%volumes}}'])
+            ->leftJoin(
+                PluginTable::CONTAINERS . ' ves',
+                '[[ves.containerId]] = [[v.id]] AND [[ves.siteId]] = :vesSiteId AND [[ves.elementType]] = :assetType',
+                [':vesSiteId' => $siteId, ':assetType' => ElementType::Asset->value]
+            )
+            ->orderBy(['v.name' => SORT_ASC]);
     }
 
     /**

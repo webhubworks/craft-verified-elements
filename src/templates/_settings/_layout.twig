@@ -1,0 +1,79 @@
+{# Shared layout for the plugin's settings subpages: renders the sub-menu on the left and the
+   subpage's content on the right. Subpages set `selectedSettingsPage` (via their controller
+   action) to mark their menu item as selected. #}
+
+{% extends '_layouts/cp.twig' %}
+
+{% set title = 'Settings'|t('app') %}
+{% set selectedSubnavItem = 'settings' %}
+{% set crumbs = [
+    { label: 'Verified Elements'|t(pluginHandle), url: url(pluginHandle) }
+] %}
+
+{% set settingsPages = [] %}
+{% if showEntriesSettings %}
+    {% set settingsPages = settingsPages|merge([{
+        key: 'entries',
+        label: 'Entries'|t('app'),
+        url: url(pluginHandle ~ '/settings/entries'),
+    }]) %}
+{% endif %}
+{% if showAssetsSettings %}
+    {% set settingsPages = settingsPages|merge([{
+        key: 'assets',
+        label: 'Assets'|t('app'),
+        url: url(pluginHandle ~ '/settings/assets'),
+    }]) %}
+{% endif %}
+{% set settingsPages = settingsPages|merge([{
+    key: 'subscriptionPlan',
+    label: 'Subscription Plan'|t(pluginHandle),
+    url: url(pluginHandle ~ '/settings/subscription-plan'),
+}]) %}
+
+{% block sidebar %}
+    <nav>
+        <ul>
+            {% for page in settingsPages %}
+                <li>
+                    <a href="{{ page.url }}" {{ selectedSettingsPage == page.key ? 'class="sel"' }}>
+                        {{ page.label }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endblock %}
+
+{% css %}
+    .ve-table-wrap {
+    border: 1px solid rgba(51, 64, 77, 0.15);
+    border-radius: 5px;
+    overflow: hidden;
+    }
+    .ve-table {
+    width: 100%;
+    border-collapse: collapse;
+    }
+    .ve-table thead tr {
+    background: #f7f8f9;
+    border-bottom: 1px solid rgba(51, 64, 77, 0.1);
+    }
+    .ve-table thead th {
+    padding: 8px 14px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #8f98a3;
+    }
+    .ve-table tbody tr + tr {
+    border-top: 1px solid rgba(51, 64, 77, 0.07);
+    }
+    .ve-table tbody td,
+    .ve-table tbody th {
+    padding: 10px 14px;
+    vertical-align: middle;
+    }
+{% endcss %}

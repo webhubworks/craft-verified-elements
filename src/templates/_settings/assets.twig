@@ -1,25 +1,9 @@
-{% extends '_layouts/cp.twig' %}
+{% extends pluginHandle ~ '/_settings/_layout.twig' %}
 
-{% set title = 'Settings'|t('app') %}
+{# Volumes have no site dimension in Craft, so there are no site tabs here - the save action
+   applies each volume's settings to every site. #}
+
 {% set fullPageForm = true %}
-{% set selectedSubnavItem = 'settings' %}
-{% set crumbs = [
-    { label: 'Verified Elements'|t(pluginHandle), url: url(pluginHandle) }
-] %}
-
-{% if sites|length > 1 %}
-    {% set tabs = [] %}
-    {% set selectedTab = 0 %}
-    {% for site in sites %}
-        {% if site.id == currentSite.id %}
-            {% set selectedTab = loop.index0 %}
-        {% endif %}
-        {% set tabs = tabs|merge([{
-            label: site.name,
-            url: url(pluginHandle ~ '/settings', {site: site.handle}),
-        }]) %}
-    {% endfor %}
-{% endif %}
 
 {% import '_includes/forms.twig' as forms %}
 
@@ -32,32 +16,29 @@
 ] %}
 
 {% block content %}
-    {{ actionInput(pluginHandle ~ '/settings/save') }}
-    {{ redirectInput(pluginHandle ~ '/settings?site=' ~ currentSite.handle) }}
-    {{ hiddenInput('siteId', currentSite.id) }}
+    {{ actionInput(pluginHandle ~ '/settings/save-assets') }}
+    {{ redirectInput(pluginHandle ~ '/settings/assets') }}
 
     <div class="ve-table-wrap">
         <table class="ve-table">
             <thead>
             <tr>
-                <th>{{ 'Section'|t('app') }}</th>
-                <th>{{ 'Section Type'|t('app') }}</th>
+                <th>{{ 'Location'|t('app') }}</th>
                 <th>{{ 'Enabled'|t('app') }}</th>
                 <th>{{ 'Default Reviewer'|t(pluginHandle) }}</th>
                 <th>{{ 'Default Period'|t(pluginHandle) }}</th>
             </tr>
             </thead>
             <tbody>
-            {% for section in sections %}
-                {% set ns = 'sections[' ~ section.id ~ ']' %}
+            {% for volume in volumes %}
+                {% set ns = 'volumes[' ~ volume.id ~ ']' %}
                 {% namespace ns %}
                     <tr>
-                        <th>{{ section.name }}</th>
-                        <td>{{ section.type|capitalize|t('app') }}</td>
+                        <th>{{ volume.name }}</th>
                         <td>
                             {{ forms.lightswitch({
                                 name: 'enabled',
-                                on: section.enabled
+                                on: volume.enabled
                             }) }}
                         </td>
                         <td>
@@ -65,7 +46,7 @@
                                 {{ forms.elementSelect({
                                     name: 'reviewerId',
                                     elementType: 'craft\\elements\\User',
-                                    elements: section.reviewerId ? [section.reviewer] : [],
+                                    elements: volume.reviewerId ? [volume.reviewer] : [],
                                     criteria: {
                                         status: 'active',
                                         can: 'verified-elements:verifyEntries',
@@ -75,11 +56,11 @@
                                 }) }}
                             {% endset %}
 
-                            {% if section.enabled and not section.reviewerId %}
+                            {% if volume.enabled and not volume.reviewerId %}
                                 <div class="flex" style="align-items:center;flex-wrap:nowrap;">
                                     {{ reviewerSelectField }}
                                     <p class="warning" style="margin:0;max-width:400px;">
-                                        {{ 'No default reviewer. Expired entries will go unnotified.'|t(pluginHandle) }}
+                                        {{ 'No default reviewer. Expired assets will go unnotified.'|t(pluginHandle) }}
                                     </p>
                                 </div>
                             {% else %}
@@ -90,7 +71,7 @@
                             {{ forms.select({
                                 name: 'defaultPeriod',
                                 options: periodSelectOptions,
-                                value: section.defaultPeriod,
+                                value: volume.defaultPeriod,
                             }) }}
                         </td>
                     </tr>
@@ -100,39 +81,6 @@
         </table>
     </div>
 {% endblock %}
-
-{% css %}
-    .ve-table-wrap {
-    border: 1px solid rgba(51, 64, 77, 0.15);
-    border-radius: 5px;
-    overflow: hidden;
-    }
-    .ve-table {
-    width: 100%;
-    border-collapse: collapse;
-    }
-    .ve-table thead tr {
-    background: #f7f8f9;
-    border-bottom: 1px solid rgba(51, 64, 77, 0.1);
-    }
-    .ve-table thead th {
-    padding: 8px 14px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #8f98a3;
-    }
-    .ve-table tbody tr + tr {
-    border-top: 1px solid rgba(51, 64, 77, 0.07);
-    }
-    .ve-table tbody td,
-    .ve-table tbody th {
-    padding: 10px 14px;
-    vertical-align: middle;
-    }
-{% endcss %}
 
 {% js %}
     Craft.initUiElements();

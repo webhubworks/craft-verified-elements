@@ -2,7 +2,9 @@
 
 namespace webhubworks\verifiedelements\services\singletons;
 
+use Craft;
 use craft\db\Query;
+use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
@@ -134,28 +136,23 @@ class PluginSettings extends Component
     {
         $rows = PluginQuery::sectionsWithSettings($siteId)->all();
 
-        // Collect all unique reviewer IDs
-        $reviewerIds = array_unique(array_filter(array_column($rows, 'reviewerId')));
+        return $this->hydrateReviewers($rows);
+    }
 
-        // Fetch User models in one go
-        $reviewers = [];
-        if (! empty($reviewerIds)) {
-            $reviewerElements = User::find()
-                ->id($reviewerIds)
-                ->status(null)
-                ->all();
+    /**
+     * Returns the volumes to list on the plugin's Settings page.
+     *
+     * Volumes have no site dimension in Craft, so the primary site's rows represent all sites
+     * (the save path writes identical rows for every site).
+     *
+     * @return array
+     */
+    public function getAllVolumesWithSettings(): array
+    {
+        $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
+        $rows = PluginQuery::volumesWithSettings($primarySiteId)->all();
 
-            foreach ($reviewerElements as $user) {
-                $reviewers[$user->id] = $user;
-            }
-        }
-
-        // Replace reviewerId with actual User model (if found)
-        foreach ($rows as &$row) {
-            $row['reviewer'] = $reviewers[$row['reviewerId']] ?? null;
-        }
-
-        return $rows;
+        return $this->hydrateReviewers($rows);
     }
 
     /**
@@ -168,6 +165,77 @@ class PluginSettings extends Component
      * @return bool If the save was successful.
      */
     public function saveSectionSettings(int $sectionId, int $siteId, array $settings): bool
+    {
+        return $this->upsertContainerSettings($sectionId, $siteId, Entry::class, $settings);
+    }
+
+    /**
+     * Saves the configuration for a volume on the plugin's Settings page.
+     *
+     * Volumes have no site dimension in Craft, so the single set of settings fans out to a row
+     * per site - the per-(container, site) lookups the rest of the plugin runs stay valid.
+     *
+     * @param int $volumeId
+     * @param array $settings
+     * @return bool If all sites' rows were saved successfully.
+     */
+    public function saveVolumeSettings(int $volumeId, array $settings): bool
+    {
+        $errors = 0;
+
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            if (! $this->upsertContainerSettings($volumeId, $site->id, Asset::class, $settings)) {
+                $errors++;
+            }
+        }
+
+        return $errors === 0;
+    }
+
+
+    // PRIVATE HELPERS
+    // =============================================================================================
+
+    /**
+     * Replaces each row's reviewerId with the actual User model under a 'reviewer' key, fetching
+     * all reviewers in one query.
+     *
+     * @param array $rows
+     * @return array
+     */
+    private function hydrateReviewers(array $rows): array
+    {
+        $reviewerIds = array_unique(array_filter(array_column($rows, 'reviewerId')));
+
+        $reviewers = [];
+        if (! empty($reviewerIds)) {
+            $reviewerElements = User::find()
+                ->id($reviewerIds)
+                ->status(null)
+                ->all();
+
+            foreach ($reviewerElements as $user) {
+                $reviewers[$user->id] = $user;
+            }
+        }
+
+        foreach ($rows as &$row) {
+            $row['reviewer'] = $reviewers[$row['reviewerId']] ?? null;
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Normalizes submitted settings and upserts one container's row for one site.
+     *
+     * @param int $containerId
+     * @param int $siteId
+     * @param string $elementType
+     * @param array $settings
+     * @return bool If the save was successful.
+     */
+    private function upsertContainerSettings(int $containerId, int $siteId, string $elementType, array $settings): bool
     {
         $enabled = ! empty($settings['enabled']);
         $defaultPeriod = $settings['defaultPeriod'] ?? null;
@@ -184,8 +252,8 @@ class PluginSettings extends Component
             Db::upsert(
                 PluginTable::CONTAINERS,
                 [
-                    'containerId' => $sectionId,
-                    'elementType' => Entry::class,
+                    'containerId' => $containerId,
+                    'elementType' => $elementType,
                     'siteId' => $siteId,
                     'reviewerId' => $reviewerId,
                     'enabled' => $enabled,
@@ -195,7 +263,12 @@ class PluginSettings extends Component
             );
         }
         catch (Exception $exception) {
-            Log::error('Failed to save section settings', $exception);
+            Log::error(sprintf(
+                'Failed to save container settings for %s [%s] on site %s',
+                Log::element($elementType),
+                $containerId,
+                $siteId
+            ), $exception);
             return false;
         }
 

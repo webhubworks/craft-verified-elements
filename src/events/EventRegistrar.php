@@ -195,9 +195,16 @@ readonly class EventRegistrar
                     $event->rules[Plugin::HANDLE . '/assets'] = Plugin::HANDLE . '/index/assets';
                 }
 
-                // Expose the plugin's settings pages
+                // Expose the plugin's settings subpages. The bare settings path lands on the
+                // first subpage (entries), mirroring the plugin's top-level nav link.
                 if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
-                    $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/index';
+                    $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/entries';
+                    $event->rules[Plugin::HANDLE . '/settings/entries'] = Plugin::HANDLE . '/settings/entries';
+                    $event->rules[Plugin::HANDLE . '/settings/subscription-plan'] = Plugin::HANDLE . '/settings/subscription-plan';
+
+                    if (Feature::AssetVerification->isEnabled()) {
+                        $event->rules[Plugin::HANDLE . '/settings/assets'] = Plugin::HANDLE . '/settings/assets';
+                    }
                 }
 
                 // Current user's account "Verified Elements" page showing their assigned elements to review
