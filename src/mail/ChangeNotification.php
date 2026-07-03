@@ -7,11 +7,12 @@ use craft\helpers\Html;
 use craft\i18n\Locale;
 use webhubworks\verifiedelements\base\NotifiableInterface;
 use webhubworks\verifiedelements\base\Notification;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\models\ElementData;
 
 /**
- * Sends an entry's Reviewer an email that someone has updated their entry
+ * Sends an element's Reviewer an email that someone has updated their element
  * and that they should verify the changes.
  */
 class ChangeNotification extends Notification
@@ -41,22 +42,34 @@ class ChangeNotification extends Notification
 
     private function subject(): string
     {
-        return $this->t('email.changeNotification.subject');
+        // Full sentences per element type (not one string with the label interpolated) so
+        // translations stay grammatically correct.
+        $subjectKey = match (ElementType::from($this->elementData->type)) {
+            ElementType::Entry => 'email.changeNotification.subject.entry',
+            ElementType::Asset => 'email.changeNotification.subject.asset',
+        };
+
+        return $this->t($subjectKey);
     }
 
     private function body(): string
     {
+        $bodyKey = match (ElementType::from($this->elementData->type)) {
+            ElementType::Entry => 'email.changeNotification.body.entry',
+            ElementType::Asset => 'email.changeNotification.body.asset',
+        };
+
         $verifiedUntilDate = $this->formatter->asDate(
             DateHelper::toDateTime($this->elementData->verifiedUntilDate),
             Locale::LENGTH_MEDIUM
         );
 
         $recipientName = Html::encode($this->recipient->getFriendlyName());
-        $message = $this->t('email.changeNotification.body') . ':';
+        $message = $this->t($bodyKey) . ':';
         $title = Html::tag('strong', Html::encode($this->elementData->title));
         $verifiedUntil = $this->t('Verified until');
         $link = Html::a($this->t('Show', null, 'app'), $this->elementData->cpEditUrl);
-        $styles = implode(';', $this->styles());
+        $styles = implode(';', $this->wrapperStyles());
 
         return <<<HTML
             <div style="$styles">
