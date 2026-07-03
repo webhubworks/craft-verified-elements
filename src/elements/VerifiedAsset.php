@@ -1,33 +1,34 @@
-<?php /** @noinspection PhpUnhandledExceptionInspection */
+<?php
 
 namespace webhubworks\verifiedelements\elements;
 
 use Craft;
-use craft\elements\Entry;
+use craft\elements\Asset;
 use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\services\ElementIndexSourcesBuilder;
 
 /**
- * Entry subtype that powers the plugin's dashboard element index, defining its sidebar sources
+ * Asset subtype that powers the plugin's dashboard element index, defining its sidebar sources
  * and default table columns.
  */
-class VerifiedEntry extends Entry
+class VerifiedAsset extends Asset
 {
     /** @inheritDoc */
     public static function refHandle(): ?string
     {
-        return 'verifiedEntry';
+        return 'verifiedAsset';
     }
 
     /** @inheritDoc */
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
-            'section',
+            'location',
             'isVerified',
             'verifiedUntilDate',
             'reviewer',
-            'postDate',
+            'dateModified',
+            'dateCreated',
         ];
     }
 
@@ -37,11 +38,11 @@ class VerifiedEntry extends Entry
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         $service = new ElementIndexSourcesBuilder(
-            elementType: Entry::class,
-            containerIdQueryParam: 'sectionId',
+            elementType: Asset::class,
+            containerIdQueryParam: 'volumeId',
             currentUserId: $currentUser->id,
             currentUserFriendlyName: $currentUser->getFriendlyName(),
-            unassignedCountBaseQuery: Entry::find()->status(Entry::STATUS_LIVE),
+            unassignedCountBaseQuery: Asset::find(),
             siteHandle: Craft::$app->getRequest()->getQueryParam('site'),
             settings: Plugin::getInstance()->getPluginSettings(),
         );

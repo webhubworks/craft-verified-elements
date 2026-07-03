@@ -39,6 +39,8 @@ use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use DateTime;
 use Twig\TwigFilter;
+use webhubworks\verifiedelements\elements\VerifiedAsset;
+use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\models\ElementData;
@@ -215,7 +217,13 @@ readonly class EventRegistrar
                 Elements::class,
                 Elements::EVENT_REGISTER_ELEMENT_TYPES,
                 static function (RegisterComponentTypesEvent $event) {
-                    $event->types[] = VerifiedEntry::class;
+                    if (Feature::EntryVerification->isEnabled()) {
+                        $event->types[] = VerifiedEntry::class;
+                    }
+
+                    if (Feature::AssetVerification->isEnabled()) {
+                        $event->types[] = VerifiedAsset::class;
+                    }
                 }
             );
         }

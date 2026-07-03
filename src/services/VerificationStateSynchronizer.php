@@ -4,12 +4,14 @@ namespace webhubworks\verifiedelements\services;
 
 use Craft;
 use craft\db\Query;
+use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
 use DateTime;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
+use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\events\EventRegistrar;
 use webhubworks\verifiedelements\helpers\DateHelper;
@@ -110,6 +112,7 @@ class VerificationStateSynchronizer
         // (Entry, Asset, etc.), so we need to explicitly bust the cache for the verified elements
         // (VerifiedEntry, VerifiedAsset, etc.).
         $verifiedElementType = match ($this->elementData->type) {
+            Asset::class => VerifiedAsset::class,
             Entry::class => VerifiedEntry::class,
         };
         Craft::$app->getElements()->invalidateCachesForElementType($verifiedElementType);
