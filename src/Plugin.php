@@ -12,8 +12,8 @@ use craft\helpers\UrlHelper;
 use webhubworks\verifiedelements\enums\Edition;
 use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\enums\Permission;
-use webhubworks\verifiedelements\events\EventRegistrar;
 use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\services\EventRegistrar;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
 use webhubworks\verifiedelements\services\singletons\Reviewers;
 
@@ -72,6 +72,7 @@ class Plugin extends BasePlugin
             $events->extendTwig();
 
             if (Feature::EntryVerification->isEnabled()) {
+//                $events->registerEntryEvents();
                 $events->registerBehaviors(Entry::class, EntryQuery::class);
                 $events->registerEntryLifecycle();
                 $events->registerIndexUi(Entry::class);
@@ -79,6 +80,7 @@ class Plugin extends BasePlugin
             }
 
             if (Feature::AssetVerification->isEnabled()) {
+//                $events->registerAssetEvents();
                 $events->registerBehaviors(Asset::class, AssetQuery::class);
                 $events->registerAssetLifecycle();
                 $events->registerIndexUi(Asset::class);

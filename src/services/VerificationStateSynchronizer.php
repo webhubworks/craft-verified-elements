@@ -10,7 +10,6 @@ use DateTime;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
 use webhubworks\verifiedelements\enums\ElementType;
-use webhubworks\verifiedelements\events\EventRegistrar;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\mail\ChangeNotification;

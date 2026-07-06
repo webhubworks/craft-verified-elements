@@ -8,7 +8,6 @@ use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
-use webhubworks\verifiedelements\events\EventRegistrar;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
