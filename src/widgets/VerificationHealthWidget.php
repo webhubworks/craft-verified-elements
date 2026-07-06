@@ -27,7 +27,7 @@ use webhubworks\verifiedelements\Plugin;
  * @property-read null|string $bodyHtml
  * @property-read null|string $settingsHtml
  */
-class VerificationHealth extends Widget
+class VerificationHealthWidget extends Widget
 {
     public const NAME = 'Verification Health';
 

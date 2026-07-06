@@ -62,8 +62,8 @@ use webhubworks\verifiedelements\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedUntilDateConditionRule;
 use webhubworks\verifiedelements\enums\Permission;
-use webhubworks\verifiedelements\widgets\ElementsToReview;
-use webhubworks\verifiedelements\widgets\VerificationHealth;
+use webhubworks\verifiedelements\widgets\ElementsToReviewWidget;
+use webhubworks\verifiedelements\widgets\VerificationHealthWidget;
 
 /**
  * Helper class for registering the plugin's event handlers.
@@ -288,10 +288,10 @@ readonly class EventRegistrar
             static function (RegisterComponentTypesEvent $event) {
                 $currentUser = Craft::$app->getUser();
 
-                $event->types[] = VerificationHealth::class;
+                $event->types[] = VerificationHealthWidget::class;
 
                 if ($currentUser->checkPermission(Permission::VerifyEntries->value)) {
-                    $event->types[] = ElementsToReview::class;
+                    $event->types[] = ElementsToReviewWidget::class;
                 }
             }
         );

@@ -21,7 +21,7 @@ use webhubworks\verifiedelements\Plugin;
  * @property-read null|string $bodyHtml
  * @property-read null|string $settingsHtml
  */
-class ElementsToReview extends Widget
+class ElementsToReviewWidget extends Widget
 {
     public const NAME = 'Elements to Review';
 
