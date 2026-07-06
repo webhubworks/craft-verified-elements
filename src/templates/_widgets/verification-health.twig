@@ -1,5 +1,8 @@
-{% set verifiedLength = (verifiedCount / totalCount * 100)|round(0, 'ceil') %}
-{% set expiredLength = (expiredCount / totalCount * 100)|round(0, 'ceil') %}
+{% set verifiedLength, expiredLength = 0, 0 %}
+{% if totalCount > 0 %}
+    {% set verifiedLength = (verifiedCount / totalCount * 100)|round(0, 'ceil') %}
+    {% set expiredLength = (expiredCount / totalCount * 100)|round(0, 'ceil') %}
+{% endif %}
 
 {% if siteDisplayed %}
     <p class="light" style="margin: 0 0 8px;">{{ siteDisplayed }}</p>
@@ -19,13 +22,13 @@
                 <li class="widget__list-item status-label">
                     {{ status.icon|raw }}
                     {{ status.label }}:
-                    <span class="light">{{ status.count }} {{ 'Entries'|t('app') }}</span>
+                    <span class="light">{{ status.count }} {{ 'Elements'|t('app') }}</span>
                 </li>
             {% endfor %}
             <li class="widget__list-item status-label">
                 <span class="status gray" role="img" aria-label="{{ 'Total'|t(pluginHandle) }}"></span>
                 {{ 'Total'|t(pluginHandle) }}:
-                <span class="light">{{ totalCount }} {{ 'Entries'|t('app') }}</span>
+                <span class="light">{{ totalCount }} {{ 'Elements'|t('app') }}</span>
             </li>
         </ol>
     </div>

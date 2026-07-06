@@ -3,16 +3,26 @@
 namespace webhubworks\verifiedelements\widgets;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Widget;
+use craft\elements\db\AssetQuery;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\helpers\Cp;
 use Throwable;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\Plugin;
 
 /**
- * Verification Health widget type
+ * Craft dashboard widget that shows system-wide verification health as one meter across all
+ * supported element types.
+ *
+ * The optional site setting defines the boundary of "the system" (sites can be entirely
+ * different products); there is deliberately NO element-type filter. Filtering health by element
+ * type skews the overview, and per-type views already live in the plugin's dashboard views.
  *
  * @property-read null|string $bodyHtml
  * @property-read null|string $settingsHtml
@@ -53,35 +63,22 @@ class VerificationHealth extends Widget
      */
     public function getBodyHtml(): ?string
     {
-        $settings = Plugin::getInstance()->getPluginSettings();
-        $enabledSectionIds = $settings->getEnabledContainerIds(Entry::class, $this->siteId);
+        $totalCount = 0;
+        $verifiedCount = 0;
+        $expiredCount = 0;
 
-        $site = $this->siteId ?: '*';
+        foreach (ElementType::enabledTypes() as $elementTypeName) {
+            $elementType = ElementType::from($elementTypeName);
 
-        $totalEntryCount = Entry::find()
-            ->status(Entry::STATUS_LIVE)
-            ->siteId($site)
-            ->section('*')
-            ->count();
-
-        $verifiedEntryCount = Entry::find()
-            ->status(Entry::STATUS_LIVE)
-            ->siteId($site)
-            ->sectionId($enabledSectionIds)
-            ->isVerified(true)
-            ->count();
-
-        $expiredEntryCount = Entry::find()
-            ->status(Entry::STATUS_LIVE)
-            ->siteId($site)
-            ->sectionId($enabledSectionIds)
-            ->isVerified(false)
-            ->count();
+            $totalCount += $this->liveElementsQuery($elementType)->count();
+            $verifiedCount += $this->countByVerificationState($elementType, isVerified: true);
+            $expiredCount += $this->countByVerificationState($elementType, isVerified: false);
+        }
 
         $statuses = [
             [
                 'label' => VerificationStatus::Verified->label(),
-                'count' => $verifiedEntryCount,
+                'count' => $verifiedCount,
                 'icon' => Cp::statusIndicatorHtml(
                     VerificationStatus::Verified->handle(),
                     ['color' => VerificationStatus::Verified->color()]
@@ -89,7 +86,7 @@ class VerificationHealth extends Widget
             ],
             [
                 'label' => VerificationStatus::Expired->label(),
-                'count' => $expiredEntryCount,
+                'count' => $expiredCount,
                 'icon' => Cp::statusIndicatorHtml(
                     VerificationStatus::Expired->handle(),
                     ['color' => VerificationStatus::Expired->color()]
@@ -99,16 +96,19 @@ class VerificationHealth extends Widget
 
         $siteDisplayed = null;
         if (Craft::$app->getIsMultiSite()) {
-            $siteDisplayed = $this->siteId
-                ? Craft::$app->getSites()->getSiteById($this->siteId)?->getName()
-                : Craft::t('app', 'All Sites');
+            if ($this->siteId) {
+                $siteDisplayed = Craft::$app->getSites()->getSiteById($this->siteId)?->getName();
+            }
+            else {
+                $siteDisplayed = Craft::t('app', 'All Sites');
+            }
         }
 
         $templateVariables = [
             'siteDisplayed' => $siteDisplayed,
-            'totalCount' => $totalEntryCount,
-            'verifiedCount' => $verifiedEntryCount,
-            'expiredCount' => $expiredEntryCount,
+            'totalCount' => $totalCount,
+            'verifiedCount' => $verifiedCount,
+            'expiredCount' => $expiredCount,
             'statuses' => $statuses,
             'statusColors' => [
                 'verified' => VerificationStatus::Verified->cssColor(),
@@ -158,9 +158,68 @@ class VerificationHealth extends Widget
             );
         }
         catch (Throwable $exception) {
-            Log::error('Error loading "Verification Health" widget settings', $exception);
+            Log::error(
+                sprintf('Error loading "%s" widget settings', self::NAME),
+                $exception
+            );
         }
 
         return null;
+    }
+
+
+    // PRIVATE HELPERS
+    // =============================================================================================
+
+    /**
+     * Base query for the elements the widget counts: one row per (element, site) verification
+     * unit, matching how verification state is stored.
+     *
+     * @param ElementType $elementType
+     * @return ElementQuery
+     */
+    private function liveElementsQuery(ElementType $elementType): ElementQuery
+    {
+        /** @var class-string<Element> $elementClass */
+        $elementClass = $elementType->value;
+
+        $query = $elementClass::find()->siteId($this->siteId ?: '*');
+
+        // "Live" differs per type: entries respect post/expiry dates; assets are simply enabled.
+        return match ($elementType) {
+            ElementType::Entry => $query->status(Entry::STATUS_LIVE),
+            ElementType::Asset => $query->status(Element::STATUS_ENABLED),
+        };
+    }
+
+    /**
+     * Counts one type's elements in enabled containers by verification state. Untracked elements
+     * count as verified via the query behavior's null-date rule ("Indefinitely").
+     *
+     * @param ElementType $elementType
+     * @param bool $isVerified
+     * @return int
+     * @noinspection PhpUndefinedMethodInspection
+     */
+    private function countByVerificationState(ElementType $elementType, bool $isVerified): int
+    {
+        $enabledContainerIds = Plugin::getInstance()
+            ->getPluginSettings()
+            ->getEnabledContainerIds($elementType->value, $this->siteId);
+
+        // An empty id list must mean zero, not "unfiltered" - Craft ignores empty query params.
+        if (empty($enabledContainerIds)) {
+            return 0;
+        }
+
+        /** @var EntryQuery|AssetQuery $query */
+        $query = $this->liveElementsQuery($elementType);
+
+        match ($elementType) {
+            ElementType::Entry => $query->sectionId($enabledContainerIds),
+            ElementType::Asset => $query->volumeId($enabledContainerIds),
+        };
+
+        return (int)$query->isVerified($isVerified)->count();
     }
 }
