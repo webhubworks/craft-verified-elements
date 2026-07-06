@@ -19,12 +19,14 @@ use webhubworks\verifiedelements\Plugin;
  */
 class VerificationHealth extends Widget
 {
+    public const NAME = 'Verification Health';
+
     public ?int $siteId = null;
 
     /** @inheritDoc */
     public static function displayName(): string
     {
-        return Craft::t(Plugin::HANDLE, 'Verification Health');
+        return Craft::t(Plugin::HANDLE, self::NAME);
     }
 
     /** @inheritDoc */
@@ -116,12 +118,15 @@ class VerificationHealth extends Widget
 
         try {
             return Craft::$app->getView()->renderTemplate(
-                Plugin::HANDLE . '/_widgets/health.twig',
+                Plugin::HANDLE . '/_widgets/verification-health.twig',
                 $templateVariables
             );
         }
         catch (Throwable $exception) {
-            Log::error('Error loading "Verification Health" widget', $exception);
+            Log::error(
+                sprintf('Error loading "%s" widget', self::NAME),
+                $exception
+            );
         }
 
         return null;

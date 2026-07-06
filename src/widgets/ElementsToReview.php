@@ -18,14 +18,16 @@ use webhubworks\verifiedelements\Plugin;
  * @property-read null|string $bodyHtml
  * @property-read null|string $settingsHtml
  */
-class EntriesToReview extends Widget
+class ElementsToReview extends Widget
 {
+    public const NAME = 'Elements to Review';
+
     public int $limit = 10;
 
     /** @inheritDoc */
     public static function displayName(): string
     {
-        return Craft::t(Plugin::HANDLE, 'Entries to Review');
+        return Craft::t(Plugin::HANDLE, self::NAME);
     }
 
     /** @inheritDoc */
@@ -76,7 +78,7 @@ class EntriesToReview extends Widget
             ->getEnabledContainerIds(Entry::class);
 
         /** @noinspection PhpUndefinedMethodInspection */
-        $entries = Entry::find()
+        $elements = Entry::find()
             ->status(Entry::STATUS_LIVE)
             ->site('*')
             ->sectionId($enabledSectionIds)
@@ -85,16 +87,16 @@ class EntriesToReview extends Widget
             ->limit($this->limit)
             ->all();
 
-        if (empty($entries)) {
+        if (empty($elements)) {
             return Html::tag(
                 'div',
-                Craft::t(Plugin::HANDLE, 'There are no entries up for review.'),
+                Craft::t(Plugin::HANDLE, "There's currently nothing to review."),
                 ['class' => ['zilch', 'small']]
             );
         }
 
         $templateVariables = [
-            'entries' => $entries,
+            'elements' => $elements,
             'statusIndicator' => Cp::statusIndicatorHtml(
                 VerificationStatus::Expired->handle(),
                 ['color' => VerificationStatus::Expired->color()]
@@ -103,12 +105,15 @@ class EntriesToReview extends Widget
 
         try {
             return Craft::$app->getView()->renderTemplate(
-                Plugin::HANDLE . '/_widgets/review.twig',
+                Plugin::HANDLE . '/_widgets/elements-to-review.twig',
                 $templateVariables
             );
         }
         catch (Throwable $exception) {
-            Log::error('Error loading "Entries to Review" widget', $exception);
+            Log::error(
+                sprintf('Error loading "%s" widget', self::NAME),
+                $exception
+            );
         }
 
         return null;

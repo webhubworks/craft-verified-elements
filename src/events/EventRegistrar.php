@@ -62,7 +62,7 @@ use webhubworks\verifiedelements\elements\conditions\ReviewerConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedUntilDateConditionRule;
 use webhubworks\verifiedelements\enums\Permission;
-use webhubworks\verifiedelements\widgets\EntriesToReview;
+use webhubworks\verifiedelements\widgets\ElementsToReview;
 use webhubworks\verifiedelements\widgets\VerificationHealth;
 
 /**
@@ -291,7 +291,7 @@ readonly class EventRegistrar
                 $event->types[] = VerificationHealth::class;
 
                 if ($currentUser->checkPermission(Permission::VerifyEntries->value)) {
-                    $event->types[] = EntriesToReview::class;
+                    $event->types[] = ElementsToReview::class;
                 }
             }
         );

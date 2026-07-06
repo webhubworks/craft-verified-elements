@@ -1,5 +1,5 @@
 {% set isMultiSite = craft.app.sites.allSites|filter(s => s.enabled)|length > 1 %}
-<div class="entriestoreview-container">
+<div class="elementstoreview-container">
     <table class="ve-widget-table fullwidth">
         <thead>
         <tr>
@@ -12,17 +12,17 @@
         </tr>
         </thead>
         <tbody>
-        {% for entry in entries %}
+        {% for element in elements %}
             <tr>
                 <td>
                     {{ statusIndicator|raw }}
-                    <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
+                    <a href="{{ element.getCpEditUrl() }}">{{ element.title }}</a>
                 </td>
-                <td>{{ entry.section.name }}</td>
+                <td>{{ element.section.name }}</td>
                 {% if isMultiSite %}
-                    <td class="light">{{ entry.site.name }}</td>
+                    <td class="light">{{ element.site.name }}</td>
                 {% endif %}
-                <td class="light">{{ entry.verifiedUntilDate|readableVerificationDate }}</td>
+                <td class="light">{{ element.verifiedUntilDate|readableVerificationDate }}</td>
             </tr>
         {% endfor %}
         </tbody>
