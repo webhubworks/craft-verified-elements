@@ -46,30 +46,6 @@ abstract class PluginQuery
         return self::unionAll($queries);
     }
 
-    /**
-     * Returns a query for all entries assigned to a reviewer.
-     *
-     * @param int $userId The Reviewer
-     * @param int|null $siteId
-     * @return Query
-     */
-    public static function entriesByReviewer(int $userId, ?int $siteId = null): Query
-    {
-        return self::reviewerElements(ElementType::Entry, $userId, $siteId);
-    }
-
-    /**
-     * Returns a query for all assets assigned to a reviewer.
-     *
-     * @param int $userId The Reviewer
-     * @param int|null $siteId
-     * @return Query
-     */
-    public static function assetsByReviewer(int $userId, ?int $siteId = null): Query
-    {
-        return self::reviewerElements(ElementType::Asset, $userId, $siteId);
-    }
-
 
     // VERIFICATION
     // =============================================================================================
