@@ -125,6 +125,16 @@ readonly class ElementData implements JsonSerializable
     }
 
     /**
+     * The verification date formatted for display.
+     *
+     * @return string
+     */
+    public function getReadableVerifiedUntilDate(): string
+    {
+        return DateHelper::readableVerificationDate(DateHelper::toDateTime($this->verifiedUntilDate));
+    }
+
+    /**
      * The display shape consumed by the CP "Admin Table" Vue component.
      *
      * @return array
@@ -144,7 +154,7 @@ readonly class ElementData implements JsonSerializable
             'containerHandle' => $this->containerHandle,
             'dateUpdated' => (new Formatter())->asDate(DateHelper::toDateTime($this->dateUpdated)),
             'reviewerId' => $this->reviewerId,
-            'verifiedUntilDate' => DateHelper::readableVerificationDate(DateHelper::toDateTime($this->verifiedUntilDate)),
+            'verifiedUntilDate' => $this->getReadableVerifiedUntilDate(),
             'isVerified' => $this->isVerified() ? 'Verified' : 'Expired',
             'url' => $this->cpEditUrl,
         ];

@@ -124,6 +124,23 @@ it('is verified when the "Verified until" date is null (Indefinitely)', function
 });
 
 
+// getReadableVerifiedUntilDate()
+// =================================================================================================
+
+it('formats set and null "Verified until" dates through the shared date helper', function () {
+    // The widget template and jsonSerialize() both rely on this delegation; the helper's own
+    // formatting rules (Today / n days / short date / Indefinite) are DateHelper's contract.
+    $row = elementDataRow();
+    $withDate = ElementData::fromArray($row);
+    $indefinite = ElementData::fromArray(elementDataRow(['verifiedUntilDate' => null]));
+
+    expect($withDate->getReadableVerifiedUntilDate())
+        ->toBe(DateHelper::readableVerificationDate(DateHelper::toDateTime($row['verifiedUntilDate'])))
+        ->and($indefinite->getReadableVerifiedUntilDate())
+        ->toBe(DateHelper::readableVerificationDate(null));
+});
+
+
 // cpEditUrl (via fromArray)
 // =================================================================================================
 

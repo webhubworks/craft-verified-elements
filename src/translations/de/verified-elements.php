@@ -15,6 +15,7 @@ return [
     'Elements verified.' => 'Elemente verifiziert.',
     'Entry has expired and is due to be verified.' => 'Der Eintrag ist abgelaufen und muss überprüft werden.',
     'Expired' => 'Abgelaufen',
+    'Found in' => 'Zu finden in',
     'Has Date' => 'Hat Datum',
     'Imminent' => 'Bevorstehend',
     'Indefinite' => 'Unbegrenzt',

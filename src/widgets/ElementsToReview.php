@@ -4,16 +4,19 @@ namespace webhubworks\verifiedelements\widgets;
 
 use Craft;
 use craft\base\Widget;
-use craft\elements\Entry;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use Throwable;
+use webhubworks\verifiedelements\db\PluginQuery;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\Log;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\Plugin;
 
 /**
- * Expired Entries Widget widget type
+ * Craft dashboard widget that lists expired elements assigned to the current user for review,
+ * most overdue first.
  *
  * @property-read null|string $bodyHtml
  * @property-read null|string $settingsHtml
@@ -73,21 +76,13 @@ class ElementsToReview extends Widget
     public function getBodyHtml(): ?string
     {
         $userId = Craft::$app->getUser()->getId();
-        $enabledSectionIds = Plugin::getInstance()
-            ->getPluginSettings()
-            ->getEnabledContainerIds(Entry::class);
 
-        /** @noinspection PhpUndefinedMethodInspection */
-        $elements = Entry::find()
-            ->status(Entry::STATUS_LIVE)
-            ->site('*')
-            ->sectionId($enabledSectionIds)
-            ->reviewerId($userId)
-            ->isVerified(false)
+        $rows = PluginQuery::expiredVerifiableElements(ElementType::enabledTypes(), $userId)
+            ->orderBy(['verifiedUntilDate' => SORT_ASC, 'title' => SORT_ASC])
             ->limit($this->limit)
             ->all();
 
-        if (empty($elements)) {
+        if (empty($rows)) {
             return Html::tag(
                 'div',
                 Craft::t(Plugin::HANDLE, "There's currently nothing to review."),
@@ -96,7 +91,11 @@ class ElementsToReview extends Widget
         }
 
         $templateVariables = [
-            'elements' => $elements,
+            'elements' => array_map(
+                static fn(array $row) => ElementData::fromArray($row),
+                $rows
+            ),
+            'typeLabels' => self::typeLabels(),
             'statusIndicator' => Cp::statusIndicatorHtml(
                 VerificationStatus::Expired->handle(),
                 ['color' => VerificationStatus::Expired->color()]
@@ -117,5 +116,25 @@ class ElementsToReview extends Widget
         }
 
         return null;
+    }
+
+
+    // PRIVATE HELPERS
+    // =============================================================================================
+
+    /**
+     * Maps element class names to translated display labels for the template's "Type" column.
+     *
+     * @return array<string, string>
+     */
+    private static function typeLabels(): array
+    {
+        $labels = [];
+        foreach (ElementType::enabledTypes() as $elementTypeName) {
+            /** @var class-string<\craft\base\Element> $elementTypeName */
+            $labels[$elementTypeName] = $elementTypeName::displayName();
+        }
+
+        return $labels;
     }
 }

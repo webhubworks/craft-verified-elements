@@ -1,10 +1,12 @@
+{# @var typeLabels array<string, string> #}
 {% set isMultiSite = craft.app.sites.allSites|filter(s => s.enabled)|length > 1 %}
 <div class="elementstoreview-container">
     <table class="ve-widget-table fullwidth">
         <thead>
         <tr>
             <th>{{ 'Title'|t('app') }}</th>
-            <th>{{ 'Section'|t('app') }}</th>
+            <th>{{ 'Type'|t('app') }}</th>
+            <th>{{ 'Found in'|t(pluginHandle) }}</th>
             {% if isMultiSite %}
                 <th>{{ 'Site'|t('app') }}</th>
             {% endif %}
@@ -13,16 +15,18 @@
         </thead>
         <tbody>
         {% for element in elements %}
+            {# @var element \webhubworks\verifiedelements\models\ElementData #}
             <tr>
                 <td>
                     {{ statusIndicator|raw }}
-                    <a href="{{ element.getCpEditUrl() }}">{{ element.title }}</a>
+                    <a href="{{ element.cpEditUrl }}">{{ element.title }}</a>
                 </td>
-                <td>{{ element.section.name }}</td>
+                <td>{{ typeLabels[element.type] }}</td>
+                <td>{{ element.containerName }}</td>
                 {% if isMultiSite %}
-                    <td class="light">{{ element.site.name }}</td>
+                    <td class="light">{{ element.siteName }}</td>
                 {% endif %}
-                <td class="light">{{ element.verifiedUntilDate|readableVerificationDate }}</td>
+                <td class="light">{{ element.getReadableVerifiedUntilDate() }}</td>
             </tr>
         {% endfor %}
         </tbody>
