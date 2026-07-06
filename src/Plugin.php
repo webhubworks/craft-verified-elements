@@ -4,10 +4,6 @@ namespace webhubworks\verifiedelements;
 
 use Craft;
 use craft\base\Plugin as BasePlugin;
-use craft\elements\Asset;
-use craft\elements\db\AssetQuery;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
 use craft\helpers\UrlHelper;
 use webhubworks\verifiedelements\enums\Edition;
 use webhubworks\verifiedelements\enums\Feature;
@@ -65,26 +61,18 @@ class Plugin extends BasePlugin
             $request->getIsConsoleRequest()
         );
 
-        $events->registerEarlyEvents();
+        $events->registerPluginEarlyInitEvents();
 
         Craft::$app->onInit(function() use ($events) {
-            $events->registerCraftComponents();
+            $events->registerPluginReadyEvents();
             $events->extendTwig();
 
             if (Feature::EntryVerification->isEnabled()) {
-//                $events->registerEntryEvents();
-                $events->registerBehaviors(Entry::class, EntryQuery::class);
-                $events->registerEntryLifecycle();
-                $events->registerIndexUi(Entry::class);
-                $events->registerEntryEditUi();
+                $events->registerEntryEvents();
             }
 
             if (Feature::AssetVerification->isEnabled()) {
-//                $events->registerAssetEvents();
-                $events->registerBehaviors(Asset::class, AssetQuery::class);
-                $events->registerAssetLifecycle();
-                $events->registerIndexUi(Asset::class);
-                $events->registerAssetEditUi();
+                $events->registerAssetEvents();
             }
         });
     }

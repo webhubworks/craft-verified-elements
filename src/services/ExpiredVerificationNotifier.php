@@ -16,7 +16,7 @@ use webhubworks\verifiedelements\models\ElementData;
  * Reviewers or the system email (if no Reviewer is assigned).
  *
  * @see CheckExpiredVerificationsController
- * @see EventRegistrar::registerEarlyEvents() // Gc::EVENT_RUN
+ * @see EventRegistrar::onRunGarbageCollection()
  */
 class ExpiredVerificationNotifier
 {

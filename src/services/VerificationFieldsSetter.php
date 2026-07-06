@@ -15,7 +15,8 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
  * Resolves the default Reviewer ID and "Verified until" date that should be applied to an
  * elements's verification fields before it is saved.
  *
- * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_BEFORE_SAVE
+ * @see EventRegistrar::onBeforeSaveAsset()
+ * @see EventRegistrar::onBeforeSaveEntry()
  * @see VerifiableBehavior::setReviewerId()
  * @see VerifiableBehavior::setVerifiedUntilDate()
  */

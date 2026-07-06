@@ -22,7 +22,8 @@ use yii\db\Exception;
  * Persists an element's verification state and notifies the assigned Reviewer when someone else
  * saves the element.
  *
- * @see EventRegistrar::registerEntryLifecycle() // Element::EVENT_AFTER_SAVE
+ * @see EventRegistrar::onAfterSaveAsset()
+ * @see EventRegistrar::onAfterSaveEntry()
  */
 class VerificationStateSynchronizer
 {

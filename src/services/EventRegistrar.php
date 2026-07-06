@@ -13,6 +13,8 @@ use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\entries\EntryCondition;
+use craft\elements\db\AssetQuery;
+use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\events\DefineAttributeHtmlEvent;
 use craft\events\DefineBehaviorsEvent;
@@ -59,6 +61,7 @@ use webhubworks\verifiedelements\models\UserRecipient;
 use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\widgets\ElementsToReviewWidget;
 use webhubworks\verifiedelements\widgets\VerificationHealthWidget;
+use yii\base\Exception;
 
 /**
  * Helper class for registering the plugin's event handlers.
@@ -73,7 +76,7 @@ readonly class EventRegistrar
     ) {}
 
 
-    // GLOBAL events
+    // PLUGIN EARLY INIT events
     // =============================================================================================
 
     /**
@@ -85,7 +88,7 @@ readonly class EventRegistrar
      * @see UrlManager::EVENT_REGISTER_CP_URL_RULES
      * @see Plugin::init()
      */
-    public function registerEarlyEvents(): void
+    public function registerPluginEarlyInitEvents(): void
     {
         if (! $this->isCpRequest && ! $this->isConsoleRequest) {
             return;
@@ -115,104 +118,150 @@ readonly class EventRegistrar
             );
         }
 
-        Event::on(
-            Gc::class,
-            Gc::EVENT_RUN,
-            static function () {
-
-                $service = new ExpiredVerificationNotifier(Dispatcher::TARGET_WEB);
-
-                foreach ($service->getExpiredElementsByReviewer() as $reviewerId => $expiredElements) {
-
-                    // 1. Find the Reviewer
-                    if (! $reviewer = $service->getReviewer($reviewerId)) {
-                        Log::warning(
-                            "Reviewer $reviewerId not found or inactive. Skipping expired notification.",
-                            __METHOD__
-                        );
-                        $service->reassignElementsToUnassigned($reviewerId);
-                        continue;
-                    }
-
-                    // 2. Notify the Reviewer
-                    $isSent = $service->notifyRecipient(
-                        new UserRecipient($reviewer),
-                        $expiredElements
-                    );
-
-                    if (! $isSent) {
-                        Log::warning(
-                            "Failed to send expired notification to User $reviewer->id.",
-                            __METHOD__
-                        );
-                    }
-                }
-
-                if (! $service->hasUnassignedExpiredElements()) {
-                    return;
-                }
-
-                // 1. Notify the system admin
-                $recipient = new SystemRecipient();
-                $isSent = $service->notifyRecipient(
-                    $recipient,
-                    $service->getUnassignedExpiredElements()
-                );
-
-                if (! $isSent) {
-                    Log::warning(
-                        "Failed to send expired notification to " . $recipient->getEmail() . '.',
-                        __METHOD__
-                    );
-                }
-            }
-        );
+        Event::on(Gc::class, Gc::EVENT_RUN, $this->onRunGarbageCollection(...));
 
         if (! $this->isCpRequest) {
             return;
         }
 
-        Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            static function (RegisterUrlRulesEvent $event) {
-                $currentUser = Craft::$app->getUser();
+        Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, $this->onRegisterCpUrlRules(...));
+    }
 
-                // Show the plugin's "Entries" page in the CP. The bare plugin handle is the
-                // landing page for the plugin's top-level nav link and renders the same page.
-                if (Feature::EntryVerification->isEnabled()) {
-                    $event->rules[Plugin::HANDLE] = Plugin::HANDLE . '/index/entries';
-                    $event->rules[Plugin::HANDLE . '/entries'] = Plugin::HANDLE . '/index/entries';
-                }
+    /**
+     * Emails each Reviewer a digest of their expired elements, and the system admin a digest
+     * of expired elements that have no Reviewer.
+     *
+     * @return void
+     * @see Gc::EVENT_RUN
+     * @see registerPluginEarlyInitEvents()
+     */
+    protected function onRunGarbageCollection(): void
+    {
+        $service = new ExpiredVerificationNotifier(Dispatcher::TARGET_WEB);
 
-                // Show the plugin's "Assets" page in the CP
-                if (Feature::AssetVerification->isEnabled()) {
-                    $event->rules[Plugin::HANDLE . '/assets'] = Plugin::HANDLE . '/index/assets';
-                }
+        foreach ($service->getExpiredElementsByReviewer() as $reviewerId => $expiredElements) {
 
-                // Expose the plugin's settings subpages. The bare settings path lands on the
-                // first subpage (entries), mirroring the plugin's top-level nav link.
-                if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
-                    $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/entries';
-                    $event->rules[Plugin::HANDLE . '/settings/entries'] = Plugin::HANDLE . '/settings/entries';
-                    $event->rules[Plugin::HANDLE . '/settings/subscription-plan'] = Plugin::HANDLE . '/settings/subscription-plan';
-
-                    if (Feature::AssetVerification->isEnabled()) {
-                        $event->rules[Plugin::HANDLE . '/settings/assets'] = Plugin::HANDLE . '/settings/assets';
-                    }
-                }
-
-                // Current user's account "Verified Elements" page showing their assigned elements to review
-                $event->rules['myaccount/' . Plugin::HANDLE] = Plugin::HANDLE . '/reviewers/index';
-                $event->rules['users/<userId:\d+>/' . Plugin::HANDLE] = Plugin::HANDLE . '/reviewers/index';
+            // 1. Find the Reviewer
+            if (! $reviewer = $service->getReviewer($reviewerId)) {
+                Log::warning(
+                    "Reviewer $reviewerId not found or inactive. Skipping expired notification.",
+                    __METHOD__
+                );
+                $service->reassignElementsToUnassigned($reviewerId);
+                continue;
             }
+
+            // 2. Notify the Reviewer
+            $isSent = $service->notifyRecipient(
+                new UserRecipient($reviewer),
+                $expiredElements
+            );
+
+            if (! $isSent) {
+                Log::warning(
+                    "Failed to send expired notification to User $reviewer->id.",
+                    __METHOD__
+                );
+            }
+        }
+
+        if (! $service->hasUnassignedExpiredElements()) {
+            return;
+        }
+
+        // 1. Notify the system admin
+        $recipient = new SystemRecipient();
+        $isSent = $service->notifyRecipient(
+            $recipient,
+            $service->getUnassignedExpiredElements()
         );
+
+        if (! $isSent) {
+            Log::warning(
+                "Failed to send expired notification to " . $recipient->getEmail() . '.',
+                __METHOD__
+            );
+        }
+    }
+
+    /**
+     * Registers the plugin's CP URL rules: the dashboard pages, the settings subpages, and the
+     * per-user account screens. Feature- and permission-gated.
+     *
+     * @param RegisterUrlRulesEvent $event
+     * @return void
+     * @see UrlManager::EVENT_REGISTER_CP_URL_RULES
+     * @see registerPluginEarlyInitEvents()
+     */
+    protected function onRegisterCpUrlRules(RegisterUrlRulesEvent $event): void
+    {
+        $currentUser = Craft::$app->getUser();
+
+        // Show the plugin's "Entries" page in the CP. The bare plugin handle is the
+        // landing page for the plugin's top-level nav link and renders the same page.
+        if (Feature::EntryVerification->isEnabled()) {
+            $event->rules[Plugin::HANDLE] = Plugin::HANDLE . '/index/entries';
+            $event->rules[Plugin::HANDLE . '/entries'] = Plugin::HANDLE . '/index/entries';
+        }
+
+        // Show the plugin's "Assets" page in the CP
+        if (Feature::AssetVerification->isEnabled()) {
+            $event->rules[Plugin::HANDLE . '/assets'] = Plugin::HANDLE . '/index/assets';
+        }
+
+        // Expose the plugin's settings subpages. The bare settings path lands on the
+        // first subpage (entries), mirroring the plugin's top-level nav link.
+        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
+            $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/entries';
+            $event->rules[Plugin::HANDLE . '/settings/entries'] = Plugin::HANDLE . '/settings/entries';
+            $event->rules[Plugin::HANDLE . '/settings/subscription-plan'] = Plugin::HANDLE . '/settings/subscription-plan';
+
+            if (Feature::AssetVerification->isEnabled()) {
+                $event->rules[Plugin::HANDLE . '/settings/assets'] = Plugin::HANDLE . '/settings/assets';
+            }
+        }
+
+        // Current user's account "Verified Elements" page showing their assigned elements to review
+        $event->rules['myaccount/' . Plugin::HANDLE] = Plugin::HANDLE . '/reviewers/index';
+        $event->rules['users/<userId:\d+>/' . Plugin::HANDLE] = Plugin::HANDLE . '/reviewers/index';
+    }
+
+
+    // PLUGIN READY events
+    // =============================================================================================
+
+    /**
+     * Events that register plugin features into Craft's various systems.
+     *
+     * @return void
+     * @see Elements::EVENT_REGISTER_ELEMENT_TYPES
+     * @see UserPermissions::EVENT_REGISTER_PERMISSIONS
+     * @see Dashboard::EVENT_REGISTER_WIDGET_TYPES
+     * @see UsersController::EVENT_DEFINE_EDIT_SCREENS
+     * @see Plugin::init()
+     */
+    public function registerPluginReadyEvents(): void
+    {
+        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
+            return;
+        }
+
+        Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, $this->onRegisterElementTypes(...));
+
+        if (! $this->isCpRequest) {
+            return;
+        }
+
+        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS, $this->onRegisterUserPermissions(...));
+        Event::on(Dashboard::class, Dashboard::EVENT_REGISTER_WIDGET_TYPES, $this->onRegisterWidgets(...));
+        Event::on(UsersController::class, UsersController::EVENT_DEFINE_EDIT_SCREENS, $this->onDefineEditScreens(...));
     }
 
     /**
      * Extend Twig for the plugin's needs.
      *
      * @return void
+     * @see Plugin::init()
      */
     public function extendTwig(): void
     {
@@ -229,82 +278,588 @@ readonly class EventRegistrar
     }
 
     /**
-     * Events that register plugin features into Craft's various systems.
+     * Registers the plugin's element types (the dashboard index subtypes) per enabled feature.
      *
+     * @param RegisterComponentTypesEvent $event
      * @return void
      * @see Elements::EVENT_REGISTER_ELEMENT_TYPES
-     * @see UserPermissions::EVENT_REGISTER_PERMISSIONS
-     * @see Dashboard::EVENT_REGISTER_WIDGET_TYPES
-     * @see UsersController::EVENT_DEFINE_EDIT_SCREENS
+     * @see registerPluginReadyEvents()
      */
-    public function registerCraftComponents(): void
+    protected function onRegisterElementTypes(RegisterComponentTypesEvent $event): void
     {
-        if ($this->isCpRequest || $this->isConsoleRequest) {
-            Event::on(
-                Elements::class,
-                Elements::EVENT_REGISTER_ELEMENT_TYPES,
-                static function (RegisterComponentTypesEvent $event) {
-                    if (Feature::EntryVerification->isEnabled()) {
-                        $event->types[] = VerifiedEntry::class;
-                    }
-
-                    if (Feature::AssetVerification->isEnabled()) {
-                        $event->types[] = VerifiedAsset::class;
-                    }
-                }
-            );
+        if (Feature::EntryVerification->isEnabled()) {
+            $event->types[] = VerifiedEntry::class;
         }
 
-        if (! $this->isCpRequest) {
+        if (Feature::AssetVerification->isEnabled()) {
+            $event->types[] = VerifiedAsset::class;
+        }
+    }
+
+    /**
+     * Adds the plugin's permission group to Craft's user permissions.
+     *
+     * @param RegisterUserPermissionsEvent $event
+     * @return void
+     * @see UserPermissions::EVENT_REGISTER_PERMISSIONS
+     * @see registerPluginReadyEvents()
+     */
+    protected function onRegisterUserPermissions(RegisterUserPermissionsEvent $event): void
+    {
+        $event->permissions[] = [
+            'heading' => Craft::t(Plugin::HANDLE, 'Verified Elements'),
+            'permissions' => [
+                Permission::ManageVerificationSettings->value => [
+                    'label' => Craft::t(Plugin::HANDLE, 'Manage Verification Settings'),
+                ],
+                Permission::VerifyEntries->value => [
+                    'label' => Craft::t(Plugin::HANDLE, 'Verify entries'),
+                ]
+            ],
+        ];
+    }
+
+    /**
+     * Registers the plugin's dashboard widgets. The personal review widget only appears for
+     * users who are allowed to verify.
+     *
+     * @param RegisterComponentTypesEvent $event
+     * @return void
+     * @see Dashboard::EVENT_REGISTER_WIDGET_TYPES
+     * @see registerPluginReadyEvents()
+     */
+    protected function onRegisterWidgets(RegisterComponentTypesEvent $event): void
+    {
+        $event->types[] = VerificationHealthWidget::class;
+
+        $currentUser = Craft::$app->getUser();
+        if ($currentUser->checkPermission(Permission::VerifyEntries->value)) {
+            $event->types[] = ElementsToReviewWidget::class;
+        }
+    }
+
+    /**
+     * Adds the "Verified Elements" screen to the account pages of users who can verify.
+     *
+     * @param DefineEditUserScreensEvent $event
+     * @return void
+     * @see UsersController::EVENT_DEFINE_EDIT_SCREENS
+     * @see registerPluginReadyEvents()
+     */
+    protected function onDefineEditScreens(DefineEditUserScreensEvent $event): void
+    {
+        if (! $event->editedUser->can(Permission::VerifyEntries->value)) {
             return;
         }
 
-        Event::on(
-            UserPermissions::class,
-            UserPermissions::EVENT_REGISTER_PERMISSIONS,
-            static function (RegisterUserPermissionsEvent $event) {
-                $event->permissions[] = [
-                    'heading' => Craft::t(Plugin::HANDLE, 'Verified Elements'),
-                    'permissions' => [
-                        Permission::ManageVerificationSettings->value => [
-                            'label' => Craft::t(Plugin::HANDLE, 'Manage Verification Settings'),
-                        ],
-                        Permission::VerifyEntries->value => [
-                            'label' => Craft::t(Plugin::HANDLE, 'Verify entries'),
-                        ]
-                    ],
-                ];
-            }
-        );
-
-        Event::on(
-            Dashboard::class,
-            Dashboard::EVENT_REGISTER_WIDGET_TYPES,
-            static function (RegisterComponentTypesEvent $event) {
-                $currentUser = Craft::$app->getUser();
-
-                $event->types[] = VerificationHealthWidget::class;
-
-                if ($currentUser->checkPermission(Permission::VerifyEntries->value)) {
-                    $event->types[] = ElementsToReviewWidget::class;
-                }
-            }
-        );
-
-        Event::on(
-            UsersController::class,
-            UsersController::EVENT_DEFINE_EDIT_SCREENS,
-            static function (DefineEditUserScreensEvent $event) {
-                if (! $event->editedUser->can(Permission::VerifyEntries->value)) {
-                    return;
-                }
-
-                $event->screens[Plugin::HANDLE] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verified Elements'),
-                ];
-            }
-        );
+        $event->screens[Plugin::HANDLE] = [
+            'label' => Craft::t(Plugin::HANDLE, 'Verified Elements'),
+        ];
     }
+
+
+    // ENTRY events
+    // =============================================================================================
+
+    /**
+     * Registers every event that makes entries verifiable: behaviors, save lifecycle, index UI,
+     * and edit-page UI.
+     *
+     * Entry condition rules and the plugin's CP URL rules are registered separately in
+     * registerPluginInitEvents() because they must attach before Craft::$app->onInit() runs.
+     *
+     * @return void
+     * @see Plugin::init()
+     */
+    public function registerEntryEvents(): void
+    {
+        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
+            return;
+        }
+
+        // element CRUD operations and lifecycle
+        $this->registerElementBehaviors(Entry::class, EntryQuery::class);
+        Event::on(Entry::class, Element::EVENT_BEFORE_SAVE, $this->onBeforeSaveEntry(...));
+        if (! $this->isCpRequest) {
+            return;
+        }
+        Event::on(Entry::class, Element::EVENT_AFTER_SAVE, $this->onAfterSaveEntry(...));
+
+        // "element index" pages
+        Event::on(Entry::class, Element::EVENT_REGISTER_SORT_OPTIONS, $this->onRegisterElementIndexSortOptions(...));
+        Event::on(Entry::class, Element::EVENT_REGISTER_ACTIONS, $this->onRegisterElementIndexActions(...));
+        Event::on(Entry::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, $this->onRegisterElementIndexTableAttributes(...));
+        Event::on(Entry::class, Element::EVENT_DEFINE_ATTRIBUTE_HTML, $this->onDefineElementIndexAttributeHtml(...));
+
+        // element "edit" pages
+        Event::on(Entry::class, Element::EVENT_DEFINE_METADATA, $this->onDefineEntryMetadata(...));
+        Event::on(Entry::class, Element::EVENT_DEFINE_SIDEBAR_HTML, $this->onDefineEntrySidebarHtml(...));
+        Event::on(Entry::class, Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $this->onDefineEntryInlineInputHtml(...));
+    }
+
+    /**
+     * Resolves the entry's default Reviewer and "Verified until" date before it saves.
+     *
+     * @param ModelEvent $event
+     * @return void
+     * @see Element::EVENT_BEFORE_SAVE
+     * @see registerEntryEvents()
+     */
+    protected function onBeforeSaveEntry(ModelEvent $event): void
+    {
+        /** @var Entry|VerifiableBehavior $entry */
+        $entry = $event->sender;
+
+        // Skip for propagation, matrix entries, drafts, and revisions.
+        if ($entry->propagating || $entry->sectionId === null) {
+            return;
+        }
+
+        // Before an entry saves, set the Reviewer ID and "Verified until" date in
+        // the entry's behavior class.
+        $service = VerificationFieldsSetter::fromElement(
+            $entry,
+            $this->plugin->getPluginSettings()
+        );
+
+        $service->updateElementFields($entry);
+    }
+
+    /**
+     * Persists the entry's verification state across its sites and notifies its Reviewer of
+     * the change.
+     *
+     * @param ModelEvent $event
+     * @return void
+     * @throws Exception
+     * @see Element::EVENT_AFTER_SAVE
+     * @see registerEntryEvents()
+     */
+    protected function onAfterSaveEntry(ModelEvent $event): void
+    {
+        /** @var Entry|VerifiableBehavior $entry */
+        $entry = $event->sender;
+
+        // Matrix entries have no section and are never verifiable.
+        if ($entry->sectionId === null) {
+            return;
+        }
+
+        $settings = $this->plugin->getPluginSettings();
+        $isSectionEnabledForSite = $settings->isContainerEnabledForSite(
+            $entry->sectionId,
+            $entry->siteId,
+            Entry::class
+        );
+        if (! $isSectionEnabledForSite) {
+            return;
+        }
+
+        // Existing drafts and revisions never sync verification state.
+        if (ElementHelper::isDraftOrRevision($entry) && ! $event->isNew) {
+            return;
+        }
+
+        // Returns a list of sites in which this entry is enabled.
+        $supportedSiteIds = array_column(
+            ElementHelper::supportedSitesForElement($entry),
+            'siteId'
+        );
+
+        // The service worker that will keep the entry synced across its supported sites
+        // and handle consequences from changes to it.
+        $service = new VerificationStateSynchronizer(
+            ElementData::fromElement($entry),
+            $supportedSiteIds,
+            $entry->enabled,
+            $settings,
+            Craft::$app->getUser()->getId()
+        );
+
+        // Since this is a new entry, and the entry is still a draft/revision, write a
+        // verification record in the db for its canonical ID on the current site. No
+        // further actions are needed until the entry is officially saved.
+        if (ElementHelper::isDraftOrRevision($entry)) {
+            $service->saveVerificationRecord();
+            return;
+        }
+
+        // On a multi-site save, Craft re-fires AFTER_SAVE for each site this entry is
+        // enabled in when it propagates the entry's data across its site-counterparts.
+        // It's possible the record for whichever site is getting saved right now doesn't
+        // yet exist. If it doesn't, create it and exit.
+        if ($entry->propagating) {
+            $service->ensurePropagatedRecord();
+            return;
+        }
+
+        // Handle everything else for the existing entry when it's saved normally.
+        $service->saveVerificationRecord();
+        $service->ensureOtherSiteRecords();
+        $service->notifyReviewerOnChange();
+    }
+
+    /**
+     * Adds the entry's verification status to the edit page's metadata list.
+     *
+     * @param DefineMetadataEvent $event
+     * @return void
+     * @see Element::EVENT_DEFINE_METADATA
+     * @see registerEntryEvents()
+     */
+    protected function onDefineEntryMetadata(DefineMetadataEvent $event): void
+    {
+        /** @var Entry|VerifiableBehavior $entry */
+        $entry = $event->sender;
+
+        $status = $entry->getVerificationStatus();
+        $statusHtml = Cp::statusIndicatorHtml(
+            $status->handle(),
+            ['color' => $status->color()]
+        );
+        $statusHtml .= Html::tag('span', $status->label());
+
+        $event->metadata[Craft::t(Plugin::HANDLE, 'Verification')] = $statusHtml;
+    }
+
+    /**
+     * Appends the plugin's verification sidebar to the entry's edit page.
+     *
+     * @param DefineHtmlEvent $event
+     * @return void
+     * @see Element::EVENT_DEFINE_SIDEBAR_HTML
+     * @see registerEntryEvents()
+     */
+    protected function onDefineEntrySidebarHtml(DefineHtmlEvent $event): void
+    {
+        $currentUser = Craft::$app->getUser();
+        if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+            return;
+        }
+
+        /** @var Entry|VerifiableBehavior $entry */
+        $entry = $event->sender;
+        if ($entry->sectionId === null) {
+            return;
+        }
+
+        $settings = $this->plugin->getPluginSettings();
+        $isSectionEnabled = $settings->isContainerEnabledForSite(
+            $entry->sectionId,
+            $entry->siteId,
+            Entry::class
+        );
+
+        if (! $isSectionEnabled) {
+            return;
+        }
+
+        $event->html .= (new CpEditSidebarRenderer($entry, $settings))->buildHtml();
+    }
+
+    /**
+     * Renders the Reviewer and "Verified until" inputs for inline editing on entry indexes.
+     *
+     * @param DefineAttributeHtmlEvent $event
+     * @return void
+     * @see Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML
+     * @see registerEntryEvents()
+     */
+    protected function onDefineEntryInlineInputHtml(DefineAttributeHtmlEvent $event): void
+    {
+        /** @var Entry|VerifiableBehavior $entry */
+        $entry = $event->sender;
+
+        /** @noinspection DuplicatedCode */
+        $currentUser = Craft::$app->getUser();
+        $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
+
+        $service = new VerificationFieldsRenderer(
+            $entry,
+            $canVerifyEntries,
+            $this->plugin->getPluginSettings()
+        );
+
+        if ($event->attribute === 'reviewer') {
+            $event->html = $service->buildReviewerFieldHtml();
+        }
+        elseif ($event->attribute === 'verifiedUntilDate') {
+            $event->html = $service->buildVerifiedUntilDateFieldHtml();
+        }
+    }
+
+
+    // ASSET events
+    // =============================================================================================
+
+    /**
+     * Registers every event that makes assets verifiable: behaviors, save lifecycle, index UI,
+     * and edit-page UI.
+     *
+     * Asset condition rules are registered separately in registerPluginInitEvents() because
+     * they must attach before Craft::$app->onInit() runs.
+     *
+     * @return void
+     * @see Plugin::init()
+     */
+    public function registerAssetEvents(): void
+    {
+        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
+            return;
+        }
+
+        // element CRUD operations and lifecycle
+        $this->registerElementBehaviors(Asset::class, AssetQuery::class);
+        Event::on(Asset::class, Element::EVENT_BEFORE_SAVE, $this->onBeforeSaveAsset(...));
+        if (! $this->isCpRequest) {
+            return;
+        }
+        Event::on(Asset::class, Element::EVENT_AFTER_SAVE, $this->onAfterSaveAsset(...));
+
+        // "element index" pages
+        Event::on(Asset::class, Element::EVENT_REGISTER_SORT_OPTIONS, $this->onRegisterElementIndexSortOptions(...));
+        Event::on(Asset::class, Element::EVENT_REGISTER_ACTIONS, $this->onRegisterElementIndexActions(...));
+        Event::on(Asset::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, $this->onRegisterElementIndexTableAttributes(...));
+        Event::on(Asset::class, Element::EVENT_DEFINE_ATTRIBUTE_HTML, $this->onDefineElementIndexAttributeHtml(...));
+
+        // element "edit" pages
+        Event::on(Asset::class, Element::EVENT_DEFINE_METADATA, $this->onDefineAssetMetadata(...));
+        Event::on(Asset::class, Element::EVENT_DEFINE_SIDEBAR_HTML, $this->onDefineAssetSidebarHtml(...));
+        Event::on(Asset::class, Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML, $this->onDefineAssetInlineInputHtml(...));
+    }
+
+    /**
+     * Resolves the asset's default Reviewer and "Verified until" date before it saves, and
+     * stashes whether its alt text changed for onAfterSaveAsset() to read.
+     *
+     * @param ModelEvent $event
+     * @return void
+     * @see Element::EVENT_BEFORE_SAVE
+     * @see registerAssetEvents()
+     */
+    protected function onBeforeSaveAsset(ModelEvent $event): void
+    {
+        /** @var Asset|VerifiableBehavior $asset */
+        $asset = $event->sender;
+
+        // Skip for propagation, folders, and temporary uploads (no volume yet).
+        if ($asset->propagating || $asset->isFolder || $asset->volumeId === null) {
+            return;
+        }
+
+        // Before an asset saves, set the Reviewer ID and "Verified until" date in
+        // the asset's behavior class.
+        $service = VerificationFieldsSetter::fromElement(
+            $asset,
+            $this->plugin->getPluginSettings()
+        );
+
+        $service->updateElementFields($asset);
+
+        // A new asset has no stored alt text to compare against.
+        if ($event->isNew) {
+            return;
+        }
+
+        // Assets never mark dirty attributes, so detect an alt-text change by
+        // comparing the incoming value against the stored one, and stash the result
+        // on the behavior for onAfterSaveAsset() to read. The live per-site value lives
+        // in `assets_sites`; `assets.alt` is only a canonical fallback.
+        $storedAlt = (new Query())
+            ->select('alt')
+            ->from(Table::ASSETS_SITES)
+            ->where([
+                'assetId' => $asset->id,
+                'siteId' => $asset->siteId,
+            ])
+            ->scalar();
+
+        // No row for this site yet, so there's no stored value.
+        if ($storedAlt === false) {
+            $storedAlt = null;
+        }
+
+        $asset->altChanged = $asset->alt !== $storedAlt;
+    }
+
+    /**
+     * Persists the asset's verification state across its sites and notifies its Reviewer when
+     * the file was replaced or its alt text changed.
+     *
+     * @param ModelEvent $event
+     * @return void
+     * @throws Exception
+     * @see Element::EVENT_AFTER_SAVE
+     * @see registerAssetEvents()
+     */
+    protected function onAfterSaveAsset(ModelEvent $event): void
+    {
+        /** @var Asset|VerifiableBehavior $asset */
+        $asset = $event->sender;
+
+        // Folders and temporary uploads (no volume yet) are never verifiable.
+        if ($asset->isFolder || $asset->volumeId === null) {
+            return;
+        }
+
+        $settings = $this->plugin->getPluginSettings();
+        $isVolumeEnabledForSite = $settings->isContainerEnabledForSite(
+            $asset->volumeId,
+            $asset->siteId,
+            Asset::class
+        );
+        if (! $isVolumeEnabledForSite) {
+            return;
+        }
+
+        // Note: assets have no drafts or revisions, so the entry lifecycle's
+        // draft/revision handling has no asset equivalent.
+
+        // Returns a list of sites in which this asset is enabled.
+        $supportedSiteIds = array_column(
+            ElementHelper::supportedSitesForElement($asset),
+            'siteId'
+        );
+
+        // The service worker that will keep the asset synced across its supported sites
+        // and handle consequences from changes to it.
+        $service = new VerificationStateSynchronizer(
+            ElementData::fromElement($asset),
+            $supportedSiteIds,
+            $asset->enabled,
+            $settings,
+            Craft::$app->getUser()->getId()
+        );
+
+        // On a multi-site save, Craft re-fires AFTER_SAVE for each site this asset is
+        // enabled in when it propagates the asset's data across its site-counterparts.
+        // It's possible the record for whichever site is getting saved right now doesn't
+        // yet exist. If it doesn't, create it and exit.
+        if ($asset->propagating) {
+            $service->ensurePropagatedRecord();
+            return;
+        }
+
+        $service->saveVerificationRecord();
+        $service->ensureOtherSiteRecords();
+
+        // Assets also fire saves for moves, renames, focal-point changes, and indexing.
+        // Only a file replacement or an alt-text change is a content change the Reviewer
+        // should hear about.
+
+        $isContentChange =
+            $asset->getScenario() === Asset::SCENARIO_REPLACE ||
+            $asset->altChanged;
+
+        if ($isContentChange) {
+            $service->notifyReviewerOnChange();
+        }
+    }
+
+    /**
+     * Adds the asset's verification status to the edit page's metadata list.
+     *
+     * @param DefineMetadataEvent $event
+     * @return void
+     * @see Element::EVENT_DEFINE_METADATA
+     * @see registerAssetEvents()
+     */
+    protected function onDefineAssetMetadata(DefineMetadataEvent $event): void
+    {
+        /** @var Asset|VerifiableBehavior $asset */
+        $asset = $event->sender;
+
+        // Folders and temporary uploads (no volume yet) are never verifiable.
+        if ($asset->isFolder || $asset->volumeId === null) {
+            return;
+        }
+
+        $status = $asset->getVerificationStatus();
+        $statusHtml = Cp::statusIndicatorHtml(
+            $status->handle(),
+            ['color' => $status->color()]
+        );
+        $statusHtml .= Html::tag('span', $status->label());
+
+        $event->metadata[Craft::t(Plugin::HANDLE, 'Verification')] = $statusHtml;
+    }
+
+    /**
+     * Appends the plugin's verification sidebar to the asset's edit page.
+     *
+     * @param DefineHtmlEvent $event
+     * @return void
+     * @see Element::EVENT_DEFINE_SIDEBAR_HTML
+     * @see registerAssetEvents()
+     */
+    protected function onDefineAssetSidebarHtml(DefineHtmlEvent $event): void
+    {
+        $currentUser = Craft::$app->getUser();
+        if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+            return;
+        }
+
+        /** @var Asset|VerifiableBehavior $asset */
+        $asset = $event->sender;
+
+        // Folders and temporary uploads (no volume yet) are never verifiable.
+        if ($asset->isFolder || $asset->volumeId === null) {
+            return;
+        }
+
+        $settings = $this->plugin->getPluginSettings();
+        $isVolumeEnabled = $settings->isContainerEnabledForSite(
+            $asset->volumeId,
+            $asset->siteId,
+            Asset::class
+        );
+
+        if (! $isVolumeEnabled) {
+            return;
+        }
+
+        $event->html .= (new CpEditSidebarRenderer($asset, $settings))->buildHtml();
+    }
+
+    /**
+     * Renders the Reviewer and "Verified until" inputs for inline editing on asset indexes.
+     *
+     * @param DefineAttributeHtmlEvent $event
+     * @return void
+     * @see Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML
+     * @see registerAssetEvents()
+     */
+    protected function onDefineAssetInlineInputHtml(DefineAttributeHtmlEvent $event): void
+    {
+        /** @var Asset|VerifiableBehavior $asset */
+        $asset = $event->sender;
+
+        // Folders and temporary uploads (no volume yet) are never verifiable.
+        if ($asset->isFolder || $asset->volumeId === null) {
+            return;
+        }
+
+        /** @noinspection DuplicatedCode */
+        $currentUser = Craft::$app->getUser();
+        $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
+
+        $service = new VerificationFieldsRenderer(
+            $asset,
+            $canVerifyEntries,
+            $this->plugin->getPluginSettings()
+        );
+
+        if ($event->attribute === 'reviewer') {
+            $event->html = $service->buildReviewerFieldHtml();
+        }
+        elseif ($event->attribute === 'verifiedUntilDate') {
+            $event->html = $service->buildVerifiedUntilDateFieldHtml();
+        }
+    }
+
+
+    // (SHARED) ELEMENT events
+    // =============================================================================================
 
     /**
      * Events that define what an element is at the Model level.
@@ -315,13 +870,11 @@ readonly class EventRegistrar
      * @see Model::EVENT_DEFINE_RULES
      * @see Model::EVENT_DEFINE_BEHAVIORS
      * @see Query::EVENT_DEFINE_BEHAVIORS
+     * @see registerAssetEvents()
+     * @see registerEntryEvents()
      */
-    public function registerBehaviors(string $elementClass, string $queryClass): void
+    protected function registerElementBehaviors(string $elementClass, string $queryClass): void
     {
-        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
-            return;
-        }
-
         Event::on(
             $elementClass,
             Model::EVENT_DEFINE_RULES,
@@ -348,540 +901,111 @@ readonly class EventRegistrar
         );
     }
 
-
     /**
-     * Events that affect how verifiable elements appear and behave in the CP's element indexes.
+     * Adds the "Verified until" sort option to element indexes.
      *
-     * @param string $elementClass
+     * @param RegisterElementSortOptionsEvent $event
      * @return void
      * @see Element::EVENT_REGISTER_SORT_OPTIONS
+     * @see registerAssetEvents()
+     * @see registerEntryEvents()
+     */
+    protected function onRegisterElementIndexSortOptions(RegisterElementSortOptionsEvent $event): void
+    {
+        $event->sortOptions[] = [
+            'label' => Craft::t(Plugin::HANDLE, 'Verified until'),
+            'orderBy' => 'verifiedUntilDate',
+            'defaultDir' => 'desc',
+        ];
+    }
+
+    /**
+     * Adds the "Verify" and "Assign Reviewer" bulk actions to element indexes for users who
+     * are allowed to verify.
+     *
+     * @param RegisterElementActionsEvent $event
+     * @return void
      * @see Element::EVENT_REGISTER_ACTIONS
+     * @see registerAssetEvents()
+     * @see registerEntryEvents()
+     */
+    protected function onRegisterElementIndexActions(RegisterElementActionsEvent $event): void
+    {
+        $currentUser = Craft::$app->getUser();
+
+        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+            $event->actions[] = VerifyElement::class;
+            $event->actions[] = AssignReviewer::class;
+        }
+    }
+
+    /**
+     * Adds the plugin's columns ("Verified until", "Verification", "Reviewer") to element
+     * indexes.
+     *
+     * @param RegisterElementTableAttributesEvent $event
+     * @return void
      * @see Element::EVENT_REGISTER_TABLE_ATTRIBUTES
+     * @see registerAssetEvents()
+     * @see registerEntryEvents()
+     */
+    protected function onRegisterElementIndexTableAttributes(RegisterElementTableAttributesEvent $event): void
+    {
+        $event->tableAttributes['verifiedUntilDate'] = [
+            'label' => Craft::t(Plugin::HANDLE, 'Verified until')
+        ];
+
+        $event->tableAttributes['isVerified'] = [
+            'label' => Craft::t(Plugin::HANDLE, 'Verification'),
+        ];
+
+        $event->tableAttributes['reviewer'] = [
+            'label' => Craft::t(Plugin::HANDLE, 'Reviewer'),
+        ];
+    }
+
+    /**
+     * Renders the values of the plugin's columns on element indexes.
+     *
+     * @param DefineAttributeHtmlEvent $event
+     * @return void
      * @see Element::EVENT_DEFINE_ATTRIBUTE_HTML
+     * @see registerAssetEvents()
+     * @see registerEntryEvents()
      */
-    public function registerIndexUi(string $elementClass): void
+    protected function onDefineElementIndexAttributeHtml(DefineAttributeHtmlEvent $event): void
     {
-        if (! $this->isCpRequest) {
+        /** @var Element|VerifiableBehavior $element */
+        $element = $event->sender;
+
+        if ($event->attribute === 'isVerified') {
+            $status = $element->getVerificationStatus();
+            $event->html = Cp::statusLabelHtml([
+                'color' => $status->color(),
+                'label' => $status->label(),
+            ]);
             return;
         }
 
-        Event::on(
-            $elementClass,
-            Element::EVENT_REGISTER_SORT_OPTIONS,
-            static function (RegisterElementSortOptionsEvent $event) {
-                $event->sortOptions[] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verified until'),
-                    'orderBy' => 'verifiedUntilDate',
-                    'defaultDir' => 'desc',
-                ];
+        if ($event->attribute === 'verifiedUntilDate') {
+            $event->html = DateHelper::readableVerificationDate($element->getVerifiedUntilDate());
+            return;
+        }
+
+        if ($event->attribute === 'reviewer') {
+            if ($reviewer = $element->getReviewer()) {
+                $event->html = Cp::elementChipHtml($reviewer);
+                return;
             }
-        );
 
-        Event::on(
-            $elementClass,
-            Element::EVENT_REGISTER_ACTIONS,
-            static function (RegisterElementActionsEvent $event) {
-                $currentUser = Craft::$app->getUser();
-
-                if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value)) {
-                    $event->actions[] = VerifyElement::class;
-                    $event->actions[] = AssignReviewer::class;
-                }
-            }
-        );
-
-        Event::on(
-            $elementClass,
-            Element::EVENT_REGISTER_TABLE_ATTRIBUTES,
-            static function (RegisterElementTableAttributesEvent $event) {
-                $event->tableAttributes['verifiedUntilDate'] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verified until')
-                ];
-
-                $event->tableAttributes['isVerified'] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verification'),
-                ];
-
-                $event->tableAttributes['reviewer'] = [
-                    'label' => Craft::t(Plugin::HANDLE, 'Reviewer'),
-                ];
-            }
-        );
-
-        Event::on(
-            $elementClass,
-            Element::EVENT_DEFINE_ATTRIBUTE_HTML,
-            static function (DefineAttributeHtmlEvent $event) {
-                /** @var Element|VerifiableBehavior $element */
-                $element = $event->sender;
-
-                switch ($event->attribute) {
-                    case "isVerified":
-                        $status = $element->getVerificationStatus();
-                        $event->html = Cp::statusLabelHtml([
-                            'color' => $status->color(),
-                            'label' => $status->label(),
-                        ]);
-                        break;
-
-                    case "verifiedUntilDate":
-                        $event->html = DateHelper::readableVerificationDate($element->getVerifiedUntilDate());
-                        break;
-
-                    case "reviewer":
-                        $reviewer = $element->getReviewer();
-                        if ($reviewer) {
-                            $event->html = Cp::elementChipHtml($reviewer);
-                        }
-                        else {
-                            $event->html = Html::tag(
-                                'span',
-                                Craft::t(Plugin::HANDLE, 'Unassigned'),
-                                [
-                                    'class' => 'light',
-                                    'style' => ['font-style' => 'italic'],
-                                ]
-                            );
-                        }
-                        break;
-                }
-            }
-        );
-    }
-
-
-    // ENTRY events
-    // =============================================================================================
-
-    /**
-     * Events that run during CRUD operations on entries.
-     *
-     * @return void
-     * @see Entry::EVENT_BEFORE_SAVE
-     * @see Entry::EVENT_AFTER_SAVE
-     */
-    public function registerEntryLifecycle(): void
-    {
-        if ($this->isCpRequest || $this->isConsoleRequest) {
-            Event::on(
-                Entry::class,
-                Element::EVENT_BEFORE_SAVE,
-                function (ModelEvent $event) {
-                    /** @var Entry|VerifiableBehavior $entry */
-                    $entry = $event->sender;
-
-                    // Skip for propagation, matrix entries, drafts, and revisions.
-                    if (
-                        $entry->propagating ||
-                        $entry->sectionId === null
-                    ) {
-                        return;
-                    }
-
-                    // Before an entry saves, set the Reviewer ID and "Verified until" date in
-                    // the entry's behavior class.
-                    $service = VerificationFieldsSetter::fromElement(
-                        $entry,
-                        $this->plugin->getPluginSettings()
-                    );
-
-                    $service->updateElementFields($entry);
-                }
+            $event->html = Html::tag(
+                'span',
+                Craft::t(Plugin::HANDLE, 'Unassigned'),
+                [
+                    'class' => 'light',
+                    'style' => ['font-style' => 'italic'],
+                ]
             );
         }
-
-        if (! $this->isCpRequest) {
-            return;
-        }
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_AFTER_SAVE,
-            function (ModelEvent $event) {
-                /** @var Entry|VerifiableBehavior $entry */
-                $entry = $event->sender;
-
-                // Matrix entries have no section and are never verifiable.
-                if ($entry->sectionId === null) {
-                    return;
-                }
-
-                $settings = $this->plugin->getPluginSettings();
-                $isSectionEnabledForSite = $settings->isContainerEnabledForSite(
-                    $entry->sectionId,
-                    $entry->siteId,
-                    Entry::class
-                );
-                if (! $isSectionEnabledForSite) {
-                    return;
-                }
-
-                // Existing drafts and revisions never sync verification state.
-                if (ElementHelper::isDraftOrRevision($entry) && ! $event->isNew) {
-                    return;
-                }
-
-                // Returns a list of sites in which this entry is enabled.
-                $supportedSiteIds = array_column(
-                    ElementHelper::supportedSitesForElement($entry),
-                    'siteId'
-                );
-
-                // The service worker that will keep the entry synced across its supported sites
-                // and handle consequences from changes to it.
-                $service = new VerificationStateSynchronizer(
-                    ElementData::fromElement($entry),
-                    $supportedSiteIds,
-                    $entry->enabled,
-                    $settings,
-                    Craft::$app->getUser()->getId()
-                );
-
-                // Since this is a new entry, and the entry is still a draft/revision, write a
-                // verification record in the db for its canonical ID on the current site. No
-                // further actions are needed until the entry is officially saved.
-                if (ElementHelper::isDraftOrRevision($entry)) {
-                    $service->saveVerificationRecord();
-                    return;
-                }
-
-                // On a multi-site save, Craft re-fires AFTER_SAVE for each site this entry is
-                // enabled in when it propagates the entry's data across its site-counterparts.
-                // It's possible the record for whichever site is getting saved right now doesn't
-                // yet exist. If it doesn't, create it and exit.
-                if ($entry->propagating) {
-                    $service->ensurePropagatedRecord();
-                    return;
-                }
-
-                // Handle everything else for the existing entry when it's saved normally.
-                $service->saveVerificationRecord();
-                $service->ensureOtherSiteRecords();
-                $service->notifyReviewerOnChange();
-            }
-        );
-    }
-
-    /**
-     * Events that affect an entry's "Edit" page in the CP.
-     *
-     * @return void
-     * @see Element::EVENT_DEFINE_METADATA
-     * @see Element::EVENT_DEFINE_SIDEBAR_HTML
-     * @see Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML
-     */
-    public function registerEntryEditUi(): void
-    {
-        if (! $this->isCpRequest) {
-            return;
-        }
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_DEFINE_METADATA,
-            static function (DefineMetadataEvent $event) {
-                /** @var Entry|VerifiableBehavior $entry */
-                $entry = $event->sender;
-
-                $status = $entry->getVerificationStatus();
-                $statusHtml = Cp::statusIndicatorHtml(
-                    $status->handle(),
-                    ['color' => $status->color()]
-                );
-                $statusHtml .= Html::tag('span', $status->label());
-
-                $event->metadata[Craft::t(Plugin::HANDLE, 'Verification')] = $statusHtml;
-            }
-        );
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_DEFINE_SIDEBAR_HTML,
-            function (DefineHtmlEvent $event) {
-                $currentUser = Craft::$app->getUser();
-                if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
-                    return;
-                }
-
-                /** @var Entry|VerifiableBehavior $entry */
-                $entry = $event->sender;
-                if ($entry->sectionId === null) {
-                    return;
-                }
-
-                $settings = $this->plugin->getPluginSettings();
-                $isSectionEnabled = $settings->isContainerEnabledForSite(
-                    $entry->sectionId,
-                    $entry->siteId,
-                    Entry::class
-                );
-                if (! $isSectionEnabled) {
-                    return;
-                }
-
-                $event->html .= (new CpEditSidebarRenderer($entry, $settings))->buildHtml();
-            }
-        );
-
-        Event::on(
-            Entry::class,
-            Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML,
-            function (DefineAttributeHtmlEvent $event) {
-                /** @var Entry|VerifiableBehavior $entry */
-                $entry = $event->sender;
-                $currentUser = Craft::$app->getUser();
-                $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
-
-                $service = new VerificationFieldsRenderer(
-                    $entry,
-                    $canVerifyEntries,
-                    $this->plugin->getPluginSettings()
-                );
-
-                if ($event->attribute === 'reviewer') {
-                    $event->html = $service->buildReviewerFieldHtml();
-                }
-                elseif ($event->attribute === 'verifiedUntilDate') {
-                    $event->html = $service->buildVerifiedUntilDateFieldHtml();
-                }
-            }
-        );
-    }
-
-    // ASSET events
-    // =============================================================================================
-
-    /**
-     * Events that run during CRUD operations on assets.
-     *
-     * @return void
-     * @see Asset::EVENT_BEFORE_SAVE
-     * @see Asset::EVENT_AFTER_SAVE
-     */
-    public function registerAssetLifecycle(): void
-    {
-        if ($this->isCpRequest || $this->isConsoleRequest) {
-            Event::on(
-                Asset::class,
-                Element::EVENT_BEFORE_SAVE,
-                function (ModelEvent $event) {
-                    /** @var Asset|VerifiableBehavior $asset */
-                    $asset = $event->sender;
-
-                    // Skip for propagation, folders, and temporary uploads (no volume yet).
-                    if (
-                        $asset->propagating ||
-                        $asset->isFolder ||
-                        $asset->volumeId === null
-                    ) {
-                        return;
-                    }
-
-                    // Before an asset saves, set the Reviewer ID and "Verified until" date in
-                    // the asset's behavior class.
-                    $service = VerificationFieldsSetter::fromElement(
-                        $asset,
-                        $this->plugin->getPluginSettings()
-                    );
-
-                    $service->updateElementFields($asset);
-
-                    // A new asset has no stored alt text to compare against.
-                    if ($event->isNew) {
-                        return;
-                    }
-
-                    // Assets never mark dirty attributes, so detect an alt-text change by
-                    // comparing the incoming value against the stored one, and stash the result
-                    // on the behavior for AFTER_SAVE to read. The live per-site value lives in
-                    // `assets_sites`; `assets.alt` is only a canonical fallback.
-                    $storedAlt = (new Query())
-                        ->select('alt')
-                        ->from(Table::ASSETS_SITES)
-                        ->where([
-                            'assetId' => $asset->id,
-                            'siteId' => $asset->siteId,
-                        ])
-                        ->scalar();
-
-                    // No row for this site yet, so there's no stored value.
-                    if ($storedAlt === false) {
-                        $storedAlt = null;
-                    }
-
-                    $asset->altChanged = $asset->alt !== $storedAlt;
-                }
-            );
-        }
-
-        if (! $this->isCpRequest) {
-            return;
-        }
-
-        Event::on(
-            Asset::class,
-            Element::EVENT_AFTER_SAVE,
-            function (ModelEvent $event) {
-                /** @var Asset|VerifiableBehavior $asset */
-                $asset = $event->sender;
-
-                // Folders and temporary uploads (no volume yet) are never verifiable.
-                if ($asset->isFolder || $asset->volumeId === null) {
-                    return;
-                }
-
-                $settings = $this->plugin->getPluginSettings();
-                $isVolumeEnabledForSite = $settings->isContainerEnabledForSite(
-                    $asset->volumeId,
-                    $asset->siteId,
-                    Asset::class
-                );
-                if (! $isVolumeEnabledForSite) {
-                    return;
-                }
-
-                // Note: assets have no drafts or revisions, so the entry lifecycle's
-                // draft/revision handling has no asset equivalent.
-
-                // Returns a list of sites in which this asset is enabled.
-                $supportedSiteIds = array_column(
-                    ElementHelper::supportedSitesForElement($asset),
-                    'siteId'
-                );
-
-                // The service worker that will keep the asset synced across its supported sites
-                // and handle consequences from changes to it.
-                $service = new VerificationStateSynchronizer(
-                    ElementData::fromElement($asset),
-                    $supportedSiteIds,
-                    $asset->enabled,
-                    $settings,
-                    Craft::$app->getUser()->getId()
-                );
-
-                // On a multi-site save, Craft re-fires AFTER_SAVE for each site this asset is
-                // enabled in when it propagates the asset's data across its site-counterparts.
-                // It's possible the record for whichever site is getting saved right now doesn't
-                // yet exist. If it doesn't, create it and exit.
-                if ($asset->propagating) {
-                    $service->ensurePropagatedRecord();
-                    return;
-                }
-
-                $service->saveVerificationRecord();
-                $service->ensureOtherSiteRecords();
-
-                // Assets also fire saves for moves, renames, focal-point changes, and indexing.
-                // Only a file replacement or an alt-text change is a content change the Reviewer
-                // should hear about.
-
-                $isContentChange =
-                    $asset->getScenario() === Asset::SCENARIO_REPLACE ||
-                    $asset->altChanged;
-
-                if ($isContentChange) {
-                    $service->notifyReviewerOnChange();
-                }
-            }
-        );
-    }
-
-    /**
-     * Events that affect an asset's "Edit" page in the CP.
-     *
-     * @return void
-     * @see Element::EVENT_DEFINE_METADATA
-     * @see Element::EVENT_DEFINE_SIDEBAR_HTML
-     * @see Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML
-     */
-    public function registerAssetEditUi(): void
-    {
-        if (! $this->isCpRequest) {
-            return;
-        }
-
-        Event::on(
-            Asset::class,
-            Element::EVENT_DEFINE_METADATA,
-            static function (DefineMetadataEvent $event) {
-                /** @var Asset|VerifiableBehavior $asset */
-                $asset = $event->sender;
-
-                // Folders and temporary uploads (no volume yet) are never verifiable.
-                if ($asset->isFolder || $asset->volumeId === null) {
-                    return;
-                }
-
-                $status = $asset->getVerificationStatus();
-                $statusHtml = Cp::statusIndicatorHtml(
-                    $status->handle(),
-                    ['color' => $status->color()]
-                );
-                $statusHtml .= Html::tag('span', $status->label());
-
-                $event->metadata[Craft::t(Plugin::HANDLE, 'Verification')] = $statusHtml;
-            }
-        );
-
-        Event::on(
-            Asset::class,
-            Element::EVENT_DEFINE_SIDEBAR_HTML,
-            function (DefineHtmlEvent $event) {
-                $currentUser = Craft::$app->getUser();
-                if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
-                    return;
-                }
-
-                /** @var Asset|VerifiableBehavior $asset */
-                $asset = $event->sender;
-
-                // Folders and temporary uploads (no volume yet) are never verifiable.
-                if ($asset->isFolder || $asset->volumeId === null) {
-                    return;
-                }
-
-                $settings = $this->plugin->getPluginSettings();
-                $isVolumeEnabled = $settings->isContainerEnabledForSite(
-                    $asset->volumeId,
-                    $asset->siteId,
-                    Asset::class
-                );
-                if (! $isVolumeEnabled) {
-                    return;
-                }
-
-                $event->html .= (new CpEditSidebarRenderer($asset, $settings))->buildHtml();
-            }
-        );
-
-        Event::on(
-            Asset::class,
-            Element::EVENT_DEFINE_INLINE_ATTRIBUTE_INPUT_HTML,
-            function (DefineAttributeHtmlEvent $event) {
-                /** @var Asset|VerifiableBehavior $asset */
-                $asset = $event->sender;
-
-                // Folders and temporary uploads (no volume yet) are never verifiable.
-                if ($asset->isFolder || $asset->volumeId === null) {
-                    return;
-                }
-
-                $currentUser = Craft::$app->getUser();
-                $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
-
-                $service = new VerificationFieldsRenderer(
-                    $asset,
-                    $canVerifyEntries,
-                    $this->plugin->getPluginSettings()
-                );
-
-                if ($event->attribute === 'reviewer') {
-                    $event->html = $service->buildReviewerFieldHtml();
-                }
-                elseif ($event->attribute === 'verifiedUntilDate') {
-                    $event->html = $service->buildVerifiedUntilDateFieldHtml();
-                }
-            }
-        );
     }
 }
