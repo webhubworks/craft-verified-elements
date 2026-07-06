@@ -69,13 +69,17 @@ abstract class PluginQuery
      * verification dates in the past.
      *
      * @param string[] $elementTypes Element FQCNs (at least one), e.g. `[Entry::class, Asset::class]`
+     * @param int|null $reviewerId
      * @return Query
      * @see \webhubworks\verifiedelements\models\ElementData Populate this object with the results of the query
      */
-    public static function expiredVerifiableElements(array $elementTypes): Query
+    public static function expiredVerifiableElements(array $elementTypes, ?int $reviewerId = null): Query
     {
         $queries = array_map(
-            static fn(string $elementType) => self::expiredElements(ElementType::from($elementType)),
+            static fn(string $elementType) => self::expiredElements(
+                ElementType::from($elementType),
+                $reviewerId
+            ),
             $elementTypes
         );
 
@@ -282,15 +286,16 @@ abstract class PluginQuery
      * past, limited to containers that are enabled in the plugin's settings.
      *
      * @param ElementType $elementType
+     * @param int|null $reviewerId
      * @return Query
      * @see \webhubworks\verifiedelements\models\ElementData
      */
-    private static function expiredElements(ElementType $elementType): Query
+    private static function expiredElements(ElementType $elementType, ?int $reviewerId = null): Query
     {
         $now = Db::prepareDateForDb(DateHelper::now());
         $containerIdColumn = $elementType->containerIdColumn();
 
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'elements.type',
                 'veea.id AS rowId',
@@ -335,6 +340,12 @@ abstract class PluginQuery
             ->andWhere(['elements.enabled' => true])
             ->andWhere(['es.enabled' => true])
             ->andWhere('elements.canonicalId IS null');
+
+        if ($reviewerId !== null) {
+            $query->andWhere(['veea.reviewerId' => $reviewerId]);
+        }
+
+        return $query;
     }
 
     /**

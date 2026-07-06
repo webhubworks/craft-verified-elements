@@ -17,8 +17,8 @@ use webhubworks\verifiedelements\models\ElementData;
  * must be excluded, matching the per-user verification list (WBHB-9618).
  *
  * Also tests the mixed-type queries: entries and assets combined via UNION ALL must not leak
- * across types, must hydrate ElementData correctly per type, and must order and paginate
- * across the whole union.
+ * across types, must hydrate ElementData correctly per type, must order and paginate across
+ * the whole union, and must apply the optional reviewer filter to every union arm.
  */
 
 
@@ -251,6 +251,72 @@ it('excludes an expired entry when the only matching container row belongs to an
     );
 
     expect($expiredIds)->not->toContain($entry->getCanonicalId());
+});
+
+it('limits expired elements to the given reviewer across the union', function () {
+    $reviewer = getSharedReviewer();
+    $otherReviewer = getSharedReviewer('b');
+
+    $section = createSection();
+    $assignedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+    $otherReviewerEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+    $unassignedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    $volume = Volume::factory()->create();
+    $assignedAsset = withVerifiableBehavior(Asset::factory()->volume($volume->handle)->create());
+
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
+        'siteId' => $assignedEntry->siteId,
+        'elementType' => \craft\elements\Entry::class,
+        'enabled' => true,
+    ]);
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $volume->id,
+        'siteId' => $assignedAsset->siteId,
+        'elementType' => \craft\elements\Asset::class,
+        'enabled' => true,
+    ]);
+
+    $reviewerIdsByElement = [
+        [$assignedEntry, $reviewer->id],
+        [$otherReviewerEntry, $otherReviewer->id],
+        [$unassignedEntry, null],
+        [$assignedAsset, $reviewer->id],
+    ];
+    foreach ($reviewerIdsByElement as [$element, $reviewerId]) {
+        Db::insert(PluginTable::ATTRIBUTES, [
+            'elementId' => $element->getCanonicalId(),
+            'siteId' => $element->siteId,
+            'reviewerId' => $reviewerId,
+            'verifiedUntilDate' => '2020-01-01 00:00:00',
+        ]);
+    }
+
+    $elementTypes = [
+        \craft\elements\Entry::class,
+        \craft\elements\Asset::class,
+    ];
+
+    $filteredIds = array_map(
+        static fn ($row) => (int) $row['id'],
+        PluginQuery::expiredVerifiableElements($elementTypes, $reviewer->id)->all()
+    );
+
+    expect($filteredIds)->toContain($assignedEntry->getCanonicalId());
+    expect($filteredIds)->toContain($assignedAsset->getCanonicalId());
+    expect($filteredIds)->not->toContain($otherReviewerEntry->getCanonicalId());
+    expect($filteredIds)->not->toContain($unassignedEntry->getCanonicalId());
+
+    // Without the filter, the same fixtures all come back - proving the exclusions above are
+    // the reviewer condition's doing, not an accident of the fixtures.
+    $unfilteredIds = array_map(
+        static fn ($row) => (int) $row['id'],
+        PluginQuery::expiredVerifiableElements($elementTypes)->all()
+    );
+
+    expect($unfilteredIds)->toContain($otherReviewerEntry->getCanonicalId());
+    expect($unfilteredIds)->toContain($unassignedEntry->getCanonicalId());
 });
 
 it('orders and paginates across the reviewer union, not per subquery', function () {
