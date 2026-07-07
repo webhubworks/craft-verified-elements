@@ -42,7 +42,8 @@ class TestableElementIndexSourcesBuilder extends ElementIndexSourcesBuilder
  * @param string $elementType
  * @param string $containerIdQueryParam
  * @param array $enabledContainerIds
- * @param int $unassignedCount
+ * @param int $expiringUnassignedCount What the badge-count query reports: unassigned elements
+ *                                     with a real (expiring) "Verified until" date.
  * @param int $currentUserId
  * @param string $currentUserFriendlyName
  * @param string|null $siteHandle
@@ -53,7 +54,7 @@ function makeSourcesBuilder(
     string  $elementType = Entry::class,
     string  $containerIdQueryParam = 'sectionId',
     array   $enabledContainerIds = [1, 2],
-    int     $unassignedCount = 0,
+    int     $expiringUnassignedCount = 0,
     int     $currentUserId = 99,
     string  $currentUserFriendlyName = 'Current User',
     ?string $siteHandle = null,
@@ -66,12 +67,15 @@ function makeSourcesBuilder(
 
     $queryClass = $elementType === Asset::class ? AssetQuery::class : EntryQuery::class;
 
+    // The `with(...)` constraints double as pins: the badge-count query must filter by
+    // no-reviewer AND a non-empty date - a differently-parameterized call fails the mock.
     /** @var ElementQueryInterface|MockInterface $unassignedCountBaseQuery */
     $unassignedCountBaseQuery = Mockery::mock($queryClass);
     $unassignedCountBaseQuery->allows($containerIdQueryParam)->with($enabledContainerIds)->andReturnSelf();
     $unassignedCountBaseQuery->allows('site')->with($siteHandle)->andReturnSelf();
     $unassignedCountBaseQuery->allows('isAssigned')->with(false)->andReturnSelf();
-    $unassignedCountBaseQuery->allows('count')->andReturn($unassignedCount);
+    $unassignedCountBaseQuery->allows('verifiedUntilDate')->with('not :empty:')->andReturnSelf();
+    $unassignedCountBaseQuery->allows('count')->andReturn($expiringUnassignedCount);
 
     $builder = new TestableElementIndexSourcesBuilder(
         elementType: $elementType,
@@ -181,20 +185,45 @@ it('scopes every source to the enabled volumes for assets', function () {
 // Unassigned badge count
 // =================================================================================================
 
-it('shows the unassigned badge count when unassigned elements exist', function () {
-    $sources = makeSourcesBuilder(unassignedCount: 3)->defineSources();
+it('shows the badge count when expiring unassigned elements exist', function () {
+    $sources = makeSourcesBuilder(expiringUnassignedCount: 3)->defineSources();
 
     $unassigned = findSourceByKey($sources, ReviewerStatus::Unassigned->handle());
 
     expect($unassigned['badgeCount'])->toBe(3);
 });
 
-it('hides the unassigned badge count when everything is assigned', function () {
-    $sources = makeSourcesBuilder(unassignedCount: 0)->defineSources();
+it('hides the badge count when no unassigned element is going to expire', function () {
+    $sources = makeSourcesBuilder(expiringUnassignedCount: 0)->defineSources();
 
     $unassigned = findSourceByKey($sources, ReviewerStatus::Unassigned->handle());
 
     expect($unassigned['badgeCount'])->toBeNull();
+});
+
+it('keeps the unassigned list criteria broad while the badge counts a narrower subset', function () {
+    // Deliberate asymmetry (WBHB-9500, re-scoped during WBHB-9773): the LIST is a pure
+    // reviewer filter, while the BADGE only prompts action for elements that will expire.
+    // The date filter lives solely on the badge-count query, never in the criteria.
+    $sources = makeSourcesBuilder(expiringUnassignedCount: 1)->defineSources();
+
+    $unassigned = findSourceByKey($sources, ReviewerStatus::Unassigned->handle());
+
+    expect($unassigned['criteria']['isAssigned'])->toBeFalse();
+    expect($unassigned['criteria'])->not->toHaveKey('verifiedUntil');
+    expect($unassigned['criteria'])->not->toHaveKey('verifiedUntilDate');
+});
+
+it('explains the badge to screen readers and as a tooltip', function () {
+    $sources = makeSourcesBuilder(expiringUnassignedCount: 1)->defineSources();
+
+    $unassigned = findSourceByKey($sources, ReviewerStatus::Unassigned->handle());
+
+    // badgeLabel is the screen-reader text; data.badge-title becomes the badge's
+    // `title` tooltip via the dashboard template's JS. Same message on both channels.
+    expect($unassigned['badgeLabel'])->toBeString();
+    expect($unassigned['badgeLabel'])->not->toBeEmpty();
+    expect($unassigned['data']['badge-title'])->toBe($unassigned['badgeLabel']);
 });
 
 

@@ -1,2 +1,14 @@
 {% extends '_layouts/elementindex' %}
 {% set title = 'Verified Elements'|t(pluginHandle) %}
+
+
+{# Craft's element-index sources have no badge option to add a tooltip `title` attribute to explain what they're for. #}
+{% js %}
+    // Add a native tooltip to badges on source filters to explain what they're for.
+    for (const sourceLink of document.querySelectorAll('a[data-badge-title]')) {
+        const badge = sourceLink.querySelector('.badge');
+        if (badge) {
+            badge.title = sourceLink.dataset.badgeTitle;
+        }
+    }
+{% endjs %}

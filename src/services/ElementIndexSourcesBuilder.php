@@ -46,10 +46,13 @@ class ElementIndexSourcesBuilder
     {
         $enabledContainerIds = $this->settings->getEnabledContainerIds($this->elementType);
 
-        $unassignedCount = $this->unassignedCountBaseQuery
+        // The number of unassigned elements whose "Verified until" dates aren't "Indefinite".
+        // The user needs to be prompted to assign these entries to someone to review them.
+        $expiringUnassignedCount = $this->unassignedCountBaseQuery
             ->{$this->containerIdQueryParam}($enabledContainerIds)
             ->site($this->siteHandle)
             ->isAssigned(false)
+            ->verifiedUntilDate('not :empty:')
             ->count();
 
         $sources = [
@@ -81,7 +84,9 @@ class ElementIndexSourcesBuilder
             [
                 'key' => ReviewerStatus::Unassigned->handle(),
                 'label' => ReviewerStatus::Unassigned->label(),
-                'badgeCount' => $unassignedCount > 0 ? $unassignedCount : null,
+                'badgeCount' => $expiringUnassignedCount > 0 ? $expiringUnassignedCount : null,
+                'badgeLabel' => Craft::t(Plugin::HANDLE, 'Number of unassigned entries that will expire.'),
+                'data' => ['badge-title' => Craft::t(Plugin::HANDLE, 'Number of unassigned entries that will expire.')],
                 'criteria' => [
                     'isAssigned' => false,
                     $this->containerIdQueryParam => $enabledContainerIds,

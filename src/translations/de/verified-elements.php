@@ -25,6 +25,7 @@ return [
     'No default reviewer. Expired assets will go unnotified.' => 'Kein Standard-Prüfer festgelegt. Für abgelaufene Dateien erfolgt keine Benachrichtigung.',
     'No default reviewer. Expired entries will go unnotified.' => 'Kein Standard-Prüfer festgelegt. Für abgelaufene Einträge erfolgt keine Benachrichtigung.',
     'Not a valid date.' => 'Kein gültiges Datum.',
+    'Number of unassigned entries that will expire.' => 'Anzahl nicht zugewiesener Elemente, die ablaufen werden.',
     'Reviewer' => 'Prüfer',
     'Reviewers' => 'Prüfer',
     'Specific Date' => 'Bestimmtes Datum',

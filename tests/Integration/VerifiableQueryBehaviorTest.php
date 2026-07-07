@@ -175,12 +175,19 @@ it('returns only entries with a reviewer when isAssigned is true', function () {
     expect($ids)->not->toContain($unassignedEntry->getCanonicalId());
 });
 
-it('returns only entries without a reviewer and with a date set when isAssigned is false', function () {
+it('returns all entries without a reviewer when isAssigned is false', function () {
+    // isAssigned is a PURE reviewer filter: date and verification status play no part.
+    // The earlier "unassigned = has a date" coupling (WBHB-9500) was deliberately removed
+    // during WBHB-9773; the date condition now lives only on the badge-count query.
     $section = createSection();
     $reviewer = getSharedReviewer();
     $assignedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $unassignedWithDate = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $unassignedIndefinite = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    // Deliberately gets NO attributes row: an element the plugin never touched has no
+    // reviewer either, and the LEFT JOIN must surface it as unassigned.
+    $untouchedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
     Db::insert(PluginTable::ATTRIBUTES, [
         'elementId' => $assignedEntry->getCanonicalId(),
@@ -208,8 +215,9 @@ it('returns only entries without a reviewer and with a date set when isAssigned 
         ->ids();
 
     expect($ids)->toContain($unassignedWithDate->getCanonicalId());
+    expect($ids)->toContain($unassignedIndefinite->getCanonicalId());
+    expect($ids)->toContain($untouchedEntry->getCanonicalId());
     expect($ids)->not->toContain($assignedEntry->getCanonicalId());
-    expect($ids)->not->toContain($unassignedIndefinite->getCanonicalId());
 });
 
 
