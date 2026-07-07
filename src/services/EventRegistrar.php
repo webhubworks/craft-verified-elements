@@ -198,10 +198,11 @@ readonly class EventRegistrar
     {
         $currentUser = Craft::$app->getUser();
 
+        $event->rules[Plugin::HANDLE] = Plugin::HANDLE . '/index/index';
+
         // Show the plugin's "Entries" page in the CP. The bare plugin handle is the
         // landing page for the plugin's top-level nav link and renders the same page.
         if (Feature::EntryVerification->isEnabled()) {
-            $event->rules[Plugin::HANDLE] = Plugin::HANDLE . '/index/entries';
             $event->rules[Plugin::HANDLE . '/entries'] = Plugin::HANDLE . '/index/entries';
         }
 

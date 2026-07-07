@@ -5,10 +5,12 @@ namespace webhubworks\verifiedelements\controllers;
 use Craft;
 use craft\helpers\AdminTable;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\ElementType;
+use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
@@ -29,6 +31,21 @@ class IndexController extends Controller
     {
         $this->requireCpRequest();
         return parent::beforeAction($action);
+    }
+
+    /**
+     * Redirects the plugin's landing URL to the first available subpage, so the URL always
+     * matches a subnav item and the sidebar keeps the subnav expanded and highlighted.
+     *
+     * @return Response
+     */
+    public function actionIndex(): Response
+    {
+        if (Feature::EntryVerification->isEnabled()) {
+            return $this->redirect(UrlHelper::cpUrl(Plugin::HANDLE . '/entries'));
+        }
+
+        return $this->redirect(UrlHelper::cpUrl(Plugin::HANDLE . '/assets'));
     }
 
     /**
