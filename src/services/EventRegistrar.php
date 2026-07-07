@@ -464,11 +464,18 @@ readonly class EventRegistrar
             return;
         }
 
-        // Returns a list of sites in which this entry is enabled.
-        $supportedSiteIds = array_column(
-            ElementHelper::supportedSitesForElement($entry),
-            'siteId'
-        );
+        // On editions without multi-site, ignore saves for any site but the primary -
+        // this also stops propagation invocations from seeding non-primary records.
+        if (! $settings->isSiteInScope($entry->siteId)) {
+            return;
+        }
+
+        // The sites this entry is enabled in, confined to sites this edition may write to
+        // (all sites when multi-site is on; the primary site alone otherwise).
+        $supportedSiteIds = array_values(array_intersect(
+            array_column(ElementHelper::supportedSitesForElement($entry), 'siteId'),
+            $settings->getInScopeSiteIds()
+        ));
 
         // The service worker that will keep the entry synced across its supported sites
         // and handle consequences from changes to it.

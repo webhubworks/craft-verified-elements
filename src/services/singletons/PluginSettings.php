@@ -65,6 +65,18 @@ class PluginSettings extends Component
     }
 
     /**
+     * Whether this plugin may operate on the given site under the current edition.
+     *
+     * @param int $siteId
+     * @return bool
+     * @throws SiteNotFoundException
+     */
+    public function isSiteInScope(int $siteId): bool
+    {
+        return in_array($siteId, $this->getInScopeSiteIds(), true);
+    }
+
+    /**
      * Returns the IDs of containers (sections, volumes, etc.) that have been enabled in this
      * plugin's settings, optionally scoped to one site.
      *
