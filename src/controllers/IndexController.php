@@ -173,9 +173,12 @@ class IndexController extends Controller
             default => SORT_ASC,
         };
 
+        $inScopeSiteIds = Plugin::getInstance()->getPluginSettings()->getInScopeSiteIds();
+
         [$results, $total] = Plugin::getInstance()->getReviewers()->getPaginatedElements(
             $page,
             $limit,
+            $inScopeSiteIds,
             $sortDir,
             $orderBy,
             $userId,

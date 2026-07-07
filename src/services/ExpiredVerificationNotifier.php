@@ -20,8 +20,13 @@ use webhubworks\verifiedelements\models\ElementData;
  */
 class ExpiredVerificationNotifier
 {
+    /**
+     * @param string $target
+     * @param int[] $inScopeSiteIds Sites the current edition may surface (see PluginSettings::getInScopeSiteIds)
+     */
     public function __construct(
-        private readonly string $target
+        private readonly string $target,
+        private readonly array  $inScopeSiteIds,
     ) {}
 
     /**
@@ -150,7 +155,7 @@ class ExpiredVerificationNotifier
         $this->expiredElementsByReviewerId = [];
         $this->expiredUnassignedElements = [];
 
-        foreach (PluginQuery::expiredVerifiableElements(ElementType::enabledTypes())->all() as $record) {
+        foreach (PluginQuery::expiredVerifiableElements(ElementType::enabledTypes(), $this->inScopeSiteIds)->all() as $record) {
             $elementData = ElementData::fromArray($record);
 
             if ($elementData->reviewerId === null) {

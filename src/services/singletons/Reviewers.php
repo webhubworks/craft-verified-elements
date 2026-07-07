@@ -18,6 +18,7 @@ class Reviewers extends Component
      *
      * @param int $page
      * @param int $limit
+     * @param int[] $inScopeSiteIds Sites the current edition may surface (see PluginSettings::getInScopeSiteIds)
      * @param int $sortDir
      * @param string $orderBy
      * @param int|null $userId
@@ -29,6 +30,7 @@ class Reviewers extends Component
     public function getPaginatedElements(
         int    $page,
         int    $limit,
+        array  $inScopeSiteIds,
         int    $sortDir = SORT_ASC,
         string $orderBy = 'verifiedUntilDate',
         ?int   $userId = null,
@@ -42,7 +44,12 @@ class Reviewers extends Component
 
         $offset = ($page - 1) * $limit;
 
-        $query = PluginQuery::elementsByReviewer($userId, $elementTypes ?? ElementType::enabledTypes(), $siteId)
+        $query = PluginQuery::elementsByReviewer(
+            $userId,
+            $elementTypes ?? ElementType::enabledTypes(),
+            $inScopeSiteIds,
+            $siteId
+        )
             ->orderBy([$orderBy => $sortDir]);
 
         $total = $query->count();

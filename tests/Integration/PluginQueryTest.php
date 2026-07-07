@@ -21,6 +21,17 @@ use webhubworks\verifiedelements\models\ElementData;
  * the whole union, and must apply the optional reviewer filter to every union arm.
  */
 
+/**
+ * Every site ID - the plugin's in-scope set on a multi-site edition. Passed to the PluginQuery
+ * builders so these tests exercise the query logic without edition site-scoping getting in the way.
+ *
+ * @return int[]
+ */
+function allSiteIds(): array
+{
+    return \Craft::$app->getSites()->getAllSiteIds();
+}
+
 
 // expiredVerifiableEntries()
 // =================================================================================================
@@ -53,11 +64,44 @@ it('excludes globally disabled entries but keeps enabled ones in the expired set
 
     $expiredIds = array_map(
         static fn ($row) => (int) $row['id'],
-        PluginQuery::expiredVerifiableEntries()->all()
+        PluginQuery::expiredVerifiableEntries(allSiteIds())->all()
     );
 
     expect($expiredIds)->toContain($enabledEntry->getCanonicalId());
     expect($expiredIds)->not->toContain($disabledEntry->getCanonicalId());
+});
+
+it('excludes rows whose site is not in the in-scope set', function () {
+    $section = createSection();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
+        'siteId' => $entry->siteId,
+        'elementType' => \craft\elements\Entry::class,
+        'enabled' => true,
+    ]);
+
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
+        'siteId' => $entry->siteId,
+        'reviewerId' => null,
+        'verifiedUntilDate' => '2020-01-01 00:00:00',
+    ]);
+
+    // In scope: the entry's own site is returned.
+    $inScopeIds = array_map(
+        static fn ($row) => (int) $row['id'],
+        PluginQuery::expiredVerifiableEntries([$entry->siteId])->all()
+    );
+    expect($inScopeIds)->toContain($entry->getCanonicalId());
+
+    // Out of scope: a site outside the set is excluded, even though the row and section are enabled.
+    $outOfScopeIds = array_map(
+        static fn ($row) => (int) $row['id'],
+        PluginQuery::expiredVerifiableEntries([$entry->siteId + 1000])->all()
+    );
+    expect($outOfScopeIds)->not->toContain($entry->getCanonicalId());
 });
 
 it('excludes entries that are disabled for the queried site', function () {
@@ -87,7 +131,7 @@ it('excludes entries that are disabled for the queried site', function () {
 
     $expiredIds = array_map(
         static fn ($row) => (int) $row['id'],
-        PluginQuery::expiredVerifiableEntries()->all()
+        PluginQuery::expiredVerifiableEntries(allSiteIds())->all()
     );
 
     expect($expiredIds)->not->toContain($entry->getCanonicalId());
@@ -113,7 +157,7 @@ it('returns rows that hydrate ElementData with the correct identity and edit URL
     ]);
 
     $rows = array_filter(
-        PluginQuery::expiredVerifiableEntries()->all(),
+        PluginQuery::expiredVerifiableEntries(allSiteIds())->all(),
         static fn ($row) => (int) $row['id'] === $entry->getCanonicalId()
     );
 
@@ -170,7 +214,7 @@ it('returns expired entries and assets together without cross-type leakage', fun
     $mixedRows = PluginQuery::expiredVerifiableElements([
         \craft\elements\Entry::class,
         \craft\elements\Asset::class,
-    ])->all();
+    ], allSiteIds())->all();
 
     $mixedIds = array_map(static fn ($row) => (int) $row['id'], $mixedRows);
     expect($mixedIds)->toContain($entry->getCanonicalId());
@@ -179,14 +223,14 @@ it('returns expired entries and assets together without cross-type leakage', fun
     // The per-type queries must not leak the other type's rows.
     $entryOnlyIds = array_map(
         static fn ($row) => (int) $row['id'],
-        PluginQuery::expiredVerifiableEntries()->all()
+        PluginQuery::expiredVerifiableEntries(allSiteIds())->all()
     );
     expect($entryOnlyIds)->toContain($entry->getCanonicalId());
     expect($entryOnlyIds)->not->toContain($asset->getCanonicalId());
 
     $assetOnlyIds = array_map(
         static fn ($row) => (int) $row['id'],
-        PluginQuery::expiredVerifiableAssets()->all()
+        PluginQuery::expiredVerifiableAssets(allSiteIds())->all()
     );
     expect($assetOnlyIds)->toContain($asset->getCanonicalId());
     expect($assetOnlyIds)->not->toContain($entry->getCanonicalId());
@@ -210,7 +254,7 @@ it('hydrates an expired asset row into ElementData with volume identity and asse
     ]);
 
     $rows = array_filter(
-        PluginQuery::expiredVerifiableAssets()->all(),
+        PluginQuery::expiredVerifiableAssets(allSiteIds())->all(),
         static fn ($row) => (int) $row['id'] === $asset->getCanonicalId()
     );
 
@@ -247,7 +291,7 @@ it('excludes an expired entry when the only matching container row belongs to an
 
     $expiredIds = array_map(
         static fn ($row) => (int) $row['id'],
-        PluginQuery::expiredVerifiableEntries()->all()
+        PluginQuery::expiredVerifiableEntries(allSiteIds())->all()
     );
 
     expect($expiredIds)->not->toContain($entry->getCanonicalId());
@@ -300,7 +344,7 @@ it('limits expired elements to the given reviewer across the union', function ()
 
     $filteredIds = array_map(
         static fn ($row) => (int) $row['id'],
-        PluginQuery::expiredVerifiableElements($elementTypes, $reviewer->id)->all()
+        PluginQuery::expiredVerifiableElements($elementTypes, allSiteIds(), $reviewer->id)->all()
     );
 
     expect($filteredIds)->toContain($assignedEntry->getCanonicalId());
@@ -312,7 +356,7 @@ it('limits expired elements to the given reviewer across the union', function ()
     // the reviewer condition's doing, not an accident of the fixtures.
     $unfilteredIds = array_map(
         static fn ($row) => (int) $row['id'],
-        PluginQuery::expiredVerifiableElements($elementTypes)->all()
+        PluginQuery::expiredVerifiableElements($elementTypes, allSiteIds())->all()
     );
 
     expect($unfilteredIds)->toContain($otherReviewerEntry->getCanonicalId());
@@ -344,7 +388,7 @@ it('orders and paginates across the reviewer union, not per subquery', function 
     $query = PluginQuery::elementsByReviewer($reviewer->id, [
         \craft\elements\Entry::class,
         \craft\elements\Asset::class,
-    ])->orderBy(['title' => SORT_ASC]);
+    ], allSiteIds())->orderBy(['title' => SORT_ASC]);
 
     expect((int) $query->count())->toBe(2);
 

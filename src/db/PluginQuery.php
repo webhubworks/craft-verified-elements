@@ -27,18 +27,25 @@ abstract class PluginQuery
      *
      * @param int $userId The Reviewer
      * @param string[] $elementTypes Element FQCNs (at least one), e.g. `[Entry::class, Asset::class]`
-     * @param int|null $siteId
+     * @param int[] $inScopeSiteIds Sites the current edition may surface (see PluginSettings::getInScopeSiteIds)
+     * @param int|null $siteId Narrows to a single site within the in-scope set
      * @return Query
      * @see \webhubworks\verifiedelements\services\singletons\Reviewers
      * @see \webhubworks\verifiedelements\models\ElementData
      */
-    public static function elementsByReviewer(int $userId, array $elementTypes, ?int $siteId = null): Query
+    public static function elementsByReviewer(
+        int   $userId,
+        array $elementTypes,
+        array $inScopeSiteIds,
+        ?int  $siteId = null,
+    ): Query
     {
         $queries = array_map(
             static fn(string $elementType) => self::reviewerElements(
                 ElementType::from($elementType),
                 $userId,
-                $siteId
+                $siteId,
+                $inScopeSiteIds
             ),
             $elementTypes
         );
@@ -69,15 +76,17 @@ abstract class PluginQuery
      * verification dates in the past.
      *
      * @param string[] $elementTypes Element FQCNs (at least one), e.g. `[Entry::class, Asset::class]`
+     * @param int[] $inScopeSiteIds Sites the current edition may surface (see PluginSettings::getInScopeSiteIds)
      * @param int|null $reviewerId
      * @return Query
      * @see \webhubworks\verifiedelements\models\ElementData Populate this object with the results of the query
      */
-    public static function expiredVerifiableElements(array $elementTypes, ?int $reviewerId = null): Query
+    public static function expiredVerifiableElements(array $elementTypes, array $inScopeSiteIds, ?int $reviewerId = null): Query
     {
         $queries = array_map(
             static fn(string $elementType) => self::expiredElements(
                 ElementType::from($elementType),
+                $inScopeSiteIds,
                 $reviewerId
             ),
             $elementTypes
@@ -89,21 +98,23 @@ abstract class PluginQuery
     /**
      * Returns a query for all verifiable entries that have verification dates in the past.
      *
+     * @param int[] $inScopeSiteIds Sites the current edition may surface (see PluginSettings::getInScopeSiteIds)
      * @return Query
      */
-    public static function expiredVerifiableEntries(): Query
+    public static function expiredVerifiableEntries(array $inScopeSiteIds): Query
     {
-        return self::expiredElements(ElementType::Entry);
+        return self::expiredElements(ElementType::Entry, $inScopeSiteIds);
     }
 
     /**
      * Returns a query for all verifiable assets that have verification dates in the past.
      *
+     * @param int[] $inScopeSiteIds Sites the current edition may surface (see PluginSettings::getInScopeSiteIds)
      * @return Query
      */
-    public static function expiredVerifiableAssets(): Query
+    public static function expiredVerifiableAssets(array $inScopeSiteIds): Query
     {
-        return self::expiredElements(ElementType::Asset);
+        return self::expiredElements(ElementType::Asset, $inScopeSiteIds);
     }
 
 
@@ -227,11 +238,17 @@ abstract class PluginQuery
      *
      * @param ElementType $elementType
      * @param int $userId The Reviewer
-     * @param int|null $siteId
+     * @param int|null $siteId Narrows to a single site within the in-scope set
+     * @param int[] $inScopeSiteIds Sites the current edition may surface (see PluginSettings::getInScopeSiteIds)
      * @return Query
      * @see \webhubworks\verifiedelements\models\ElementData
      */
-    private static function reviewerElements(ElementType $elementType, int $userId, ?int $siteId): Query
+    private static function reviewerElements(
+        ElementType $elementType,
+        int         $userId,
+        ?int        $siteId,
+        array       $inScopeSiteIds,
+    ): Query
     {
         $containerIdColumn = $elementType->containerIdColumn();
 
@@ -272,7 +289,9 @@ abstract class PluginQuery
             ->leftJoin('{{%sites}}', '[[sites.id]] = [[veea.siteId]]')
             ->where(['veea.reviewerId' => $userId])
             ->andWhere(['elements.type' => $elementType->value])
-            ->andWhere('elements.canonicalId IS null');
+            ->andWhere('elements.canonicalId IS null')
+            // Don't return rows for sites not supported by the plugin's current edition.
+            ->andWhere(['veea.siteId' => $inScopeSiteIds]);
 
         if ($siteId !== null) {
             $query->andWhere(['veea.siteId' => $siteId]);
@@ -286,11 +305,12 @@ abstract class PluginQuery
      * past, limited to containers that are enabled in the plugin's settings.
      *
      * @param ElementType $elementType
+     * @param int[] $inScopeSiteIds Sites the current edition may surface (see PluginSettings::getInScopeSiteIds)
      * @param int|null $reviewerId
      * @return Query
      * @see \webhubworks\verifiedelements\models\ElementData
      */
-    private static function expiredElements(ElementType $elementType, ?int $reviewerId = null): Query
+    private static function expiredElements(ElementType $elementType, array $inScopeSiteIds, ?int $reviewerId = null): Query
     {
         $now = Db::prepareDateForDb(DateHelper::now());
         $containerIdColumn = $elementType->containerIdColumn();
@@ -339,7 +359,9 @@ abstract class PluginQuery
             ->andWhere(['elements.type' => $elementType->value])
             ->andWhere(['elements.enabled' => true])
             ->andWhere(['es.enabled' => true])
-            ->andWhere('elements.canonicalId IS null');
+            ->andWhere('elements.canonicalId IS null')
+            // Don't return rows for sites not supported by the plugin's current edition.
+            ->andWhere(['veea.siteId' => $inScopeSiteIds]);
 
         if ($reviewerId !== null) {
             $query->andWhere(['veea.reviewerId' => $reviewerId]);

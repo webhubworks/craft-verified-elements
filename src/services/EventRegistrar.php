@@ -138,7 +138,10 @@ readonly class EventRegistrar
      */
     protected function onRunGarbageCollection(): void
     {
-        $service = new ExpiredVerificationNotifier(Dispatcher::TARGET_WEB);
+        $service = new ExpiredVerificationNotifier(
+            Dispatcher::TARGET_WEB,
+            $this->plugin->getPluginSettings()->getInScopeSiteIds()
+        );
 
         foreach ($service->getExpiredElementsByReviewer() as $reviewerId => $expiredElements) {
 

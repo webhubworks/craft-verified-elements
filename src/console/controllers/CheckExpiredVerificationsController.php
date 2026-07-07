@@ -8,6 +8,7 @@ use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\SystemRecipient;
 use webhubworks\verifiedelements\models\UserRecipient;
+use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
 use yii\console\ExitCode;
 use yii\helpers\BaseConsole;
@@ -22,7 +23,10 @@ class CheckExpiredVerificationsController extends Controller
     /** @inheritDoc */
     public function beforeAction($action): bool
     {
-        $this->service = new ExpiredVerificationNotifier(Dispatcher::TARGET_CONSOLE);
+        $this->service = new ExpiredVerificationNotifier(
+            Dispatcher::TARGET_CONSOLE,
+            Plugin::getInstance()->getPluginSettings()->getInScopeSiteIds()
+        );
         return parent::beforeAction($action);
     }
 

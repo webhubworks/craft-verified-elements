@@ -76,8 +76,9 @@ class ElementsToReviewWidget extends Widget
     public function getBodyHtml(): ?string
     {
         $userId = Craft::$app->getUser()->getId();
+        $inScopeSiteIds = Plugin::getInstance()->getPluginSettings()->getInScopeSiteIds();
 
-        $rows = PluginQuery::expiredVerifiableElements(ElementType::enabledTypes(), $userId)
+        $rows = PluginQuery::expiredVerifiableElements(ElementType::enabledTypes(), $inScopeSiteIds, $userId)
             ->orderBy(['verifiedUntilDate' => SORT_ASC, 'title' => SORT_ASC])
             ->limit($this->limit)
             ->all();
