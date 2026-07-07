@@ -48,6 +48,7 @@ class TestableElementIndexSourcesBuilder extends ElementIndexSourcesBuilder
  * @param string $currentUserFriendlyName
  * @param string|null $siteHandle
  * @param User[] $reviewers Unsaved User elements returned by the reviewers lookup seam.
+ * @param int[] $inScopeSiteIds Sites the edition may surface; each source is restricted to these.
  * @return TestableElementIndexSourcesBuilder
  */
 function makeSourcesBuilder(
@@ -59,11 +60,13 @@ function makeSourcesBuilder(
     string  $currentUserFriendlyName = 'Current User',
     ?string $siteHandle = null,
     array   $reviewers = [],
+    array   $inScopeSiteIds = [1, 2],
 ): TestableElementIndexSourcesBuilder
 {
     /** @var PluginSettings|MockInterface $settings */
     $settings = Mockery::mock(PluginSettings::class);
     $settings->allows('getEnabledContainerIds')->with($elementType)->andReturn($enabledContainerIds);
+    $settings->allows('getInScopeSiteIds')->andReturn($inScopeSiteIds);
 
     $queryClass = $elementType === Asset::class ? AssetQuery::class : EntryQuery::class;
 
@@ -178,6 +181,21 @@ it('scopes every source to the enabled volumes for assets', function () {
 
         expect($source['criteria']['volumeId'])->toBe([5]);
         expect($source['criteria'])->not->toHaveKey('sectionId');
+    }
+});
+
+it('restricts every source to the in-scope sites', function () {
+    // Craft narrows the index site menu to each source's sites, so this is what keeps a
+    // non-multi-site edition confined to the primary site (see PluginSettings::getInScopeSiteIds).
+    $sources = makeSourcesBuilder(inScopeSiteIds: [1, 3])->defineSources();
+
+    foreach ($sources as $source) {
+        // The Reviewer heading is not a real source and carries no sites.
+        if (! isset($source['key'])) {
+            continue;
+        }
+
+        expect($source['sites'])->toBe([1, 3]);
     }
 });
 

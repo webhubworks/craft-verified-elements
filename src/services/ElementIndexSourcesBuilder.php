@@ -46,6 +46,11 @@ class ElementIndexSourcesBuilder
     {
         $enabledContainerIds = $this->settings->getEnabledContainerIds($this->elementType);
 
+        // Restrict each source (and so the index's site menu) to the sites this edition may
+        // surface. Craft narrows the menu to the current source's sites, intersected with the
+        // user's editable sites - so without multi-site, only the primary site is reachable.
+        $inScopeSiteIds = $this->settings->getInScopeSiteIds();
+
         // The number of unassigned elements whose "Verified until" dates aren't "Indefinite".
         // The user needs to be prompted to assign these entries to someone to review them.
         $expiringUnassignedCount = $this->unassignedCountBaseQuery
@@ -59,6 +64,7 @@ class ElementIndexSourcesBuilder
             [
                 'key' => VerificationStatus::Expired->handle(),
                 'label' => VerificationStatus::Expired->label(),
+                'sites' => $inScopeSiteIds,
                 'criteria' => [
                     'isVerified' => false,
                     $this->containerIdQueryParam => $enabledContainerIds,
@@ -67,6 +73,7 @@ class ElementIndexSourcesBuilder
             [
                 'key' => 'upcoming',
                 'label' => Craft::t(Plugin::HANDLE, 'Imminent'),
+                'sites' => $inScopeSiteIds,
                 'criteria' => [
                     'isVerified' => true,
                     $this->containerIdQueryParam => $enabledContainerIds,
@@ -76,6 +83,7 @@ class ElementIndexSourcesBuilder
             [
                 'key' => VerificationStatus::Verified->handle(),
                 'label' => VerificationStatus::Verified->label(),
+                'sites' => $inScopeSiteIds,
                 'criteria' => [
                     'isVerified' => true,
                     $this->containerIdQueryParam => $enabledContainerIds,
@@ -84,6 +92,7 @@ class ElementIndexSourcesBuilder
             [
                 'key' => ReviewerStatus::Unassigned->handle(),
                 'label' => ReviewerStatus::Unassigned->label(),
+                'sites' => $inScopeSiteIds,
                 'badgeCount' => $expiringUnassignedCount > 0 ? $expiringUnassignedCount : null,
                 'badgeLabel' => Craft::t(Plugin::HANDLE, 'Number of unassigned entries that will expire.'),
                 'data' => ['badge-title' => Craft::t(Plugin::HANDLE, 'Number of unassigned entries that will expire.')],
@@ -98,6 +107,7 @@ class ElementIndexSourcesBuilder
             [
                 'key' => 'mine',
                 'label' => $this->currentUserFriendlyName,
+                'sites' => $inScopeSiteIds,
                 'criteria' => [
                     'reviewerId' => $this->currentUserId,
                     $this->containerIdQueryParam => $enabledContainerIds,
@@ -109,6 +119,7 @@ class ElementIndexSourcesBuilder
             $sources[] = [
                 'key' => 'reviewer-' . $reviewer->id,
                 'label' => $reviewer->getFriendlyName(),
+                'sites' => $inScopeSiteIds,
                 'criteria' => [
                     'reviewerId' => $reviewer->id,
                     $this->containerIdQueryParam => $enabledContainerIds,
