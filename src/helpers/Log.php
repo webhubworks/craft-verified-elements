@@ -21,7 +21,7 @@ use webhubworks\verifiedelements\Plugin;
  * @see Plugin::HANDLE
  * @see Plugin::init()
  */
-abstract class Log
+class Log
 {
     /**
      * Logs an informative message.

@@ -53,6 +53,7 @@ use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\enums\Permission;
+use webhubworks\verifiedelements\helpers\AssetHelper;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\models\ElementData;
@@ -684,7 +685,7 @@ readonly class EventRegistrar
 
     /**
      * Persists the asset's verification state across its sites and notifies its Reviewer when
-     * the file was replaced or its alt text changed.
+     * the file was replaced or its field content changed.
      *
      * @param ModelEvent $event
      * @return void
@@ -743,15 +744,7 @@ readonly class EventRegistrar
         $service->saveVerificationRecord();
         $service->ensureOtherSiteRecords();
 
-        // Assets also fire saves for moves, renames, focal-point changes, and indexing.
-        // Only a file replacement or an alt-text change is a content change the Reviewer
-        // should hear about.
-
-        $isContentChange =
-            $asset->getScenario() === Asset::SCENARIO_REPLACE ||
-            $asset->altChanged;
-
-        if ($isContentChange) {
+        if (AssetHelper::hasNotifiableContentChange($asset, $event->isNew)) {
             $service->notifyReviewerOnChange();
         }
     }
