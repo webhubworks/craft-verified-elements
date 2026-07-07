@@ -379,12 +379,14 @@ readonly class EventRegistrar
             return;
         }
 
-        // element CRUD operations and lifecycle
         $this->registerElementBehaviors(Entry::class, EntryQuery::class);
-        Event::on(Entry::class, Element::EVENT_BEFORE_SAVE, $this->onBeforeSaveEntry(...));
+
         if (! $this->isCpRequest) {
             return;
         }
+
+        // element CRUD operations and lifecycle
+        Event::on(Entry::class, Element::EVENT_BEFORE_SAVE, $this->onBeforeSaveEntry(...));
         Event::on(Entry::class, Element::EVENT_AFTER_SAVE, $this->onAfterSaveEntry(...));
 
         // "element index" pages
@@ -610,12 +612,14 @@ readonly class EventRegistrar
             return;
         }
 
-        // element CRUD operations and lifecycle
         $this->registerElementBehaviors(Asset::class, AssetQuery::class);
-        Event::on(Asset::class, Element::EVENT_BEFORE_SAVE, $this->onBeforeSaveAsset(...));
+
         if (! $this->isCpRequest) {
             return;
         }
+
+        // element CRUD operations and lifecycle
+        Event::on(Asset::class, Element::EVENT_BEFORE_SAVE, $this->onBeforeSaveAsset(...));
         Event::on(Asset::class, Element::EVENT_AFTER_SAVE, $this->onAfterSaveAsset(...));
 
         // "element index" pages
