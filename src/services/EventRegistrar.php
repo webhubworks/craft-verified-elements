@@ -753,14 +753,21 @@ readonly class EventRegistrar
             return;
         }
 
+        // On editions without multi-site, ignore saves for any site but the primary -
+        // this also stops propagation invocations from seeding non-primary records.
+        if (! $settings->isSiteInScope($asset->siteId)) {
+            return;
+        }
+
         // Note: assets have no drafts or revisions, so the entry lifecycle's
         // draft/revision handling has no asset equivalent.
 
-        // Returns a list of sites in which this asset is enabled.
-        $supportedSiteIds = array_column(
-            ElementHelper::supportedSitesForElement($asset),
-            'siteId'
-        );
+        // The sites this asset is enabled in, confined to sites this edition may write to
+        // (all sites when multi-site is on; the primary site alone otherwise).
+        $supportedSiteIds = array_values(array_intersect(
+            array_column(ElementHelper::supportedSitesForElement($asset), 'siteId'),
+            $settings->getInScopeSiteIds()
+        ));
 
         // The service worker that will keep the asset synced across its supported sites
         // and handle consequences from changes to it.
