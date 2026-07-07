@@ -96,8 +96,10 @@ class VerificationHealthWidget extends Widget
 
         $siteDisplayed = null;
         if (Craft::$app->getIsMultiSite()) {
-            if ($this->siteId) {
-                $siteDisplayed = Craft::$app->getSites()->getSiteById($this->siteId)?->getName();
+            $effectiveSiteIds = $this->effectiveSiteIds();
+
+            if (count($effectiveSiteIds) === 1) {
+                $siteDisplayed = Craft::$app->getSites()->getSiteById($effectiveSiteIds[0])?->getName();
             }
             else {
                 $siteDisplayed = Craft::t('app', 'All Sites');
@@ -139,9 +141,13 @@ class VerificationHealthWidget extends Widget
             return null;
         }
 
+        $inScopeSiteIds = Plugin::getInstance()->getPluginSettings()->getInScopeSiteIds();
+
         $options = [['label' => Craft::t('app', 'All Sites'), 'value' => '']];
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $options[] = ['label' => $site->name, 'value' => $site->id];
+            if (in_array($site->id, $inScopeSiteIds, true)) {
+                $options[] = ['label' => $site->name, 'value' => $site->id];
+            }
         }
 
         $templateVariables = [
@@ -172,6 +178,23 @@ class VerificationHealthWidget extends Widget
     // =============================================================================================
 
     /**
+     * The sites this widget counts: the configured site when it is in scope, otherwise every
+     * in-scope site (all sites on multi-site editions; the primary site alone without).
+     *
+     * @return int[]
+     */
+    private function effectiveSiteIds(): array
+    {
+        $inScopeSiteIds = Plugin::getInstance()->getPluginSettings()->getInScopeSiteIds();
+
+        if ($this->siteId && in_array($this->siteId, $inScopeSiteIds, true)) {
+            return [$this->siteId];
+        }
+
+        return $inScopeSiteIds;
+    }
+
+    /**
      * Base query for the elements the widget counts: one row per (element, site) verification
      * unit, matching how verification state is stored.
      *
@@ -183,7 +206,7 @@ class VerificationHealthWidget extends Widget
         /** @var class-string<Element> $elementClass */
         $elementClass = $elementType->value;
 
-        $query = $elementClass::find()->siteId($this->siteId ?: '*');
+        $query = $elementClass::find()->siteId($this->effectiveSiteIds());
 
         // "Live" differs per type: entries respect post/expiry dates; assets are simply enabled.
         return match ($elementType) {
@@ -205,7 +228,7 @@ class VerificationHealthWidget extends Widget
     {
         $enabledContainerIds = Plugin::getInstance()
             ->getPluginSettings()
-            ->getEnabledContainerIds($elementType->value, $this->siteId);
+            ->getEnabledContainerIds($elementType->value, $this->effectiveSiteIds());
 
         // An empty id list must mean zero, not "unfiltered" - Craft ignores empty query params.
         if (empty($enabledContainerIds)) {

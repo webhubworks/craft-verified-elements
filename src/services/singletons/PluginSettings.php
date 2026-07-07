@@ -84,12 +84,13 @@ class PluginSettings extends Component
      * don't re-query the database.
      *
      * @param string $elementType
-     * @param int|null $siteId Limits the check to one site; null checks across all sites.
+     * @param int|int[]|null $siteId Limits the check to one site or a set of sites; null checks across all sites.
      * @return int[]
      */
-    public function getEnabledContainerIds(string $elementType, ?int $siteId = null): array
+    public function getEnabledContainerIds(string $elementType, int|array|null $siteId = null): array
     {
-        $key = $elementType . ':' . ($siteId ?? 'all');
+        $siteKey = is_array($siteId) ? implode(',', $siteId) : ($siteId ?? 'all');
+        $key = $elementType . ':' . $siteKey;
 
         if (array_key_exists($key, $this->_enabledContainerIds)) {
             return $this->_enabledContainerIds[$key];
