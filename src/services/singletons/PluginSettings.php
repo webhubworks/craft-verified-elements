@@ -7,9 +7,12 @@ use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\errors\SiteNotFoundException;
 use craft\helpers\Db;
+use craft\models\Site;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
+use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\models\ContainerDefaults;
 use yii\base\Component;
@@ -17,6 +20,9 @@ use yii\db\Exception;
 
 /**
  * Singleton to handle related plugin settings' actions.
+ *
+ * @property-read int[] $inScopeSiteIds
+ * @property-read array $allVolumesWithSettings
  */
 class PluginSettings extends Component
 {
@@ -35,6 +41,28 @@ class PluginSettings extends Component
      * @see getDefaultSettingsForContainer
      */
     private array $containerDefaults = [];
+
+    /**
+     * Returns the IDs of the sites this plugin may operate on, honoring the edition.
+     *
+     * Multi-site is a Pro feature. On editions without it, the plugin is confined to the
+     * primary site: non-primary sites are hidden from the UI and excluded from reads and
+     * writes, even on a multi-site Craft install.
+     *
+     * @return int[]
+     * @throws SiteNotFoundException
+     */
+    public function getInScopeSiteIds(): array
+    {
+        if (Feature::MultiSite->isEnabled()) {
+            return array_map(
+                static fn(Site $site): int => $site->id,
+                Craft::$app->getSites()->getAllSites()
+            );
+        }
+
+        return [Craft::$app->getSites()->getPrimarySite()->id];
+    }
 
     /**
      * Returns the IDs of containers (sections, volumes, etc.) that have been enabled in this

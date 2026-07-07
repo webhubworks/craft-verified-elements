@@ -4,6 +4,7 @@ namespace webhubworks\verifiedelements\controllers;
 
 use Craft;
 use craft\errors\SiteNotFoundException;
+use craft\models\Site;
 use craft\web\Controller;
 use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
@@ -35,16 +36,28 @@ class SettingsController extends Controller
      */
     public function actionEntries(): Response
     {
-        $sites = Craft::$app->getSites()->getAllSites();
+        $pluginSettings = Plugin::getInstance()->getPluginSettings();
+        $inScopeSiteIds = $pluginSettings->getInScopeSiteIds();
 
-        $siteHandle = $this->request->getQueryParam('site');
-        $currentSite = $siteHandle
-            ? Craft::$app->getSites()->getSiteByHandle($siteHandle)
-            : Craft::$app->getSites()->getPrimarySite();
+        // Only offer the sites this edition may manage. The template hides the site tabs
+        // when one remains, so lite collapses to a single primary-site view.
+        $sites = array_values(array_filter(
+            Craft::$app->getSites()->getAllSites(),
+            static fn(Site $site): bool => in_array($site->id, $inScopeSiteIds, true)
+        ));
 
-        $sections = Plugin::getInstance()
-            ->getPluginSettings()
-            ->getAllSectionsWithSettings($currentSite->id);
+        $requestedSiteHandle = $this->request->getQueryParam('site');
+        $requestedSite = $requestedSiteHandle
+            ? Craft::$app->getSites()->getSiteByHandle($requestedSiteHandle)
+            : null;
+
+        // Ignore an out-of-scope ?site= and fall back to the primary site.
+        $currentSite = Craft::$app->getSites()->getPrimarySite();
+        if ($requestedSite && in_array($requestedSite->id, $inScopeSiteIds, true)) {
+            $currentSite = $requestedSite;
+        }
+
+        $sections = $pluginSettings->getAllSectionsWithSettings($currentSite->id);
 
         return $this->renderTemplate(
             Plugin::HANDLE . '/_settings/entries.twig',
@@ -106,6 +119,12 @@ class SettingsController extends Controller
         $siteId = (int) $this->request->getRequiredBodyParam('siteId');
         $sections = $this->request->getRequiredBodyParam('sections');
         $service = Plugin::getInstance()->getPluginSettings();
+
+        // The UI never offers an out-of-scope site on lower editions, so a siteId outside
+        // the in-scope set is a stale or forged post.
+        if (! in_array($siteId, $service->getInScopeSiteIds(), true)) {
+            throw new BadRequestHttpException('Site is not available on this edition.');
+        }
 
         foreach ($sections as $sectionId => $settings) {
             $service->saveSectionSettings((int) $sectionId, $siteId, $settings);
