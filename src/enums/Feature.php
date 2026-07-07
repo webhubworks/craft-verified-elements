@@ -35,12 +35,6 @@ enum Feature
      */
     case MultiSite;
 
-    /**
-     * Will the plugin allow assigning a Reviewer (Craft user) to keep an element updated or must
-     * a single user be the sole Reviewer?
-     */
-    case ReviewerAssignment;
-
 
     // PER EDITION
     // =============================================================================================
@@ -53,7 +47,7 @@ enum Feature
     public function requiredEdition(): Edition
     {
         return match ($this) {
-            self::EntryVerification, self::ReviewerAssignment => Edition::Lite,
+            self::EntryVerification => Edition::Lite,
             self::MultiSite => Edition::Pro,
             self::AssetVerification => Edition::ProPlus,
         };
