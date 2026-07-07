@@ -523,6 +523,23 @@ readonly class EventRegistrar
         /** @var Entry|VerifiableBehavior $entry */
         $entry = $event->sender;
 
+        // Matrix entries have no section and are never verifiable.
+        if ($entry->sectionId === null) {
+            return;
+        }
+
+        $settings = $this->plugin->getPluginSettings();
+
+        // The plugin manages only in-scope sites; omit verification metadata on others.
+        if (! $settings->isSiteInScope($entry->siteId)) {
+            return;
+        }
+
+        // Only sections enabled for verification show a status.
+        if (! $settings->isContainerEnabledForSite($entry->sectionId, $entry->siteId, Entry::class)) {
+            return;
+        }
+
         $status = $entry->getVerificationStatus();
         $statusHtml = Cp::statusIndicatorHtml(
             $status->handle(),
@@ -555,6 +572,12 @@ readonly class EventRegistrar
         }
 
         $settings = $this->plugin->getPluginSettings();
+
+        // The plugin manages only in-scope sites; omit the sidebar on others.
+        if (! $settings->isSiteInScope($entry->siteId)) {
+            return;
+        }
+
         $isSectionEnabled = $settings->isContainerEnabledForSite(
             $entry->sectionId,
             $entry->siteId,
@@ -580,6 +603,11 @@ readonly class EventRegistrar
     {
         /** @var Entry|VerifiableBehavior $entry */
         $entry = $event->sender;
+
+        // The plugin manages only in-scope sites; render no fields on others.
+        if (! $this->plugin->getPluginSettings()->isSiteInScope($entry->siteId)) {
+            return;
+        }
 
         /** @noinspection DuplicatedCode */
         $currentUser = Craft::$app->getUser();
@@ -779,6 +807,18 @@ readonly class EventRegistrar
             return;
         }
 
+        $settings = $this->plugin->getPluginSettings();
+
+        // The plugin manages only in-scope sites; omit verification metadata on others.
+        if (! $settings->isSiteInScope($asset->siteId)) {
+            return;
+        }
+
+        // Only volumes enabled for verification show a status.
+        if (! $settings->isContainerEnabledForSite($asset->volumeId, $asset->siteId, Asset::class)) {
+            return;
+        }
+
         $status = $asset->getVerificationStatus();
         $statusHtml = Cp::statusIndicatorHtml(
             $status->handle(),
@@ -813,6 +853,12 @@ readonly class EventRegistrar
         }
 
         $settings = $this->plugin->getPluginSettings();
+
+        // The plugin manages only in-scope sites; omit the sidebar on others.
+        if (! $settings->isSiteInScope($asset->siteId)) {
+            return;
+        }
+
         $isVolumeEnabled = $settings->isContainerEnabledForSite(
             $asset->volumeId,
             $asset->siteId,
@@ -841,6 +887,11 @@ readonly class EventRegistrar
 
         // Folders and temporary uploads (no volume yet) are never verifiable.
         if ($asset->isFolder || $asset->volumeId === null) {
+            return;
+        }
+
+        // The plugin manages only in-scope sites; render no fields on others.
+        if (! $this->plugin->getPluginSettings()->isSiteInScope($asset->siteId)) {
             return;
         }
 
