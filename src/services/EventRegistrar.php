@@ -200,8 +200,6 @@ readonly class EventRegistrar
      */
     protected function onRegisterCpUrlRules(RegisterUrlRulesEvent $event): void
     {
-        $currentUser = Craft::$app->getUser();
-
         $event->rules[Plugin::HANDLE] = Plugin::HANDLE . '/index/index';
 
         // Show the plugin's "Entries" page in the CP. The bare plugin handle is the
@@ -217,7 +215,7 @@ readonly class EventRegistrar
 
         // Expose the plugin's settings subpages. The bare settings path lands on the
         // first subpage (entries), mirroring the plugin's top-level nav link.
-        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
+        if (Permission::ManageVerificationSettings->isGranted()) {
             $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/entries';
             $event->rules[Plugin::HANDLE . '/settings/entries'] = Plugin::HANDLE . '/settings/entries';
             $event->rules[Plugin::HANDLE . '/settings/subscription-plan'] = Plugin::HANDLE . '/settings/subscription-plan';
@@ -341,7 +339,7 @@ readonly class EventRegistrar
 
     /**
      * Registers the plugin's dashboard widgets. The personal review widget only appears for
-     * users who are allowed to verify.
+     * users who can access the plugin.
      *
      * @param RegisterComponentTypesEvent $event
      * @return void
@@ -350,12 +348,12 @@ readonly class EventRegistrar
      */
     protected function onRegisterWidgets(RegisterComponentTypesEvent $event): void
     {
-        $event->types[] = VerificationHealthWidget::class;
-
-        $currentUser = Craft::$app->getUser();
-        if ($currentUser->checkPermission(Permission::VerifyEntries->value)) {
-            $event->types[] = ElementsToReviewWidget::class;
+        if (! Permission::AccessPlugin->isGranted()) {
+            return;
         }
+
+        $event->types[] = VerificationHealthWidget::class;
+        $event->types[] = ElementsToReviewWidget::class;
     }
 
     /**
@@ -578,8 +576,7 @@ readonly class EventRegistrar
      */
     protected function onDefineEntrySidebarHtml(DefineHtmlEvent $event): void
     {
-        $currentUser = Craft::$app->getUser();
-        if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+        if (! Permission::VerifyEntries->isGranted()) {
             return;
         }
 
@@ -628,13 +625,9 @@ readonly class EventRegistrar
             return;
         }
 
-        /** @noinspection DuplicatedCode */
-        $currentUser = Craft::$app->getUser();
-        $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
-
         $service = new VerificationFieldsRenderer(
             $entry,
-            $canVerifyEntries,
+            Permission::VerifyEntries->isGranted(),
             $this->plugin->getPluginSettings()
         );
 
@@ -657,12 +650,12 @@ readonly class EventRegistrar
      */
     protected function onRegisterEntryIndexActions(RegisterElementActionsEvent $event): void
     {
-        $currentUser = Craft::$app->getUser();
-
-        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value)) {
-            $event->actions[] = VerifyElement::class;
-            $event->actions[] = AssignReviewer::class;
+        if (! Permission::VerifyEntries->isGranted()) {
+            return;
         }
+
+        $event->actions[] = VerifyElement::class;
+        $event->actions[] = AssignReviewer::class;
     }
 
 
@@ -884,8 +877,7 @@ readonly class EventRegistrar
      */
     protected function onDefineAssetSidebarHtml(DefineHtmlEvent $event): void
     {
-        $currentUser = Craft::$app->getUser();
-        if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyAssets->value)) {
+        if (! Permission::VerifyAssets->isGranted()) {
             return;
         }
 
@@ -941,13 +933,9 @@ readonly class EventRegistrar
             return;
         }
 
-        /** @noinspection DuplicatedCode */
-        $currentUser = Craft::$app->getUser();
-        $canVerifyAssets = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyAssets->value);
-
         $service = new VerificationFieldsRenderer(
             $asset,
-            $canVerifyAssets,
+            Permission::VerifyAssets->isGranted(),
             $this->plugin->getPluginSettings()
         );
 
@@ -970,12 +958,12 @@ readonly class EventRegistrar
      */
     protected function onRegisterAssetIndexActions(RegisterElementActionsEvent $event): void
     {
-        $currentUser = Craft::$app->getUser();
-
-        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyAssets->value)) {
-            $event->actions[] = VerifyElement::class;
-            $event->actions[] = AssignReviewer::class;
+        if (! Permission::VerifyAssets->isGranted()) {
+            return;
         }
+
+        $event->actions[] = VerifyElement::class;
+        $event->actions[] = AssignReviewer::class;
     }
 
 

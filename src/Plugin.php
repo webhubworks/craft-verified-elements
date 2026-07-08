@@ -99,7 +99,6 @@ class Plugin extends BasePlugin
     public function getCpNavItem(): ?array
     {
         $nav = parent::getCpNavItem();
-        $currentUser = Craft::$app->getUser();
 
         if (Feature::EntryVerification->isEnabled()) {
             $nav['subnav']['entries'] = [
@@ -115,7 +114,7 @@ class Plugin extends BasePlugin
             ];
         }
 
-        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::ManageVerificationSettings->value)) {
+        if (Permission::ManageVerificationSettings->isGranted()) {
             $nav['subnav']['settings'] = [
                 'label' => Craft::t('app', 'Settings'),
                 'url' => self::HANDLE . '/settings',
