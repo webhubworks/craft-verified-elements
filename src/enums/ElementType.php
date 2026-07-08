@@ -9,6 +9,7 @@ use craft\elements\Entry;
 use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\models\Volume;
+use ValueError;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 
@@ -105,6 +106,19 @@ enum ElementType: string
     }
 
     /**
+     * Returns the permission required to verify elements of this type.
+     *
+     * @return Permission
+     */
+    public function verifyPermission(): Permission
+    {
+        return match ($this) {
+            self::Entry => Permission::VerifyEntries,
+            self::Asset => Permission::VerifyAssets,
+        };
+    }
+
+    /**
      * Returns the FQCNs of the element types whose features are enabled in the plugin's current
      * edition.
      *
@@ -192,7 +206,7 @@ enum ElementType: string
             }
         }
 
-        throw new \ValueError(sprintf('Unknown element type URI segment: %s', $uriSegment));
+        throw new ValueError(sprintf('Unknown element type URI segment: %s', $uriSegment));
     }
 
     /**

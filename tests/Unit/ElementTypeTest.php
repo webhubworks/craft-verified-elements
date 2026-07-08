@@ -7,6 +7,7 @@ use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\Feature;
+use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\helpers\Log;
 
 /**
@@ -61,6 +62,11 @@ it('maps each type to its verified element subtype', function () {
 it('maps each type to its feature gate', function () {
     expect(ElementType::Entry->feature())->toBe(Feature::EntryVerification);
     expect(ElementType::Asset->feature())->toBe(Feature::AssetVerification);
+});
+
+it('maps each type to its verify permission', function () {
+    expect(ElementType::Entry->verifyPermission())->toBe(Permission::VerifyEntries);
+    expect(ElementType::Asset->verifyPermission())->toBe(Permission::VerifyAssets);
 });
 
 it('maps each type to its plugin index URI segment', function () {

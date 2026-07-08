@@ -51,6 +51,7 @@ use webhubworks\verifiedelements\elements\conditions\VerifiedConditionRule;
 use webhubworks\verifiedelements\elements\conditions\VerifiedUntilDateConditionRule;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\helpers\AssetHelper;
@@ -311,16 +312,30 @@ readonly class EventRegistrar
      */
     protected function onRegisterUserPermissions(RegisterUserPermissionsEvent $event): void
     {
+        $permissions = [
+            Permission::ManageVerificationSettings->value => [
+                'label' => Craft::t(Plugin::HANDLE, 'Manage Verification Settings'),
+            ],
+        ];
+
+        foreach (ElementType::cases() as $elementType) {
+            if (! $elementType->feature()->isEnabled()) {
+                continue;
+            }
+
+            $label = match ($elementType) {
+                ElementType::Entry => Craft::t(Plugin::HANDLE, 'Verify entries'),
+                ElementType::Asset => Craft::t(Plugin::HANDLE, 'Verify assets'),
+            };
+
+            $permissions[$elementType->verifyPermission()->value] = [
+                'label' => $label,
+            ];
+        }
+
         $event->permissions[] = [
             'heading' => Craft::t(Plugin::HANDLE, 'Verified Elements'),
-            'permissions' => [
-                Permission::ManageVerificationSettings->value => [
-                    'label' => Craft::t(Plugin::HANDLE, 'Manage Verification Settings'),
-                ],
-                Permission::VerifyEntries->value => [
-                    'label' => Craft::t(Plugin::HANDLE, 'Verify entries'),
-                ]
-            ],
+            'permissions' => $permissions,
         ];
     }
 
@@ -608,6 +623,7 @@ readonly class EventRegistrar
         $entry = $event->sender;
 
         // The plugin manages only in-scope sites; render no fields on others.
+        /** @noinspection DuplicatedCode */
         if (! $this->plugin->getPluginSettings()->isSiteInScope($entry->siteId)) {
             return;
         }
@@ -901,6 +917,7 @@ readonly class EventRegistrar
         }
 
         // The plugin manages only in-scope sites; render no fields on others.
+        /** @noinspection DuplicatedCode */
         if (! $this->plugin->getPluginSettings()->isSiteInScope($asset->siteId)) {
             return;
         }

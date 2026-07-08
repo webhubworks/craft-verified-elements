@@ -7,6 +7,7 @@ namespace webhubworks\verifiedelements\enums;
  */
 enum Permission: string
 {
-    case VerifyEntries = 'verified-elements:verifyEntries';
     case ManageVerificationSettings = 'verified-elements:manageVerificationSettings';
+    case VerifyAssets = 'verified-elements:verifyAssets';
+    case VerifyEntries = 'verified-elements:verifyEntries';
 }
