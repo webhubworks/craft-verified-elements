@@ -5,8 +5,10 @@ namespace webhubworks\verifiedelements\services;
 use Craft;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\enums\ReviewerStatus;
@@ -133,13 +135,31 @@ class ElementIndexSourcesBuilder
     /**
      * Factory method for testing.
      *
+     * Returns the users who actually have review assignments for this element type, NOT the
+     * holders of a verify permission. Assignments outlive permission changes, so a permission
+     * query misrepresents the real reviewer set.
+     *
      * @return User[]
      */
     protected function findReviewers(): array
     {
+        $reviewerIds = PluginQuery::assignedReviewerIds(
+            ElementType::from($this->elementType),
+            $this->settings->getInScopeSiteIds()
+        )->column();
+
+        // The "mine" source already covers the current user.
+        $reviewerIds = array_filter(
+            array_map('intval', $reviewerIds),
+            fn(int $reviewerId): bool => $reviewerId !== $this->currentUserId
+        );
+
+        if (empty($reviewerIds)) {
+            return [];
+        }
+
         return User::find()
-            ->can(Permission::VerifyEntries->value)
-            ->id(['not', $this->currentUserId])
+            ->id($reviewerIds)
             ->all();
     }
 }

@@ -6,6 +6,7 @@ use markhuot\craftpest\factories\Entry;
 use markhuot\craftpest\factories\Volume;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\models\ElementData;
 
 /**
@@ -401,4 +402,173 @@ it('orders and paginates across the reviewer union, not per subquery', function 
     $secondPage = $query->limit(1)->offset(1)->all();
     expect($secondPage)->toHaveCount(1);
     expect((int) $secondPage[0]['id'])->toBe($asset->getCanonicalId());
+});
+
+
+// assignedReviewerIds()
+// =================================================================================================
+
+it('returns each assigned reviewer once and ignores unassigned rows', function () {
+    $section = createSection();
+    $reviewer = getSharedReviewer();
+    $entryOne = withVerifiableBehavior(Entry::factory()->section($section)->create());
+    $entryTwo = withVerifiableBehavior(Entry::factory()->section($section)->create());
+    $unassignedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
+        'siteId' => $entryOne->siteId,
+        'elementType' => \craft\elements\Entry::class,
+        'enabled' => true,
+    ]);
+
+    // Two assignments for the same reviewer must collapse to one ID.
+    foreach ([$entryOne, $entryTwo] as $entry) {
+        Db::insert(PluginTable::ATTRIBUTES, [
+            'elementId' => $entry->getCanonicalId(),
+            'siteId' => $entry->siteId,
+            'reviewerId' => $reviewer->id,
+            'verifiedUntilDate' => null,
+        ]);
+    }
+
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $unassignedEntry->getCanonicalId(),
+        'siteId' => $unassignedEntry->siteId,
+        'reviewerId' => null,
+        'verifiedUntilDate' => null,
+    ]);
+
+    $reviewerIds = array_map(
+        'intval',
+        PluginQuery::assignedReviewerIds(ElementType::Entry, allSiteIds())->column()
+    );
+
+    expect($reviewerIds)->toBe([$reviewer->id]);
+});
+
+it('does not leak reviewers across element types', function () {
+    $section = createSection();
+    $volume = Volume::factory()->create();
+    $entryReviewer = getSharedReviewer('a');
+    $assetReviewer = getSharedReviewer('b');
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+    $asset = withVerifiableBehavior(Asset::factory()->volume($volume->handle)->create());
+
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
+        'siteId' => $entry->siteId,
+        'elementType' => \craft\elements\Entry::class,
+        'enabled' => true,
+    ]);
+
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $volume->id,
+        'siteId' => $asset->siteId,
+        'elementType' => \craft\elements\Asset::class,
+        'enabled' => true,
+    ]);
+
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
+        'siteId' => $entry->siteId,
+        'reviewerId' => $entryReviewer->id,
+        'verifiedUntilDate' => null,
+    ]);
+
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $asset->getCanonicalId(),
+        'siteId' => $asset->siteId,
+        'reviewerId' => $assetReviewer->id,
+        'verifiedUntilDate' => null,
+    ]);
+
+    $entryReviewerIds = array_map(
+        'intval',
+        PluginQuery::assignedReviewerIds(ElementType::Entry, allSiteIds())->column()
+    );
+    $assetReviewerIds = array_map(
+        'intval',
+        PluginQuery::assignedReviewerIds(ElementType::Asset, allSiteIds())->column()
+    );
+
+    expect($entryReviewerIds)->toBe([$entryReviewer->id]);
+    expect($assetReviewerIds)->toBe([$assetReviewer->id]);
+});
+
+it('excludes reviewers whose assignments sit only in disabled containers', function () {
+    $section = createSection();
+    $reviewer = getSharedReviewer();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
+        'siteId' => $entry->siteId,
+        'elementType' => \craft\elements\Entry::class,
+        'enabled' => false,
+    ]);
+
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
+        'siteId' => $entry->siteId,
+        'reviewerId' => $reviewer->id,
+        'verifiedUntilDate' => null,
+    ]);
+
+    expect(PluginQuery::assignedReviewerIds(ElementType::Entry, allSiteIds())->column())->toBe([]);
+});
+
+it('requires the enabled container row to match the element type', function () {
+    $section = createSection();
+    $reviewer = getSharedReviewer();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    // containerId has no FK, so a row can exist for the same ID under the WRONG type - the
+    // section/volume ID-collision scenario. It must not satisfy the Entry-type query.
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
+        'siteId' => $entry->siteId,
+        'elementType' => \craft\elements\Asset::class,
+        'enabled' => true,
+    ]);
+
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
+        'siteId' => $entry->siteId,
+        'reviewerId' => $reviewer->id,
+        'verifiedUntilDate' => null,
+    ]);
+
+    expect(PluginQuery::assignedReviewerIds(ElementType::Entry, allSiteIds())->column())->toBe([]);
+});
+
+it('excludes assignments on out-of-scope sites', function () {
+    $section = createSection();
+    $reviewer = getSharedReviewer();
+    $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
+
+    Db::insert(PluginTable::CONTAINERS, [
+        'containerId' => $section->id,
+        'siteId' => $entry->siteId,
+        'elementType' => \craft\elements\Entry::class,
+        'enabled' => true,
+    ]);
+
+    Db::insert(PluginTable::ATTRIBUTES, [
+        'elementId' => $entry->getCanonicalId(),
+        'siteId' => $entry->siteId,
+        'reviewerId' => $reviewer->id,
+        'verifiedUntilDate' => null,
+    ]);
+
+    // In scope: the entry's own site.
+    $inScopeReviewerIds = array_map(
+        'intval',
+        PluginQuery::assignedReviewerIds(ElementType::Entry, [$entry->siteId])->column()
+    );
+    expect($inScopeReviewerIds)->toBe([$reviewer->id]);
+
+    // Out of scope: every other site.
+    $otherSiteIds = array_values(array_diff(allSiteIds(), [$entry->siteId]));
+    expect(PluginQuery::assignedReviewerIds(ElementType::Entry, $otherSiteIds)->column())->toBe([]);
 });

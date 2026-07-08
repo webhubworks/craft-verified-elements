@@ -220,6 +220,38 @@ abstract class PluginQuery
             ]);
     }
 
+    /**
+     * IDs of the users currently assigned as reviewers on elements of the given type, restricted
+     * to enabled containers and in-scope sites. Feeds the per-reviewer dashboard sources: a
+     * reviewer "exists" for the dashboard when they have at least one assignment it can show,
+     * regardless of what permissions they hold.
+     *
+     * @param ElementType $elementType
+     * @param int[] $inScopeSiteIds
+     * @return Query
+     */
+    public static function assignedReviewerIds(ElementType $elementType, array $inScopeSiteIds): Query
+    {
+        return (new Query())
+            ->select('veea.reviewerId')
+            ->distinct()
+            ->from(['veea' => PluginTable::ATTRIBUTES])
+            ->innerJoin(
+                ['elementRecord' => $elementType->elementTable()],
+                '[[elementRecord.id]] = [[veea.elementId]]'
+            )
+            ->innerJoin(
+                ['ves' => PluginTable::CONTAINERS],
+                sprintf(
+                    '[[ves.containerId]] = [[elementRecord.%s]] AND [[ves.siteId]] = [[veea.siteId]] AND [[ves.enabled]] = 1',
+                    $elementType->containerIdColumn()
+                )
+            )
+            ->andWhere(['ves.elementType' => $elementType->value])
+            ->andWhere(['not', ['veea.reviewerId' => null]])
+            ->andWhere(['veea.siteId' => $inScopeSiteIds]);
+    }
+
 
     // PRIVATE HELPERS
     // =============================================================================================
