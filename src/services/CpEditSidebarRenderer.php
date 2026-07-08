@@ -88,6 +88,7 @@ readonly class CpEditSidebarRenderer
             'isVerified' => $this->element->getIsVerified(),
             'reviewer' => $this->element->getReviewer(),
             'dateSelectOptions' => $dateSelectOptions,
+            'assignableReviewerPermission' => $elementType->verifyPermission()->value,
         ];
 
         try {

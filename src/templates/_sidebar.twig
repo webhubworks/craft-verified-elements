@@ -35,7 +35,7 @@
             elements: reviewer ? [reviewer] : [],
             criteria: {
                 status: 'active',
-                can: 'verified-elements:verifyEntries',
+                can: assignableReviewerPermission,
             }
         }) }}
     </div>

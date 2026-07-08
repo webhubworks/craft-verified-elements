@@ -49,7 +49,7 @@
                                     elements: volume.reviewerId ? [volume.reviewer] : [],
                                     criteria: {
                                         status: 'active',
-                                        can: 'verified-elements:verifyEntries',
+                                        can: assignableReviewerPermission,
                                     },
                                     limit: 1,
                                     hideSidebar: true,

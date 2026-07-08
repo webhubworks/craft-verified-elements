@@ -7,6 +7,7 @@ use craft\errors\SiteNotFoundException;
 use craft\models\Site;
 use craft\web\Controller;
 use webhubworks\verifiedelements\enums\Feature;
+use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
 use webhubworks\verifiedelements\Plugin;
 use yii\web\BadRequestHttpException;
@@ -67,6 +68,7 @@ class SettingsController extends Controller
                 'currentSite' => $currentSite,
                 'sections' => $sections,
                 'periodSelectOptions' => VerificationFieldsRenderer::periodSelectOptions(),
+                'assignableReviewerPermission' => Permission::VerifyEntries->value,
             ]
         );
     }
@@ -88,6 +90,7 @@ class SettingsController extends Controller
                 ...$this->sharedTemplateVariables('assets'),
                 'volumes' => $volumes,
                 'periodSelectOptions' => VerificationFieldsRenderer::periodSelectOptions(),
+                'assignableReviewerPermission' => Permission::VerifyAssets->value,
             ]
         );
     }
