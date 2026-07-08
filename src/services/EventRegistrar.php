@@ -357,7 +357,9 @@ readonly class EventRegistrar
     }
 
     /**
-     * Adds the "Verified Elements" screen to the account pages of users who can verify.
+     * Adds the "Verified Elements" screen to the account pages of users who can access the
+     * plugin. Reviewer assignments are a data role, not a permission - a user who can view but
+     * not verify (assigned by others) still needs their "assigned elements" screen.
      *
      * @param DefineEditUserScreensEvent $event
      * @return void
@@ -366,7 +368,7 @@ readonly class EventRegistrar
      */
     protected function onDefineEditScreens(DefineEditUserScreensEvent $event): void
     {
-        if (! $event->editedUser->can(Permission::VerifyEntries->value)) {
+        if (! $event->editedUser->can(Permission::AccessPlugin->value)) {
             return;
         }
 
