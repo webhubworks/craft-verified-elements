@@ -409,7 +409,7 @@ readonly class EventRegistrar
 
         // "element index" pages
         Event::on(Entry::class, Element::EVENT_REGISTER_SORT_OPTIONS, $this->onRegisterElementIndexSortOptions(...));
-        Event::on(Entry::class, Element::EVENT_REGISTER_ACTIONS, $this->onRegisterElementIndexActions(...));
+        Event::on(Entry::class, Element::EVENT_REGISTER_ACTIONS, $this->onRegisterEntryIndexActions(...));
         Event::on(Entry::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, $this->onRegisterElementIndexTableAttributes(...));
         Event::on(Entry::class, Element::EVENT_DEFINE_ATTRIBUTE_HTML, $this->onDefineElementIndexAttributeHtml(...));
 
@@ -646,6 +646,25 @@ readonly class EventRegistrar
         }
     }
 
+    /**
+     * Adds the "Verify" and "Assign Reviewer" bulk actions to entry indexes for users who
+     * are allowed to verify entries.
+     *
+     * @param RegisterElementActionsEvent $event
+     * @return void
+     * @see Element::EVENT_REGISTER_ACTIONS
+     * @see registerEntryEvents()
+     */
+    protected function onRegisterEntryIndexActions(RegisterElementActionsEvent $event): void
+    {
+        $currentUser = Craft::$app->getUser();
+
+        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+            $event->actions[] = VerifyElement::class;
+            $event->actions[] = AssignReviewer::class;
+        }
+    }
+
 
     // ASSET events
     // =============================================================================================
@@ -678,7 +697,7 @@ readonly class EventRegistrar
 
         // "element index" pages
         Event::on(Asset::class, Element::EVENT_REGISTER_SORT_OPTIONS, $this->onRegisterElementIndexSortOptions(...));
-        Event::on(Asset::class, Element::EVENT_REGISTER_ACTIONS, $this->onRegisterElementIndexActions(...));
+        Event::on(Asset::class, Element::EVENT_REGISTER_ACTIONS, $this->onRegisterAssetIndexActions(...));
         Event::on(Asset::class, Element::EVENT_REGISTER_TABLE_ATTRIBUTES, $this->onRegisterElementIndexTableAttributes(...));
         Event::on(Asset::class, Element::EVENT_DEFINE_ATTRIBUTE_HTML, $this->onDefineElementIndexAttributeHtml(...));
 
@@ -940,6 +959,25 @@ readonly class EventRegistrar
         }
     }
 
+    /**
+     * Adds the "Verify" and "Assign Reviewer" bulk actions to asset indexes for users who
+     * are allowed to verify assets.
+     *
+     * @param RegisterElementActionsEvent $event
+     * @return void
+     * @see Element::EVENT_REGISTER_ACTIONS
+     * @see registerAssetEvents()
+     */
+    protected function onRegisterAssetIndexActions(RegisterElementActionsEvent $event): void
+    {
+        $currentUser = Craft::$app->getUser();
+
+        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyAssets->value)) {
+            $event->actions[] = VerifyElement::class;
+            $event->actions[] = AssignReviewer::class;
+        }
+    }
+
 
     // (SHARED) ELEMENT events
     // =============================================================================================
@@ -1000,26 +1038,6 @@ readonly class EventRegistrar
             'orderBy' => 'verifiedUntilDate',
             'defaultDir' => 'desc',
         ];
-    }
-
-    /**
-     * Adds the "Verify" and "Assign Reviewer" bulk actions to element indexes for users who
-     * are allowed to verify.
-     *
-     * @param RegisterElementActionsEvent $event
-     * @return void
-     * @see Element::EVENT_REGISTER_ACTIONS
-     * @see registerAssetEvents()
-     * @see registerEntryEvents()
-     */
-    protected function onRegisterElementIndexActions(RegisterElementActionsEvent $event): void
-    {
-        $currentUser = Craft::$app->getUser();
-
-        if ($currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value)) {
-            $event->actions[] = VerifyElement::class;
-            $event->actions[] = AssignReviewer::class;
-        }
     }
 
     /**

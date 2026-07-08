@@ -63,6 +63,24 @@ enum ElementType: string
     }
 
     /**
+     * Resolves the registry case for an element class name.
+     *
+     * Like fromElement(), this resolves the plugin's own element subtypes (VerifiedEntry,
+     * VerifiedAsset) to their vanilla case. `is_a()` walks the inheritance chain, where
+     * `self::from()` would only match the exact case values.
+     *
+     * @param class-string<Element> $elementClass
+     * @return self
+     */
+    public static function fromElementClass(string $elementClass): self
+    {
+        return match (true) {
+            is_a($elementClass, Entry::class, true) => self::Entry,
+            is_a($elementClass, Asset::class, true) => self::Asset,
+        };
+    }
+
+    /**
      * Returns the ID of the container (section, volume, ...) the element belongs to.
      *
      * @param Element $element

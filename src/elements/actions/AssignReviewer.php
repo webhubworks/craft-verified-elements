@@ -7,7 +7,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use Throwable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
-use webhubworks\verifiedelements\enums\Permission;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\Plugin;
 
 /**
@@ -60,7 +60,10 @@ class AssignReviewer extends ElementAction
                     },
                 });
             })();
-        JS, [static::class, Permission::VerifyEntries->value]);
+        JS, [
+            static::class,
+            ElementType::fromElementClass($this->elementType)->verifyPermission()->value
+        ]);
 
         return null;
     }

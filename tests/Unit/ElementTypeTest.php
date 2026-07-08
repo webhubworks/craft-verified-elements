@@ -42,6 +42,20 @@ it('returns null when trying to resolve an unsupported element type', function (
     expect(ElementType::tryFromElement(new User()))->toBeNull();
 });
 
+it('resolves element class names to their registry case', function () {
+    expect(ElementType::fromElementClass(Entry::class))->toBe(ElementType::Entry);
+    expect(ElementType::fromElementClass(Asset::class))->toBe(ElementType::Asset);
+});
+
+it("resolves the plugin's element subtype class names to their vanilla case", function () {
+    expect(ElementType::fromElementClass(VerifiedEntry::class))->toBe(ElementType::Entry);
+    expect(ElementType::fromElementClass(VerifiedAsset::class))->toBe(ElementType::Asset);
+});
+
+it('throws for unsupported element class names', function () {
+    ElementType::fromElementClass(User::class);
+})->throws(UnhandledMatchError::class);
+
 
 // Per-type knowledge
 // =================================================================================================
