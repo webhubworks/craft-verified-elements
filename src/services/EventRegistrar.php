@@ -866,7 +866,7 @@ readonly class EventRegistrar
     protected function onDefineAssetSidebarHtml(DefineHtmlEvent $event): void
     {
         $currentUser = Craft::$app->getUser();
-        if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyEntries->value)) {
+        if (! $currentUser->getIsAdmin() && ! $currentUser->checkPermission(Permission::VerifyAssets->value)) {
             return;
         }
 
@@ -924,11 +924,11 @@ readonly class EventRegistrar
 
         /** @noinspection DuplicatedCode */
         $currentUser = Craft::$app->getUser();
-        $canVerifyEntries = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyEntries->value);
+        $canVerifyAssets = $currentUser->getIsAdmin() || $currentUser->checkPermission(Permission::VerifyAssets->value);
 
         $service = new VerificationFieldsRenderer(
             $asset,
-            $canVerifyEntries,
+            $canVerifyAssets,
             $this->plugin->getPluginSettings()
         );
 

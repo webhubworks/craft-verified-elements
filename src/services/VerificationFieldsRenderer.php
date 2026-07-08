@@ -13,7 +13,6 @@ use Throwable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\enums\DateStatus;
 use webhubworks\verifiedelements\enums\ElementType;
-use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\helpers\Log;
@@ -30,7 +29,7 @@ readonly class VerificationFieldsRenderer
 
     public function __construct(
         private Element        $element,
-        private bool           $canVerifyEntries,
+        private bool           $canVerifyElements,
         private PluginSettings $settings
     ) {}
 
@@ -50,9 +49,9 @@ readonly class VerificationFieldsRenderer
             'elements' => $reviewer ? [$reviewer] : null,
             'criteria' => [
                 'status' => 'active',
-                'can' => Permission::VerifyEntries->value,
+                'can' => ElementType::fromElement($this->element)->verifyPermission()->value,
             ],
-            'disabled' => ! $this->canVerifyEntries,
+            'disabled' => ! $this->canVerifyElements,
         ];
 
         try {
@@ -90,7 +89,7 @@ readonly class VerificationFieldsRenderer
             'value' => $this->getVerifiedUntilDateValue(),
             'addOptionLabel' => 'specificDate',
             'addOptionFn' => self::jsFunctionToAddCustomDate(),
-            'disabled' => ! $this->canVerifyEntries,
+            'disabled' => ! $this->canVerifyElements,
         ];
 
         try {
