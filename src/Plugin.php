@@ -114,7 +114,7 @@ class Plugin extends BasePlugin
             ];
         }
 
-        if (Permission::ManageVerificationSettings->isGranted()) {
+        if (Permission::ManagePluginSettings->isGranted()) {
             $nav['subnav']['settings'] = [
                 'label' => Craft::t('app', 'Settings'),
                 'url' => self::HANDLE . '/settings',

@@ -22,10 +22,10 @@ enum Permission: string
      * Grants managing the plugin's settings.
      *
      * Includes:
-     * 1. Viewing the Settings subnav item.
+     * 1. Viewing the plugin's Settings subnav item.
      * 2. Registering the settings URL rules.
      */
-    case ManageVerificationSettings = 'verified-elements:manageVerificationSettings';
+    case ManagePluginSettings = 'verified-elements:managePluginSettings';
 
     /**
      * Grants verifying assets.

@@ -215,7 +215,7 @@ readonly class EventRegistrar
 
         // Expose the plugin's settings subpages. The bare settings path lands on the
         // first subpage (entries), mirroring the plugin's top-level nav link.
-        if (Permission::ManageVerificationSettings->isGranted()) {
+        if (Permission::ManagePluginSettings->isGranted()) {
             $event->rules[Plugin::HANDLE . '/settings'] = Plugin::HANDLE . '/settings/entries';
             $event->rules[Plugin::HANDLE . '/settings/entries'] = Plugin::HANDLE . '/settings/entries';
             $event->rules[Plugin::HANDLE . '/settings/subscription-plan'] = Plugin::HANDLE . '/settings/subscription-plan';
@@ -311,7 +311,7 @@ readonly class EventRegistrar
     protected function onRegisterUserPermissions(RegisterUserPermissionsEvent $event): void
     {
         $permissions = [
-            Permission::ManageVerificationSettings->value => [
+            Permission::ManagePluginSettings->value => [
                 'label' => Craft::t(Plugin::HANDLE, 'Manage Verification Settings'),
             ],
         ];
