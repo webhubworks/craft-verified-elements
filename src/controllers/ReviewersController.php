@@ -7,6 +7,7 @@ use craft\controllers\EditUserTrait;
 use craft\web\CpScreenResponseBehavior;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\Feature;
+use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\Plugin;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -39,6 +40,15 @@ class ReviewersController extends Controller
     public function actionIndex(?int $userId = null): Response
     {
         $user = $this->editedUser($userId);
+
+        /**
+         * The Verified Elements screen is only registered for users who may access the plugin:
+         * @see \webhubworks\verifiedelements\services\EventRegistrar::onDefineEditScreens()
+         * Accessing it by URL must follow the same rule.
+         */
+        if (! $user->can(Permission::AccessPlugin->value)) {
+            throw new ForbiddenHttpException('This user does not have access to Verified Elements.');
+        }
 
         $showEntriesTab = Feature::EntryVerification->isEnabled();
         $showAssetsTab = Feature::AssetVerification->isEnabled();
