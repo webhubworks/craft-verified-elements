@@ -12,6 +12,7 @@ use craft\models\Volume;
 use ValueError;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
+use yii\base\InvalidArgumentException;
 
 /**
  * Registry of the element types this plugin can verify.
@@ -24,7 +25,7 @@ use webhubworks\verifiedelements\elements\VerifiedEntry;
  * display labels) lives here. Adding a new element type means adding a case and filling in the
  * `match` arms below; static analysis flags any arm that's missed.
  */
-enum ElementType : string
+enum ElementType: string
 {
     case Entry = Entry::class;
     case Asset = Asset::class;
@@ -38,12 +39,17 @@ enum ElementType : string
      *
      * @param Element $element
      * @return self
+     * @throws InvalidArgumentException
      */
     public static function fromElement(Element $element): self
     {
         return match (true) {
             $element instanceof Entry => self::Entry,
             $element instanceof Asset => self::Asset,
+            default => throw new InvalidArgumentException(sprintf(
+                'Unsupported element type: %s',
+                $element::class
+            ))
         };
     }
 
@@ -71,12 +77,17 @@ enum ElementType : string
      *
      * @param class-string<Element> $elementClass
      * @return self
+     * @throws InvalidArgumentException
      */
     public static function fromElementClass(string $elementClass): self
     {
         return match (true) {
             is_a($elementClass, Entry::class, true) => self::Entry,
             is_a($elementClass, Asset::class, true) => self::Asset,
+            default => throw new InvalidArgumentException(sprintf(
+                'Unsupported element class: %s',
+                $elementClass
+            ))
         };
     }
 

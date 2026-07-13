@@ -9,6 +9,7 @@ use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\helpers\Log;
+use yii\base\InvalidArgumentException;
 
 /**
  * UNIT TESTS
@@ -52,9 +53,13 @@ it("resolves the plugin's element subtype class names to their vanilla case", fu
     expect(ElementType::fromElementClass(VerifiedAsset::class))->toBe(ElementType::Asset);
 });
 
+it('throws for unsupported elements', function() {
+    ElementType::fromElement(new User());
+})->throws(InvalidArgumentException::class);
+
 it('throws for unsupported element class names', function() {
     ElementType::fromElementClass(User::class);
-})->throws(UnhandledMatchError::class);
+})->throws(InvalidArgumentException::class);
 
 
 // Per-type knowledge
