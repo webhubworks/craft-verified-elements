@@ -11,6 +11,7 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\helpers\Cp;
 use Throwable;
+use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\Log;
@@ -57,10 +58,7 @@ class VerificationHealthWidget extends Widget
         return 'heart';
     }
 
-    /**
-     * @inheritDoc
-     * @noinspection PhpUndefinedMethodInspection
-     */
+    /** @inheritDoc */
     public function getBodyHtml(): ?string
     {
         $totalCount = 0;
@@ -203,6 +201,7 @@ class VerificationHealthWidget extends Widget
         /** @var class-string<Element> $elementClass */
         $elementClass = $elementType->value;
 
+        /** @var ElementQuery $query */
         $query = $elementClass::find()->siteId($this->effectiveSiteIds());
 
         // "Live" differs per type: entries respect post/expiry dates; assets are simply enabled.
@@ -219,7 +218,6 @@ class VerificationHealthWidget extends Widget
      * @param ElementType $elementType
      * @param bool $isVerified
      * @return int
-     * @noinspection PhpUndefinedMethodInspection
      */
     private function countByVerificationState(ElementType $elementType, bool $isVerified): int
     {
@@ -232,7 +230,7 @@ class VerificationHealthWidget extends Widget
             return 0;
         }
 
-        /** @var EntryQuery|AssetQuery $query */
+        /** @var (EntryQuery|AssetQuery)&VerifiableQueryBehavior $query */
         $query = $this->liveElementsQuery($elementType);
 
         match ($elementType) {

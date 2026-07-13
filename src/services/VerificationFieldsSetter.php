@@ -47,14 +47,12 @@ class VerificationFieldsSetter
     /**
      * Instantiate this class from a live element (with VerifiableBehavior attached).
      *
-     * @param Element|VerifiableBehavior $element
+     * @param Element&VerifiableBehavior $element
      * @param PluginSettings $settings
      * @return self
      */
     public static function fromElement(Element $element, PluginSettings $settings): self
     {
-        /** @var Element|VerifiableBehavior $element */
-
         $elementType = ElementType::fromElement($element);
 
         $canonicalId = $element->getCanonicalId();

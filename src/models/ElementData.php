@@ -70,13 +70,11 @@ readonly class ElementData implements JsonSerializable
     /**
      * Snapshot a live element (with VerifiableBehavior attached).
      *
-     * @param Element|VerifiableBehavior $element
+     * @param Element&VerifiableBehavior $element
      * @return self
      */
     public static function fromElement(Element $element): self
     {
-        /** @var VerifiableBehavior $element */
-
         $elementType = ElementType::fromElement($element);
         $container = $elementType->container($element);
         $site = $element->getSite();

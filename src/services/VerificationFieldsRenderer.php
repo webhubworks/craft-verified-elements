@@ -25,8 +25,11 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
  */
 readonly class VerificationFieldsRenderer
 {
-    /** @var Element|VerifiableBehavior $element */
-
+    /**
+     * @param Element&VerifiableBehavior $element
+     * @param bool $canVerifyElements
+     * @param PluginSettings $settings
+     */
     public function __construct(
         private Element        $element,
         private bool           $canVerifyElements,

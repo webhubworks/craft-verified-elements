@@ -20,8 +20,10 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
  */
 readonly class CpEditSidebarRenderer
 {
-    /** @var Element|VerifiableBehavior $element */
-
+    /**
+     * @param Element&VerifiableBehavior $element
+     * @param PluginSettings $settings
+     */
     public function __construct(
         private Element $element,
         private PluginSettings $settings,
