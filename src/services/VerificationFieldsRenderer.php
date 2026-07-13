@@ -158,7 +158,7 @@ readonly class VerificationFieldsRenderer
             // Tell the user how many days, months, or years away the date is
             $hint = DateTimeHelper::humanDuration($dateInterval);
             if ($period->value === $defaultPeriod) {
-                $hint .= ' (' . Craft::t(Plugin::HANDLE, 'Standard') . ')';
+                $hint .= ' (' . Craft::t(Plugin::HANDLE, 'Default') . ')';
             }
 
             $options[] = [
