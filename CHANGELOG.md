@@ -1,4 +1,37 @@
-# Release Notes for Verified Entries
+# Release Notes for Verified Elements
+
+## 2.0.0 - Unreleased
+
+### Added
+- Added asset verification: verify assets, assign reviewers, and configure per-volume
+  defaults, with change notifications on file replacement, alt text, and custom field
+  changes (Pro Plus edition).
+- Added multi-site support: verification state, settings, dashboards, widgets, and
+  notifications are now tracked per site (Pro edition).
+- Added editions: Lite, Pro, and Pro Plus.
+- Added a "Verify assets" user permission.
+- Added the Verify and Assign Reviewer bulk actions to asset indexes.
+- Added verification condition rules to asset indexes.
+- Added a Subscription Plan settings page.
+
+### Changed
+- Renamed the plugin from "Verified Entries" to "Verified Elements". The handle is now
+  `verified-elements` and the Composer package `webhubworks/craft-verified-elements`.
+- The plugin dashboard, review digest emails, and the account screen now cover entries
+  and assets, grouped by element type.
+- Dashboard widgets are now available to everyone who can access the plugin, not only
+  users who can verify entries.
+- The Unassigned dashboard source now lists all elements without a reviewer; its badge
+  counts only unassigned elements with a verification date.
+
+### Fixed
+- Fixed a bug where the plugin dashboard could show stale verification state after an
+  entry was saved.
+- Fixed a bug where the Imminent dashboard source used a window that collapsed near the
+  end of a month.
+- Settings actions now require the "Manage settings" permission server-side.
+
+---
 
 ## 1.1.0 - 2025-10-17
 ### Added
