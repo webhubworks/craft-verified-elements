@@ -17,6 +17,24 @@ Keep your content fresh and accurate with streamlined review workflows built dir
 
 Perfect for marketing teams, content editors, and organizations who need to maintain compliance, accuracy, and freshness across their digital content without leaving their familiar CMS environment.
 
+## Editions
+
+Verified Elements is available in three editions. Every edition includes the full
+review workflow; higher editions extend it to more sites and more element types.
+
+| Feature                          | Lite | Pro | Pro Plus |
+|----------------------------------|:----:|:---:|:--------:|
+| Entry verification               |  ✓   |  ✓  |    ✓     |
+| Reviewer assignment              |  ✓   |  ✓  |    ✓     |
+| Verification periods per section |  ✓   |  ✓  |    ✓     |
+| Expiry email notifications       |  ✓   |  ✓  |    ✓     |
+| Dashboard widgets                |  ✓   |  ✓  |    ✓     |
+| Bulk verification actions        |  ✓   |  ✓  |    ✓     |
+| Multi-site support               |      |  ✓  |    ✓     |
+| Asset verification               |      |     |    ✓     |
+
+You can switch editions at any time from the plugin's page on the Craft Plugin Store.
+
 ## Requirements
 
 This plugin requires Craft CMS 5.6.0 or later, and PHP 8.2 or later.
