@@ -80,7 +80,10 @@ class Plugin extends BasePlugin
     /** @inheritDoc */
     public static function editions(): array
     {
-        return Edition::currentlyAvailable();
+        return array_map(
+            static fn(Edition $edition) => $edition->handle(),
+            Edition::currentlyAvailable()
+        );
     }
 
     /**

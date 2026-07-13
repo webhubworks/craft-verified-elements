@@ -6,6 +6,7 @@ use Craft;
 use craft\errors\SiteNotFoundException;
 use craft\models\Site;
 use craft\web\Controller;
+use webhubworks\verifiedelements\enums\Edition;
 use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
@@ -104,9 +105,21 @@ class SettingsController extends Controller
      */
     public function actionSubscriptionPlan(): Response
     {
+        $editions = array_map(
+            static fn(Edition $edition): array => [
+                'handle' => $edition->value,
+                'name' => $edition->label(),
+            ],
+            Edition::currentlyAvailable()
+        );
+
         return $this->renderTemplate(
             Plugin::HANDLE . '/_settings/subscription-plan.twig',
-            $this->sharedTemplateVariables('subscriptionPlan')
+            [
+                ...$this->sharedTemplateVariables('subscriptionPlan'),
+                'editions' => $editions,
+                'currentEditionHandle' => Plugin::getInstance()->edition,
+            ]
         );
     }
 
@@ -121,7 +134,7 @@ class SettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        $siteId = (int) $this->request->getRequiredBodyParam('siteId');
+        $siteId = (int)$this->request->getRequiredBodyParam('siteId');
         $sections = $this->request->getRequiredBodyParam('sections');
         $service = Plugin::getInstance()->getPluginSettings();
 
@@ -132,7 +145,7 @@ class SettingsController extends Controller
         }
 
         foreach ($sections as $sectionId => $settings) {
-            $service->saveSectionSettings((int) $sectionId, $siteId, $settings);
+            $service->saveSectionSettings((int)$sectionId, $siteId, $settings);
         }
 
         return $this->asSuccess(Craft::t(Plugin::HANDLE, 'Verification settings saved.'));
@@ -153,7 +166,7 @@ class SettingsController extends Controller
         $service = Plugin::getInstance()->getPluginSettings();
 
         foreach ($volumes as $volumeId => $settings) {
-            $service->saveVolumeSettings((int) $volumeId, $settings);
+            $service->saveVolumeSettings((int)$volumeId, $settings);
         }
 
         return $this->asSuccess(Craft::t(Plugin::HANDLE, 'Verification settings saved.'));

@@ -47,15 +47,15 @@ enum Edition: string
     /**
      * The editions for this plugin that are currently offered to consumers.
      *
-     * @return string[]
+     * @return Edition[]
      */
     public static function currentlyAvailable(): array
     {
         // list each edition from lowest to highest
         return [
-            self::Lite->handle(),
-            self::Pro->handle(),
-            self::ProPlus->handle(),
+            self::Lite,
+            self::Pro,
+            self::ProPlus,
         ];
     }
 }
