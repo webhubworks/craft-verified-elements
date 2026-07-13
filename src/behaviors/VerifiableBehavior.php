@@ -80,7 +80,7 @@ class VerifiableBehavior extends Behavior
         }
 
         if (is_array($value)) {
-            $this->_reviewerId = ! empty($value) ? (int)reset($value) : null;
+            $this->_reviewerId = !empty($value) ? (int)reset($value) : null;
             return;
         }
 
@@ -100,7 +100,7 @@ class VerifiableBehavior extends Behavior
      */
     public function getReviewer(): ?User
     {
-        if (! $this->getReviewerId()) {
+        if (!$this->getReviewerId()) {
             return null;
         }
 
@@ -128,7 +128,7 @@ class VerifiableBehavior extends Behavior
             return;
         }
 
-        if (! DateHelper::isDateString($value)) {
+        if (!DateHelper::isDateString($value)) {
             $this->_verifiedUntilDate = null;
             return;
         }
@@ -139,8 +139,7 @@ class VerifiableBehavior extends Behavior
                     'Y-m-d H:i:s', $value . ' 00:00:00',
                     $systemTimeZone
                 );
-            }
-            catch (Exception $exception) {
+            } catch (Exception $exception) {
                 Log::error(
                     'Failed to parse date-only string',
                     $exception

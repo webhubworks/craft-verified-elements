@@ -15,7 +15,7 @@ use webhubworks\verifiedelements\helpers\DateHelper;
 // now()
 // =================================================================================================
 
-it('stores the same verified-until date whether or not now() carries the system timezone', function () {
+it('stores the same verified-until date whether or not now() carries the system timezone', function() {
     $originalTimeZone = Craft::$app->getTimeZone();
 
     try {
@@ -38,8 +38,7 @@ it('stores the same verified-until date whether or not now() carries the system 
 
         // The real question. Passes => Bucket B is a safe no-op.
         expect($helperStored)->toBe($bareStored);
-    }
-    finally {
+    } finally {
         Carbon::setTestNow();
         Craft::$app->setTimeZone($originalTimeZone);
     }

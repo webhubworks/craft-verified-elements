@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpSameParameterValueInspection */
+<?php
+
+/** @noinspection PhpSameParameterValueInspection */
 
 namespace webhubworks\verifiedelements\behaviors;
 
@@ -56,7 +58,7 @@ class VerifiableQueryBehavior extends Behavior
         /** @var Query $query */
         $query = $this->owner->query;
 
-        if (! $this->hasJoin($query, 'veea')) {
+        if (!$this->hasJoin($query, 'veea')) {
             $query->leftJoin(
                 ['veea' => PluginTable::ATTRIBUTES],
                 '[[veea.elementId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
@@ -103,7 +105,7 @@ class VerifiableQueryBehavior extends Behavior
         $subQuery = $this->owner->subQuery;
 
         // Join our `verifiedelements_attributes` table
-        if (! $this->hasJoin($subQuery, 'veea')) {
+        if (!$this->hasJoin($subQuery, 'veea')) {
             $subQuery->leftJoin(
                 ['veea' => PluginTable::ATTRIBUTES],
                 '[[veea.elementId]] = [[elements.id]] AND [[veea.siteId]] = [[elements_sites.siteId]]'
@@ -127,8 +129,7 @@ class VerifiableQueryBehavior extends Behavior
                 'veea.verifiedUntilDate IS NULL',
                 'veea.verifiedUntilDate >= UTC_TIMESTAMP()',
             ]);
-        }
-        else {
+        } else {
             $query->andWhere(['and',
                 'veea.verifiedUntilDate IS NOT NULL',
                 'veea.verifiedUntilDate < UTC_TIMESTAMP()',
@@ -150,8 +151,7 @@ class VerifiableQueryBehavior extends Behavior
 
         if ($value) {
             $query->andWhere('veea.reviewerId IS NOT NULL');
-        }
-        else {
+        } else {
             $query->andWhere('veea.reviewerId IS NULL');
         }
 
@@ -170,8 +170,7 @@ class VerifiableQueryBehavior extends Behavior
 
         if (is_array($value) || is_int($value)) {
             $query->andWhere(['veea.reviewerId' => $value]);
-        }
-        elseif ($value === null) {
+        } elseif ($value === null) {
             $query->andWhere('veea.reviewerId IS null');
         }
 
@@ -206,7 +205,7 @@ class VerifiableQueryBehavior extends Behavior
      */
     private function hasJoin(Query $query, string $alias): bool
     {
-        if (! $query->join) {
+        if (!$query->join) {
             return false;
         }
 
@@ -216,8 +215,7 @@ class VerifiableQueryBehavior extends Behavior
                 if (in_array($alias, $aliases, true)) {
                     return true;
                 }
-            }
-            else {
+            } else {
                 return $query->isJoined($alias);
             }
         }

@@ -1,9 +1,10 @@
-<?php /** @noinspection PhpUnused */
+<?php
+
+/** @noinspection PhpUnused */
 
 namespace webhubworks\verifiedelements\controllers;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
 use craft\web\Controller;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\Plugin;
@@ -48,15 +49,15 @@ class CustomDateController extends Controller
 
         $date = DateHelper::toDateTime($this->request->getBodyParam('verifiedUntilDate'));
 
-        if (! $date) {
+        if (!$date) {
             return $this->asFailure(
                 Craft::t(Plugin::HANDLE, 'No date provided.'),
                 [
                     'errors' => [
                         'verifiedUntilDate' => [
-                            Craft::t('app', '{attribute} cannot be blank.', ['attribute' => 'Date'])
-                        ]
-                    ]
+                            Craft::t('app', '{attribute} cannot be blank.', ['attribute' => 'Date']),
+                        ],
+                    ],
                 ]
             );
         }

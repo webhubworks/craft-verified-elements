@@ -38,8 +38,7 @@ abstract class PluginQuery
         array $elementTypes,
         array $inScopeSiteIds,
         ?int  $siteId = null,
-    ): Query
-    {
+    ): Query {
         $queries = array_map(
             static fn(string $elementType) => self::reviewerElements(
                 ElementType::from($elementType),
@@ -139,7 +138,7 @@ abstract class PluginQuery
                 's.type',
                 'ves.reviewerId',
                 'ves.enabled',
-                'ves.defaultPeriod'
+                'ves.defaultPeriod',
             ])
             ->from(['s' => '{{%sections}}'])
             ->innerJoin(
@@ -175,7 +174,7 @@ abstract class PluginQuery
                 'v.handle',
                 'ves.reviewerId',
                 'ves.enabled',
-                'ves.defaultPeriod'
+                'ves.defaultPeriod',
             ])
             ->from(['v' => '{{%volumes}}'])
             ->leftJoin(
@@ -280,8 +279,7 @@ abstract class PluginQuery
         int         $userId,
         ?int        $siteId,
         array       $inScopeSiteIds,
-    ): Query
-    {
+    ): Query {
         $containerIdColumn = $elementType->containerIdColumn();
 
         $query = (new Query())

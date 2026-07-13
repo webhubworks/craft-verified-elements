@@ -46,7 +46,7 @@ function elementDataRow(array $overrides = []): array
 // fromArray()
 // =================================================================================================
 
-it('casts id-like columns to int and keeps strings as strings', function () {
+it('casts id-like columns to int and keeps strings as strings', function() {
     $elementData = ElementData::fromArray(elementDataRow());
 
     expect($elementData->rowId)->toBe(5)
@@ -60,7 +60,7 @@ it('casts id-like columns to int and keeps strings as strings', function () {
         ->and($elementData->siteHandle)->toBe('sandboxEn');
 });
 
-it('hydrates null row id, reviewer, and "Verified until" date', function () {
+it('hydrates null row id, reviewer, and "Verified until" date', function() {
     $elementData = ElementData::fromArray(elementDataRow([
         'rowId' => null,
         'reviewerId' => null,
@@ -72,7 +72,7 @@ it('hydrates null row id, reviewer, and "Verified until" date', function () {
         ->and($elementData->verifiedUntilDate)->toBeNull();
 });
 
-it('hydrates a null title as an empty string', function () {
+it('hydrates a null title as an empty string', function() {
     $elementData = ElementData::fromArray(elementDataRow(['title' => null]));
 
     expect($elementData->title)->toBe('');
@@ -82,7 +82,7 @@ it('hydrates a null title as an empty string', function () {
 // isVerified()
 // =================================================================================================
 
-it('is verified when the "Verified until" date is in the future', function () {
+it('is verified when the "Verified until" date is in the future', function() {
     Carbon::setTestNow(Carbon::create(2026, 6, 24, 0, 0, 0, 'UTC'));
 
     try {
@@ -91,13 +91,12 @@ it('is verified when the "Verified until" date is in the future', function () {
         ]));
 
         expect($elementData->isVerified())->toBeTrue();
-    }
-    finally {
+    } finally {
         Carbon::setTestNow();
     }
 });
 
-it('is not verified when the "Verified until" date is in the past', function () {
+it('is not verified when the "Verified until" date is in the past', function() {
     Carbon::setTestNow(Carbon::create(2026, 6, 24, 0, 0, 0, 'UTC'));
 
     try {
@@ -106,13 +105,12 @@ it('is not verified when the "Verified until" date is in the past', function () 
         ]));
 
         expect($elementData->isVerified())->toBeFalse();
-    }
-    finally {
+    } finally {
         Carbon::setTestNow();
     }
 });
 
-it('is verified when the "Verified until" date is null (Indefinitely)', function () {
+it('is verified when the "Verified until" date is null (Indefinitely)', function() {
     // Null means "Indefinitely" and counts as verified, matching VerificationStatus::fromDate()
     // and the rest of the CP. The pre-refactor dashboard transform treated null as expired;
     // that discrepancy was resolved deliberately (see WBHB-9773 notes, 2026-07-02).
@@ -127,7 +125,7 @@ it('is verified when the "Verified until" date is null (Indefinitely)', function
 // getReadableVerifiedUntilDate()
 // =================================================================================================
 
-it('formats set and null "Verified until" dates through the shared date helper', function () {
+it('formats set and null "Verified until" dates through the shared date helper', function() {
     // The widget template and jsonSerialize() both rely on this delegation; the helper's own
     // formatting rules (Today / n days / short date / Indefinite) are DateHelper's contract.
     $row = elementDataRow();
@@ -144,7 +142,7 @@ it('formats set and null "Verified until" dates through the shared date helper',
 // cpEditUrl (via fromArray)
 // =================================================================================================
 
-it('builds an entry CP edit URL scoped to the element site', function () {
+it('builds an entry CP edit URL scoped to the element site', function() {
     $elementData = ElementData::fromArray(elementDataRow());
 
     expect($elementData->cpEditUrl)
@@ -152,7 +150,7 @@ it('builds an entry CP edit URL scoped to the element site', function () {
         ->toContain('site=sandboxEn');
 });
 
-it('builds an asset CP edit URL scoped to the element site', function () {
+it('builds an asset CP edit URL scoped to the element site', function() {
     $elementData = ElementData::fromArray(elementDataRow(['type' => Asset::class]));
 
     expect($elementData->cpEditUrl)
@@ -160,7 +158,7 @@ it('builds an asset CP edit URL scoped to the element site', function () {
         ->toContain('site=sandboxEn');
 });
 
-it('builds an empty CP edit URL for an unsupported element type', function () {
+it('builds an empty CP edit URL for an unsupported element type', function() {
     $elementData = ElementData::fromArray(elementDataRow(['type' => 'craft\elements\Category']));
 
     expect($elementData->cpEditUrl)->toBe('');
@@ -170,7 +168,7 @@ it('builds an empty CP edit URL for an unsupported element type', function () {
 // jsonSerialize()
 // =================================================================================================
 
-it('serializes to the display shape the Admin Table expects', function () {
+it('serializes to the display shape the Admin Table expects', function() {
     Carbon::setTestNow(Carbon::create(2026, 6, 24, 0, 0, 0, 'UTC'));
 
     try {
@@ -206,13 +204,12 @@ it('serializes to the display shape the Admin Table expects', function () {
         // straight passthrough
         expect($json['containerName'])->toBe('Test Entries')
             ->and($json['siteName'])->toBe('Sandbox EN');
-    }
-    finally {
+    } finally {
         Carbon::setTestNow();
     }
 });
 
-it('labels a null (Indefinitely) date as Verified', function () {
+it('labels a null (Indefinitely) date as Verified', function() {
     $row = elementDataRow(['verifiedUntilDate' => null]);
 
     $json = ElementData::fromArray($row)->jsonSerialize();

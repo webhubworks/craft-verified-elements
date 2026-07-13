@@ -6,10 +6,10 @@ use markhuot\craftpest\factories\Entry;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
 use webhubworks\verifiedelements\helpers\DateHelper;
-use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\ContainerDefaults;
-use webhubworks\verifiedelements\services\VerificationStateSynchronizer;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\services\VerificationStateSynchronizer;
 
 /**
  * INTEGRATION TESTS
@@ -30,7 +30,7 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
 // saveVerificationRecord()
 // =================================================================================================
 
-it('writes a verification record for the element and site', function () {
+it('writes a verification record for the element and site', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(30));
@@ -52,7 +52,7 @@ it('writes a verification record for the element and site', function () {
     expect($row['siteId'])->toBe($entry->siteId);
 });
 
-it('upserts rather than inserts a second row when called twice for the same element and site', function () {
+it('upserts rather than inserts a second row when called twice for the same element and site', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $entry->setVerifiedUntilDate(Carbon::now()->addDays(30));
@@ -77,7 +77,7 @@ it('upserts rather than inserts a second row when called twice for the same elem
     expect((int)$count)->toBe(1);
 });
 
-it('overwrites the stored values when saved again from a fresh snapshot with updated fields', function () {
+it('overwrites the stored values when saved again from a fresh snapshot with updated fields', function() {
     Carbon::setTestNow('2026-01-01 00:00:00');
 
     $section = createSection();
@@ -115,7 +115,7 @@ it('overwrites the stored values when saved again from a fresh snapshot with upd
     Carbon::setTestNow();
 });
 
-it('stores a null reviewer id when none is set on the element', function () {
+it('stores a null reviewer id when none is set on the element', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -134,7 +134,7 @@ it('stores a null reviewer id when none is set on the element', function () {
     expect($row['reviewerId'])->toBeNull();
 });
 
-it('stores the reviewer id when one is set on the element', function () {
+it('stores the reviewer id when one is set on the element', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $reviewer = getSharedReviewer();
@@ -159,7 +159,7 @@ it('stores the reviewer id when one is set on the element', function () {
 // ensureOtherSiteRecords()
 // =================================================================================================
 
-it('creates a record for each other supported site', function () {
+it('creates a record for each other supported site', function() {
     $siteB = createSite('B');
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -181,7 +181,7 @@ it('creates a record for each other supported site', function () {
     expect($row)->not->toBeNull();
 });
 
-it("seeds each site record using that site's own section defaults", function () {
+it("seeds each site record using that site's own section defaults", function() {
     Carbon::setTestNow('2026-01-01 00:00:00');
 
     $siteB = createSite('B');
@@ -219,7 +219,7 @@ it("seeds each site record using that site's own section defaults", function () 
     Carbon::setTestNow();
 });
 
-it('does not overwrite an existing record for another site', function () {
+it('does not overwrite an existing record for another site', function() {
     $siteB = createSite('B');
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -248,7 +248,7 @@ it('does not overwrite an existing record for another site', function () {
     expect($row['verifiedUntilDate'])->toBe('2030-06-01 00:00:00');
 });
 
-it('returns true when all site records are seeded successfully', function () {
+it('returns true when all site records are seeded successfully', function() {
     $siteB = createSite('B');
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -271,7 +271,7 @@ it('returns true when all site records are seeded successfully', function () {
 // ensurePropagatedRecord()
 // =================================================================================================
 
-it('creates no record when no source record exists for the element', function () {
+it('creates no record when no source record exists for the element', function() {
     $siteB = createSite('B');
     $section = createSection();
     $entryOnSiteA = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -295,7 +295,7 @@ it('creates no record when no source record exists for the element', function ()
     expect($row)->toBeNull();
 });
 
-it('copies the source record to the propagated site when none exists there yet', function () {
+it('copies the source record to the propagated site when none exists there yet', function() {
     Carbon::setTestNow('2026-01-01 00:00:00');
 
     $siteB = createSite('B');
@@ -334,7 +334,7 @@ it('copies the source record to the propagated site when none exists there yet',
     Carbon::setTestNow();
 });
 
-it('does not overwrite an existing record on the propagated site', function () {
+it('does not overwrite an existing record on the propagated site', function() {
     $siteB = createSite('B');
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());

@@ -1,4 +1,6 @@
-<?php /** @noinspection ALL */
+<?php
+
+/** @noinspection ALL */
 
 return [
     'email.changeNotification.body.asset' => "An asset you're assigned to review has been updated. Please take a moment to review the latest changes",

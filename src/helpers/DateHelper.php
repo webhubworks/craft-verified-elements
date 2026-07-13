@@ -44,8 +44,7 @@ class DateHelper
     {
         try {
             $result = DateTimeHelper::toDateTime($value);
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             Log::error('Failed to parse datetime value', $exception);
             return null;
         }
@@ -67,8 +66,7 @@ class DateHelper
     {
         try {
             return new DateInterval($period);
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             Log::error('Failed to create DateInterval from period string', $exception);
             return null;
         }
@@ -82,14 +80,13 @@ class DateHelper
      */
     public static function createDateTimeZone(?string $timeZone = null): DateTimeZone
     {
-        if (! $timeZone) {
+        if (!$timeZone) {
             $timeZone = Craft::$app->getTimeZone();
         }
 
         try {
             return new DateTimeZone($timeZone);
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             Log::error('Failed to create DateTimeZone', $exception);
             return new DateTimeZone('UTC');
         }
@@ -138,7 +135,7 @@ class DateHelper
      */
     public static function isDateString(mixed $value): bool
     {
-        if (! is_string($value)) {
+        if (!is_string($value)) {
             return false;
         }
 
@@ -153,7 +150,7 @@ class DateHelper
      */
     public static function isDateOnlyString(mixed $value): bool
     {
-        if (! is_string($value)) {
+        if (!is_string($value)) {
             return false;
         }
 

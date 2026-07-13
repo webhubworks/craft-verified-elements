@@ -55,7 +55,7 @@ class CheckExpiredVerificationsController extends Controller
     {
         $this->stdout("Checking verification dates of elements with assigned reviewers..." . PHP_EOL, BaseConsole::FG_BLUE);
 
-        if (! $this->service->hasExpiredElementsByReviewer()) {
+        if (!$this->service->hasExpiredElementsByReviewer()) {
             $this->stdout('No expired elements.' . PHP_EOL, BaseConsole::FG_GREEN);
 
             return ExitCode::OK;
@@ -67,7 +67,7 @@ class CheckExpiredVerificationsController extends Controller
 
             // 1. Find the Reviewer
             $reviewer = $this->service->getReviewer($reviewerId);
-            if (! $reviewer) {
+            if (!$reviewer) {
                 $this->stdout(sprintf(
                         "User %s not found or inactive. Skipping.",
                         $reviewerId
@@ -96,8 +96,7 @@ class CheckExpiredVerificationsController extends Controller
 
             if ($isSent) {
                 $this->stdout('Sent', BaseConsole::FG_GREEN);
-            }
-            else {
+            } else {
                 $this->stdout('Failed', BaseConsole::FG_RED);
             }
 
@@ -117,7 +116,7 @@ class CheckExpiredVerificationsController extends Controller
     {
         $this->stdout("Checking verification dates of unassigned elements..." . PHP_EOL, BaseConsole::FG_BLUE);
 
-        if (! $this->service->hasUnassignedExpiredElements()) {
+        if (!$this->service->hasUnassignedExpiredElements()) {
             $this->stdout('No expired unassigned elements.' . PHP_EOL, BaseConsole::FG_GREEN);
 
             return ExitCode::OK;
@@ -142,8 +141,7 @@ class CheckExpiredVerificationsController extends Controller
 
         if ($isSent) {
             $this->stdout('Sent', BaseConsole::FG_GREEN);
-        }
-        else {
+        } else {
             $this->stdout('Failed', BaseConsole::FG_RED);
         }
 

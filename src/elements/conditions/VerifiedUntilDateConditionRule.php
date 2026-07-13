@@ -4,9 +4,9 @@ namespace webhubworks\verifiedelements\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseDateRangeConditionRule;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use Throwable;
@@ -51,8 +51,7 @@ class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implemen
         /** @var Element|VerifiableBehavior $element */
         try {
             return $this->matchValue($element->getVerifiedUntilDate());
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error($exception->getMessage(), $exception);
         }
 

@@ -9,8 +9,8 @@ use Throwable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\helpers\Log;
-use webhubworks\verifiedelements\services\singletons\PluginSettings;
 use webhubworks\verifiedelements\Plugin;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 /**
  * Constructs the HTML that gets injected into Craft's sidebar on an element's "edit" page,
@@ -24,8 +24,9 @@ readonly class CpEditSidebarRenderer
 
     public function __construct(
         private Element $element,
-        private PluginSettings $settings
-    ) {}
+        private PluginSettings $settings,
+    ) {
+    }
 
     /**
      * @return string The HTML to inject into Craft's sidebar.
@@ -34,7 +35,7 @@ readonly class CpEditSidebarRenderer
     {
         $html = '';
 
-        if (! $this->element->getIsVerified()) {
+        if (!$this->element->getIsVerified()) {
             $html .= $this->buildWarningHtml();
         }
 
@@ -96,8 +97,7 @@ readonly class CpEditSidebarRenderer
                 Plugin::HANDLE . '/_sidebar.twig',
                 $templateVariables
             );
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error(sprintf(
                 'Error rendering sidebar HTML for %s',
                 Log::element($this->element, plural: true, capitalize: false)

@@ -2,8 +2,8 @@
 
 namespace webhubworks\verifiedelements\controllers;
 
-use craft\web\Controller;
 use craft\controllers\EditUserTrait;
+use craft\web\Controller;
 use craft\web\CpScreenResponseBehavior;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\Feature;
@@ -46,7 +46,7 @@ class ReviewersController extends Controller
          * @see \webhubworks\verifiedelements\services\EventRegistrar::onDefineEditScreens()
          * Accessing it by URL must follow the same rule.
          */
-        if (! $user->can(Permission::AccessPlugin->value)) {
+        if (!$user->can(Permission::AccessPlugin->value)) {
             throw new ForbiddenHttpException('This user does not have access to Verified Elements.');
         }
 
@@ -59,7 +59,7 @@ class ReviewersController extends Controller
             : ElementType::Asset->uriSegment();
         $selectedElementType = $this->request->getQueryParam('elementType', $defaultElementType);
 
-        if ($selectedElementType === ElementType::Asset->uriSegment() && ! $showAssetsTab) {
+        if ($selectedElementType === ElementType::Asset->uriSegment() && !$showAssetsTab) {
             $selectedElementType = $defaultElementType;
         }
 

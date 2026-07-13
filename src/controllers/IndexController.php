@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php
+
+/** @noinspection PhpUnused */
 
 namespace webhubworks\verifiedelements\controllers;
 
@@ -7,7 +9,6 @@ use craft\helpers\AdminTable;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
-use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\ElementType;
@@ -15,6 +16,7 @@ use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -41,8 +43,7 @@ class IndexController extends Controller
             // Users who verify content from there don't necessarily have access to the plugin's
             // pages, so these endpoints only require a verify permission.
             $this->requireVerifyPermission();
-        }
-        else {
+        } else {
             $this->requirePermission(Permission::AccessPlugin->value);
         }
 
@@ -128,11 +129,9 @@ class IndexController extends Controller
         if ($verificationPeriod === VerificationPeriod::SpecificDate->value) {
             $inputDate = $this->request->getRequiredBodyParam('specificDate');
             $date = DateHelper::toDateTime($inputDate);
-        }
-        elseif ($verificationPeriod === VerificationPeriod::Indefinitely->value) {
+        } elseif ($verificationPeriod === VerificationPeriod::Indefinitely->value) {
             $date = null;
-        }
-        else {
+        } else {
             $interval = DateHelper::createDateInterval($verificationPeriod);
             $date = DateTimeHelper::now()->add($interval);
         }

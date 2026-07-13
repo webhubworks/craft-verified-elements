@@ -1,12 +1,11 @@
 <?php
 
+use craft\helpers\App;
 use markhuot\craftpest\test\RefreshesDatabase;
 use markhuot\craftpest\test\TestCase;
-use craft\helpers\App;
-
 
 $databaseName = App::env('CRAFT_DB_DATABASE');
-if (! str_contains((string)$databaseName, 'test')) {
+if (!str_contains((string)$databaseName, 'test')) {
     fwrite(STDERR, "Aborting: Pest must run against a dedicated test database. Run via `ddev composer test:verified-elements` or set CRAFT_DB_DATABASE to a database whose name contains 'test'.\n");
     exit(1);
 }
@@ -27,18 +26,18 @@ uses(TestCase::class)->in(__DIR__ . '/Unit');
 
 // INTEGRATION tests
 uses(TestCase::class, RefreshesDatabase::class)
-    ->beforeAll(function () {
+    ->beforeAll(function() {
         // First run against an empty DB: craft-pest hasn't installed Craft yet
         // (that happens in the first test's setUp). Skip; the re-exec after
         // install comes back through here.
-        if (! Craft::$app->getIsInstalled(true)) {
+        if (!Craft::$app->getIsInstalled(true)) {
             return;
         }
 
         getSharedReviewer('a');
         getSharedReviewer('b');
     })
-    ->afterEach(function () {
+    ->afterEach(function() {
         cleanUpSites();
         cleanUpSections();
         cleanUpUsers();

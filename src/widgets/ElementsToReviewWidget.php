@@ -108,8 +108,7 @@ class ElementsToReviewWidget extends Widget
                 Plugin::HANDLE . '/_widgets/elements-to-review.twig',
                 $templateVariables
             );
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error(
                 sprintf('Error loading "%s" widget', self::NAME),
                 $exception

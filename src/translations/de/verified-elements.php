@@ -1,4 +1,6 @@
-<?php /** @noinspection ALL */
+<?php
+
+/** @noinspection ALL */
 
 return [
     "There's currently nothing to review." => 'Es gibt derzeit nichts zu überprüfen.',

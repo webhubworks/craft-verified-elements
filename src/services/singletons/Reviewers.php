@@ -36,8 +36,7 @@ class Reviewers extends Component
         ?int   $userId = null,
         ?int   $siteId = null,
         ?array $elementTypes = null,
-    ): array
-    {
+    ): array {
         if ($userId === null) {
             $userId = Craft::$app->getUser()->getId();
         }

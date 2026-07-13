@@ -19,7 +19,7 @@ use webhubworks\verifiedelements\services\VerificationStateSynchronizer;
 // notifyReviewerOnChange()
 // =================================================================================================
 
-it('returns false when the element has no verified until date', function () {
+it('returns false when the element has no verified until date', function() {
     $synchronizer = new VerificationStateSynchronizer(
         mockElementData(),
         [],
@@ -31,7 +31,7 @@ it('returns false when the element has no verified until date', function () {
     expect($synchronizer->notifyReviewerOnChange())->toBeFalse();
 });
 
-it('returns false when the element is disabled', function () {
+it('returns false when the element is disabled', function() {
     $synchronizer = new VerificationStateSynchronizer(
         mockElementData(verifiedUntilDate: '2030-01-01 00:00:00'),
         [],
@@ -43,7 +43,7 @@ it('returns false when the element is disabled', function () {
     expect($synchronizer->notifyReviewerOnChange())->toBeFalse();
 });
 
-it('returns false when the element has no reviewer', function () {
+it('returns false when the element has no reviewer', function() {
     $synchronizer = new VerificationStateSynchronizer(
         mockElementData(reviewerId: null, verifiedUntilDate: '2030-01-01 00:00:00'),
         [],
@@ -55,7 +55,7 @@ it('returns false when the element has no reviewer', function () {
     expect($synchronizer->notifyReviewerOnChange())->toBeFalse();
 });
 
-it('returns false when the reviewer is the current editor', function () {
+it('returns false when the reviewer is the current editor', function() {
     $reviewer = Mockery::mock(User::class);
     $reviewer->id = 42;
     $reviewer->active = true;
@@ -79,7 +79,7 @@ it('returns false when the reviewer is the current editor', function () {
     expect($synchronizer->notifyReviewerOnChange())->toBeFalse();
 });
 
-it('returns true when a change notification is sent to the reviewer', function () {
+it('returns true when a change notification is sent to the reviewer', function() {
     $reviewer = Mockery::mock(User::class);
     $reviewer->id = 42;
     $reviewer->active = true;

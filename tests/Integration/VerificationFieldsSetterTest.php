@@ -3,8 +3,8 @@
 use craft\helpers\Db;
 use markhuot\craftpest\factories\Entry;
 use webhubworks\verifiedelements\db\PluginTable;
-use webhubworks\verifiedelements\services\VerificationFieldsSetter;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
+use webhubworks\verifiedelements\services\VerificationFieldsSetter;
 
 /**
  * INTEGRATION TESTS
@@ -21,7 +21,7 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
 // VerificationFieldsSetter::fromElement()
 // =================================================================================================
 
-it('detects the first save when no verification record exists for the entry and site', function () {
+it('detects the first save when no verification record exists for the entry and site', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -38,7 +38,7 @@ it('detects the first save when no verification record exists for the entry and 
     expect($setter->resolveVerificationDate())->toBeNull();
 });
 
-it('detects a subsequent save when a verification record already exists for the entry and site', function () {
+it('detects a subsequent save when a verification record already exists for the entry and site', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -62,7 +62,7 @@ it('detects a subsequent save when a verification record already exists for the 
     expect($setter->resolveVerificationDate())->toBeNull();
 });
 
-it('treats a new entry with a null canonical id as a first save', function () {
+it('treats a new entry with a null canonical id as a first save', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 

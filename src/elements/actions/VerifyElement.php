@@ -1,4 +1,6 @@
-<?php /** @noinspection JSUnresolvedReference */
+<?php
+
+/** @noinspection JSUnresolvedReference */
 
 namespace webhubworks\verifiedelements\elements\actions;
 
@@ -72,7 +74,7 @@ class VerifyElement extends ElementAction
         $successCount = count(
             array_filter(
                 $elements,
-                function (Element $element) use ($elementsService) {
+                function(Element $element) use ($elementsService) {
                     /** @var Element|VerifiableBehavior $element */
                     try {
                         $element->setVerifiedUntilDate($this->date);

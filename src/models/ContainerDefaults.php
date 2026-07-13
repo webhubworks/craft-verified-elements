@@ -17,7 +17,8 @@ readonly class ContainerDefaults
         public int     $siteId,
         public ?int    $reviewerId,
         public ?string $period,
-    ) {}
+    ) {
+    }
 
     /**
      * A unique identifier for memoizing this object.

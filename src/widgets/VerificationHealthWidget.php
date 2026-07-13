@@ -100,8 +100,7 @@ class VerificationHealthWidget extends Widget
 
             if (count($effectiveSiteIds) === 1) {
                 $siteDisplayed = Craft::$app->getSites()->getSiteById($effectiveSiteIds[0])?->getName();
-            }
-            else {
+            } else {
                 $siteDisplayed = Craft::t('app', 'All Sites');
             }
         }
@@ -123,8 +122,7 @@ class VerificationHealthWidget extends Widget
                 Plugin::HANDLE . '/_widgets/verification-health.twig',
                 $templateVariables
             );
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error(
                 sprintf('Error loading "%s" widget', self::NAME),
                 $exception
@@ -137,7 +135,7 @@ class VerificationHealthWidget extends Widget
     /** @inheritDoc */
     public function getSettingsHtml(): ?string
     {
-        if (! Craft::$app->getIsMultiSite()) {
+        if (!Craft::$app->getIsMultiSite()) {
             return null;
         }
 
@@ -162,8 +160,7 @@ class VerificationHealthWidget extends Widget
                 '_includes/forms/select.twig',
                 $templateVariables
             );
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error(
                 sprintf('Error loading "%s" widget settings', self::NAME),
                 $exception

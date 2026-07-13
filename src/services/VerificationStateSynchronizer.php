@@ -33,7 +33,8 @@ class VerificationStateSynchronizer
         private readonly bool           $isElementEnabled,
         private readonly PluginSettings $settings,
         private readonly ?int           $currentUserId,
-    ) {}
+    ) {
+    }
 
     /**
      * Ensures a verification record exists for this element and its currently-set site without
@@ -59,8 +60,7 @@ class VerificationStateSynchronizer
                 $this->elementData->id,
                 $this->elementData->siteId
             );
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             Log::error(sprintf(
                 'Error seeding verification row for %s [%s] "%s" on site %s',
                 Log::element($this->elementData->type),
@@ -92,8 +92,7 @@ class VerificationStateSynchronizer
                 'reviewerId' => $this->elementData->reviewerId,
                 'verifiedUntilDate' => $this->elementData->verifiedUntilDate,
             ]);
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             Log::error(sprintf(
                 'Error upserting verification details for %s [%s] "%s" on site %s',
                 Log::element($this->elementData->type),
@@ -133,7 +132,7 @@ class VerificationStateSynchronizer
                 continue;
             }
 
-            if (! $this->ensureSiteRecord($siteId)) {
+            if (!$this->ensureSiteRecord($siteId)) {
                 $errors++;
             }
         }
@@ -151,12 +150,12 @@ class VerificationStateSynchronizer
      */
     public function notifyReviewerOnChange(): bool
     {
-        if ($this->elementData->verifiedUntilDate === null || ! $this->isElementEnabled) {
+        if ($this->elementData->verifiedUntilDate === null || !$this->isElementEnabled) {
             return false;
         }
 
         $reviewer = $this->findReviewer();
-        if (! $reviewer || ! $reviewer->active) {
+        if (!$reviewer || !$reviewer->active) {
             Log::warning(sprintf(
                 '%s [%s] "%s" on site %s "%s" has no Reviewer to notify.',
                 Log::element($this->elementData->type),
@@ -175,7 +174,7 @@ class VerificationStateSynchronizer
         // Email the Reviewer if someone else edits their assigned element
         $isSent = $this->buildChangeNotification($reviewer)->send();
 
-        if (! $isSent) {
+        if (!$isSent) {
             Log::warning(
                 "Failed to send 'change' notification to $reviewer->email.",
                 __METHOD__
@@ -228,8 +227,7 @@ class VerificationStateSynchronizer
                 'reviewerId' => $containerDefaults?->reviewerId,
                 'verifiedUntilDate' => Db::prepareDateForDb($verifiedUntilDate),
             ]);
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             Log::error(sprintf(
                 'Error seeding verification row for %s [%s] "%s" on site %s',
                 Log::element($this->elementData->type),
@@ -255,7 +253,7 @@ class VerificationStateSynchronizer
      */
     private function convertPeriodToDateTime(?string $period): ?DateTime
     {
-        if (! $period) {
+        if (!$period) {
             return null;
         }
 
@@ -284,7 +282,7 @@ class VerificationStateSynchronizer
             ->where(['elementId' => $elementId])
             ->one();
 
-        if (! $sourceRow) {
+        if (!$sourceRow) {
             return;
         }
 

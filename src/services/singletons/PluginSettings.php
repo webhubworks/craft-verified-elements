@@ -132,7 +132,7 @@ class PluginSettings extends Component
             $elementType
         )->one();
 
-        if (! $defaults) {
+        if (!$defaults) {
             return $this->containerDefaults[$key] = null;
         }
 
@@ -225,7 +225,7 @@ class PluginSettings extends Component
         $errors = 0;
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            if (! $this->upsertContainerSettings($volumeId, $site->id, Asset::class, $settings)) {
+            if (!$this->upsertContainerSettings($volumeId, $site->id, Asset::class, $settings)) {
                 $errors++;
             }
         }
@@ -249,7 +249,7 @@ class PluginSettings extends Component
         $reviewerIds = array_unique(array_filter(array_column($rows, 'reviewerId')));
 
         $reviewers = [];
-        if (! empty($reviewerIds)) {
+        if (!empty($reviewerIds)) {
             $reviewerElements = User::find()
                 ->id($reviewerIds)
                 ->status(null)
@@ -278,14 +278,13 @@ class PluginSettings extends Component
      */
     private function upsertContainerSettings(int $containerId, int $siteId, string $elementType, array $settings): bool
     {
-        $enabled = ! empty($settings['enabled']);
+        $enabled = !empty($settings['enabled']);
         $defaultPeriod = $settings['defaultPeriod'] ?? null;
 
         $reviewerId = $settings['reviewerId'] ?? null;
         if (is_array($reviewerId)) {
             $reviewerId = reset($reviewerId) ?: null;
-        }
-        else {
+        } else {
             $reviewerId = $reviewerId ?: null;
         }
 
@@ -302,8 +301,7 @@ class PluginSettings extends Component
                 ],
                 compact('reviewerId', 'enabled', 'defaultPeriod')
             );
-        }
-        catch (Exception $exception) {
+        } catch (Exception $exception) {
             Log::error(sprintf(
                 'Failed to save container settings for %s [%s] on site %s',
                 Log::element($elementType),

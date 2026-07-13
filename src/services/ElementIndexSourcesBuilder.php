@@ -9,11 +9,11 @@ use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\ElementType;
-use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\enums\ReviewerStatus;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 /**
@@ -36,7 +36,8 @@ class ElementIndexSourcesBuilder
         private readonly ElementQueryInterface $unassignedCountBaseQuery,
         private readonly ?string               $siteHandle,
         private readonly PluginSettings        $settings,
-    ) {}
+    ) {
+    }
 
     /**
      * Define the "sources" that filter a list of elements in the CP when viewing what Craft calls
@@ -70,7 +71,7 @@ class ElementIndexSourcesBuilder
                 'criteria' => [
                     'isVerified' => false,
                     $this->containerIdQueryParam => $enabledContainerIds,
-                ]
+                ],
             ],
             [
                 'key' => 'upcoming',
@@ -89,7 +90,7 @@ class ElementIndexSourcesBuilder
                 'criteria' => [
                     'isVerified' => true,
                     $this->containerIdQueryParam => $enabledContainerIds,
-                ]
+                ],
             ],
             [
                 'key' => ReviewerStatus::Unassigned->handle(),
@@ -113,7 +114,7 @@ class ElementIndexSourcesBuilder
                 'criteria' => [
                     'reviewerId' => $this->currentUserId,
                     $this->containerIdQueryParam => $enabledContainerIds,
-                ]
+                ],
             ],
         ];
 

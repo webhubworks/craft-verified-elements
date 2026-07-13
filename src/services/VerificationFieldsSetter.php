@@ -33,8 +33,7 @@ class VerificationFieldsSetter
         private readonly ?DateTime $currentVerifiedUntilDate,
         private readonly bool      $isFirstSave,
         PluginSettings             $settings,
-    )
-    {
+    ) {
         $containerDefaults = $settings->getDefaultSettingsForContainer(
             $containerId,
             $siteId,
@@ -62,7 +61,7 @@ class VerificationFieldsSetter
         $isFirstSave = true;
 
         if ($canonicalId !== null) {
-            $isFirstSave = ! PluginQuery::verifiableEntry($canonicalId, $element->siteId)->exists();
+            $isFirstSave = !PluginQuery::verifiableEntry($canonicalId, $element->siteId)->exists();
         }
 
         return new self(
@@ -88,7 +87,7 @@ class VerificationFieldsSetter
     public function resolveReviewerId(): ?int
     {
         // The container has no default reviewer to apply, so ignore.
-        if (! $this->defaultReviewerId) {
+        if (!$this->defaultReviewerId) {
             return null;
         }
 
@@ -126,7 +125,7 @@ class VerificationFieldsSetter
     {
         // The element already exists, so never apply the container's default period as the element's
         // verification date.
-        if (! $this->isFirstSave) {
+        if (!$this->isFirstSave) {
             return null;
         }
 
@@ -136,7 +135,7 @@ class VerificationFieldsSetter
         }
 
         // The container's plugin settings has no default period configured, so ignore.
-        if (! $this->defaultPeriod) {
+        if (!$this->defaultPeriod) {
             return null;
         }
 

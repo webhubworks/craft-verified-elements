@@ -20,7 +20,7 @@ use webhubworks\verifiedelements\db\PluginTable;
 // JOIN correctness
 // =================================================================================================
 
-it("returns the queried site's verification data when an entry exists on multiple sites", function () {
+it("returns the queried site's verification data when an entry exists on multiple sites", function() {
     $siteB = createSite('b');
     $section = createSection();
     $user = getSharedReviewer();
@@ -62,7 +62,7 @@ it("returns the queried site's verification data when an entry exists on multipl
 // isVerified()
 // =================================================================================================
 
-it('excludes entries with expired dates when isVerified is true', function () {
+it('excludes entries with expired dates when isVerified is true', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -80,7 +80,7 @@ it('excludes entries with expired dates when isVerified is true', function () {
     expect($ids)->not->toContain($entry->getCanonicalId());
 });
 
-it('includes entries with future dates when isVerified is true', function () {
+it('includes entries with future dates when isVerified is true', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -98,7 +98,7 @@ it('includes entries with future dates when isVerified is true', function () {
     expect($ids)->toContain($entry->getCanonicalId());
 });
 
-it('includes entries with a null date when isVerified is true', function () {
+it('includes entries with a null date when isVerified is true', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -116,7 +116,7 @@ it('includes entries with a null date when isVerified is true', function () {
     expect($ids)->toContain($entry->getCanonicalId());
 });
 
-it('returns only entries with expired dates when isVerified is false', function () {
+it('returns only entries with expired dates when isVerified is false', function() {
     $section = createSection();
     $expiredEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $verifiedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -147,7 +147,7 @@ it('returns only entries with expired dates when isVerified is false', function 
 // isAssigned()
 // =================================================================================================
 
-it('returns only entries with a reviewer when isAssigned is true', function () {
+it('returns only entries with a reviewer when isAssigned is true', function() {
     $section = createSection();
     $reviewer = getSharedReviewer();
     $assignedEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -175,7 +175,7 @@ it('returns only entries with a reviewer when isAssigned is true', function () {
     expect($ids)->not->toContain($unassignedEntry->getCanonicalId());
 });
 
-it('returns all entries without a reviewer when isAssigned is false', function () {
+it('returns all entries without a reviewer when isAssigned is false', function() {
     // isAssigned is a PURE reviewer filter: date and verification status play no part.
     // The earlier "unassigned = has a date" coupling (WBHB-9500) was deliberately removed
     // during WBHB-9773; the date condition now lives only on the badge-count query.
@@ -224,7 +224,7 @@ it('returns all entries without a reviewer when isAssigned is false', function (
 // reviewerId()
 // =================================================================================================
 
-it('returns only entries assigned to the given reviewer', function () {
+it('returns only entries assigned to the given reviewer', function() {
     $section = createSection();
     $reviewerA = getSharedReviewer();
     $reviewerB = getSharedReviewer('b');

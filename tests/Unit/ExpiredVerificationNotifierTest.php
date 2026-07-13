@@ -18,14 +18,14 @@ use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
 // hasExpiredElementsByReviewer()
 // =================================================================================================
 
-it('returns false when there are no expired elements assigned to a reviewer', function () {
+it('returns false when there are no expired elements assigned to a reviewer', function() {
     $notifier = new TestableExpiredVerificationNotifier('web', [1]);
     $notifier->seed([], []);
 
     expect($notifier->hasExpiredElementsByReviewer())->toBeFalse();
 });
 
-it('returns true when there are expired elements assigned to a reviewer', function () {
+it('returns true when there are expired elements assigned to a reviewer', function() {
     $notifier = new TestableExpiredVerificationNotifier('web', [1]);
     $notifier->seed(
         [42 => [mockElementData(reviewerId: 42, verifiedUntilDate: '2020-01-01 00:00:00')]],
@@ -39,14 +39,14 @@ it('returns true when there are expired elements assigned to a reviewer', functi
 // hasUnassignedExpiredElements()
 // =================================================================================================
 
-it('returns false when there are no unassigned expired elements', function () {
+it('returns false when there are no unassigned expired elements', function() {
     $notifier = new TestableExpiredVerificationNotifier('web', [1]);
     $notifier->seed([], []);
 
     expect($notifier->hasUnassignedExpiredElements())->toBeFalse();
 });
 
-it('returns true when there are unassigned expired elements', function () {
+it('returns true when there are unassigned expired elements', function() {
     $notifier = new TestableExpiredVerificationNotifier('web', [1]);
     $notifier->seed(
         [],
@@ -60,14 +60,14 @@ it('returns true when there are unassigned expired elements', function () {
 // reassignElementsToUnassigned()
 // =================================================================================================
 
-it('returns false when the reviewer ID has no elements', function () {
+it('returns false when the reviewer ID has no elements', function() {
     $notifier = new TestableExpiredVerificationNotifier('web', [1]);
     $notifier->seed([], []);
 
     expect($notifier->reassignElementsToUnassigned(99))->toBeFalse();
 });
 
-it('returns true and moves elements to unassigned when reviewer is found', function () {
+it('returns true and moves elements to unassigned when reviewer is found', function() {
     $elementData = mockElementData(reviewerId: 42, verifiedUntilDate: '2020-01-01 00:00:00');
     $notifier = new TestableExpiredVerificationNotifier('web', [1]);
     $notifier->seed(
@@ -83,7 +83,7 @@ it('returns true and moves elements to unassigned when reviewer is found', funct
 // notifyRecipient()
 // =================================================================================================
 
-it('returns true when the notification is sent successfully', function () {
+it('returns true when the notification is sent successfully', function() {
     $notification = Mockery::mock(ExpiredNotification::class);
     $notification->allows('send')->andReturn(true);
 
@@ -99,7 +99,7 @@ it('returns true when the notification is sent successfully', function () {
     expect($notifier->notifyRecipient($recipient, []))->toBeTrue();
 });
 
-it('returns false when the notification fails to send', function () {
+it('returns false when the notification fails to send', function() {
     $notification = Mockery::mock(ExpiredNotification::class);
     $notification->allows('send')->andReturn(false);
 

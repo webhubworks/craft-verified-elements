@@ -37,7 +37,7 @@ function allSiteIds(): array
 // expiredVerifiableEntries()
 // =================================================================================================
 
-it('excludes globally disabled entries but keeps enabled ones in the expired set', function () {
+it('excludes globally disabled entries but keeps enabled ones in the expired set', function() {
     $section = createSection();
     $enabledEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
     $disabledEntry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -64,7 +64,7 @@ it('excludes globally disabled entries but keeps enabled ones in the expired set
     Db::update('{{%elements}}', ['enabled' => false], ['id' => $disabledEntry->getCanonicalId()]);
 
     $expiredIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableEntries(allSiteIds())->all()
     );
 
@@ -72,7 +72,7 @@ it('excludes globally disabled entries but keeps enabled ones in the expired set
     expect($expiredIds)->not->toContain($disabledEntry->getCanonicalId());
 });
 
-it('excludes rows whose site is not in the in-scope set', function () {
+it('excludes rows whose site is not in the in-scope set', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -92,20 +92,20 @@ it('excludes rows whose site is not in the in-scope set', function () {
 
     // In scope: the entry's own site is returned.
     $inScopeIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableEntries([$entry->siteId])->all()
     );
     expect($inScopeIds)->toContain($entry->getCanonicalId());
 
     // Out of scope: a site outside the set is excluded, even though the row and section are enabled.
     $outOfScopeIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableEntries([$entry->siteId + 1000])->all()
     );
     expect($outOfScopeIds)->not->toContain($entry->getCanonicalId());
 });
 
-it('excludes entries that are disabled for the queried site', function () {
+it('excludes entries that are disabled for the queried site', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -131,14 +131,14 @@ it('excludes entries that are disabled for the queried site', function () {
     );
 
     $expiredIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableEntries(allSiteIds())->all()
     );
 
     expect($expiredIds)->not->toContain($entry->getCanonicalId());
 });
 
-it('returns rows that hydrate ElementData with the correct identity and edit URL', function () {
+it('returns rows that hydrate ElementData with the correct identity and edit URL', function() {
     $section = createSection();
     $reviewer = getSharedReviewer();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -159,7 +159,7 @@ it('returns rows that hydrate ElementData with the correct identity and edit URL
 
     $rows = array_filter(
         PluginQuery::expiredVerifiableEntries(allSiteIds())->all(),
-        static fn ($row) => (int) $row['id'] === $entry->getCanonicalId()
+        static fn($row) => (int) $row['id'] === $entry->getCanonicalId()
     );
 
     expect($rows)->toHaveCount(1);
@@ -183,7 +183,7 @@ it('returns rows that hydrate ElementData with the correct identity and edit URL
 // Mixed-type queries (UNION ALL)
 // =================================================================================================
 
-it('returns expired entries and assets together without cross-type leakage', function () {
+it('returns expired entries and assets together without cross-type leakage', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -217,27 +217,27 @@ it('returns expired entries and assets together without cross-type leakage', fun
         \craft\elements\Asset::class,
     ], allSiteIds())->all();
 
-    $mixedIds = array_map(static fn ($row) => (int) $row['id'], $mixedRows);
+    $mixedIds = array_map(static fn($row) => (int) $row['id'], $mixedRows);
     expect($mixedIds)->toContain($entry->getCanonicalId());
     expect($mixedIds)->toContain($asset->getCanonicalId());
 
     // The per-type queries must not leak the other type's rows.
     $entryOnlyIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableEntries(allSiteIds())->all()
     );
     expect($entryOnlyIds)->toContain($entry->getCanonicalId());
     expect($entryOnlyIds)->not->toContain($asset->getCanonicalId());
 
     $assetOnlyIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableAssets(allSiteIds())->all()
     );
     expect($assetOnlyIds)->toContain($asset->getCanonicalId());
     expect($assetOnlyIds)->not->toContain($entry->getCanonicalId());
 });
 
-it('hydrates an expired asset row into ElementData with volume identity and asset edit URL', function () {
+it('hydrates an expired asset row into ElementData with volume identity and asset edit URL', function() {
     $volume = Volume::factory()->create();
     $asset = withVerifiableBehavior(Asset::factory()->volume($volume->handle)->create());
 
@@ -256,7 +256,7 @@ it('hydrates an expired asset row into ElementData with volume identity and asse
 
     $rows = array_filter(
         PluginQuery::expiredVerifiableAssets(allSiteIds())->all(),
-        static fn ($row) => (int) $row['id'] === $asset->getCanonicalId()
+        static fn($row) => (int) $row['id'] === $asset->getCanonicalId()
     );
 
     expect($rows)->toHaveCount(1);
@@ -271,7 +271,7 @@ it('hydrates an expired asset row into ElementData with volume identity and asse
     );
 });
 
-it('excludes an expired entry when the only matching container row belongs to another element type', function () {
+it('excludes an expired entry when the only matching container row belongs to another element type', function() {
     $section = createSection();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
 
@@ -291,14 +291,14 @@ it('excludes an expired entry when the only matching container row belongs to an
     ]);
 
     $expiredIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableEntries(allSiteIds())->all()
     );
 
     expect($expiredIds)->not->toContain($entry->getCanonicalId());
 });
 
-it('limits expired elements to the given reviewer across the union', function () {
+it('limits expired elements to the given reviewer across the union', function() {
     $reviewer = getSharedReviewer();
     $otherReviewer = getSharedReviewer('b');
 
@@ -344,7 +344,7 @@ it('limits expired elements to the given reviewer across the union', function ()
     ];
 
     $filteredIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableElements($elementTypes, allSiteIds(), $reviewer->id)->all()
     );
 
@@ -356,7 +356,7 @@ it('limits expired elements to the given reviewer across the union', function ()
     // Without the filter, the same fixtures all come back - proving the exclusions above are
     // the reviewer condition's doing, not an accident of the fixtures.
     $unfilteredIds = array_map(
-        static fn ($row) => (int) $row['id'],
+        static fn($row) => (int) $row['id'],
         PluginQuery::expiredVerifiableElements($elementTypes, allSiteIds())->all()
     );
 
@@ -364,7 +364,7 @@ it('limits expired elements to the given reviewer across the union', function ()
     expect($unfilteredIds)->toContain($unassignedEntry->getCanonicalId());
 });
 
-it('orders and paginates across the reviewer union, not per subquery', function () {
+it('orders and paginates across the reviewer union, not per subquery', function() {
     $reviewer = getSharedReviewer('b');
 
     $section = createSection();
@@ -408,7 +408,7 @@ it('orders and paginates across the reviewer union, not per subquery', function 
 // assignedReviewerIds()
 // =================================================================================================
 
-it('returns each assigned reviewer once and ignores unassigned rows', function () {
+it('returns each assigned reviewer once and ignores unassigned rows', function() {
     $section = createSection();
     $reviewer = getSharedReviewer();
     $entryOne = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -447,7 +447,7 @@ it('returns each assigned reviewer once and ignores unassigned rows', function (
     expect($reviewerIds)->toBe([$reviewer->id]);
 });
 
-it('does not leak reviewers across element types', function () {
+it('does not leak reviewers across element types', function() {
     $section = createSection();
     $volume = Volume::factory()->create();
     $entryReviewer = getSharedReviewer('a');
@@ -496,7 +496,7 @@ it('does not leak reviewers across element types', function () {
     expect($assetReviewerIds)->toBe([$assetReviewer->id]);
 });
 
-it('excludes reviewers whose assignments sit only in disabled containers', function () {
+it('excludes reviewers whose assignments sit only in disabled containers', function() {
     $section = createSection();
     $reviewer = getSharedReviewer();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -518,7 +518,7 @@ it('excludes reviewers whose assignments sit only in disabled containers', funct
     expect(PluginQuery::assignedReviewerIds(ElementType::Entry, allSiteIds())->column())->toBe([]);
 });
 
-it('requires the enabled container row to match the element type', function () {
+it('requires the enabled container row to match the element type', function() {
     $section = createSection();
     $reviewer = getSharedReviewer();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());
@@ -542,7 +542,7 @@ it('requires the enabled container row to match the element type', function () {
     expect(PluginQuery::assignedReviewerIds(ElementType::Entry, allSiteIds())->column())->toBe([]);
 });
 
-it('excludes assignments on out-of-scope sites', function () {
+it('excludes assignments on out-of-scope sites', function() {
     $section = createSection();
     $reviewer = getSharedReviewer();
     $entry = withVerifiableBehavior(Entry::factory()->section($section)->create());

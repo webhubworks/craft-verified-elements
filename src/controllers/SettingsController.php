@@ -1,4 +1,6 @@
-<?php /** @noinspection PhpUnused */
+<?php
+
+/** @noinspection PhpUnused */
 
 namespace webhubworks\verifiedelements\controllers;
 
@@ -9,8 +11,8 @@ use craft\web\Controller;
 use webhubworks\verifiedelements\enums\Edition;
 use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\enums\Permission;
-use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
 use webhubworks\verifiedelements\Plugin;
+use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
 use yii\web\BadRequestHttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
@@ -140,7 +142,7 @@ class SettingsController extends Controller
 
         // The UI never offers an out-of-scope site on lower editions, so a siteId outside
         // the in-scope set is a stale or forged post.
-        if (! in_array($siteId, $service->getInScopeSiteIds(), true)) {
+        if (!in_array($siteId, $service->getInScopeSiteIds(), true)) {
             throw new BadRequestHttpException('Site is not available on this edition.');
         }
 

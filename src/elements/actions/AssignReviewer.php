@@ -1,4 +1,6 @@
-<?php /** @noinspection JSUnresolvedReference */
+<?php
+
+/** @noinspection JSUnresolvedReference */
 
 namespace webhubworks\verifiedelements\elements\actions;
 
@@ -62,7 +64,7 @@ class AssignReviewer extends ElementAction
             })();
         JS, [
             static::class,
-            ElementType::fromElementClass($this->elementType)->verifyPermission()->value
+            ElementType::fromElementClass($this->elementType)->verifyPermission()->value,
         ]);
 
         return null;
@@ -76,7 +78,7 @@ class AssignReviewer extends ElementAction
 
         $savedElements = array_filter(
             $elements,
-            function (Element $element) use ($elementsService) {
+            function(Element $element) use ($elementsService) {
                 try {
                     /** @var Element|VerifiableBehavior $element */
                     $element->setReviewerId($this->reviewerId);

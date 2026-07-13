@@ -38,7 +38,8 @@ readonly class ElementData implements JsonSerializable
         public ?int    $reviewerId,
         public ?string $verifiedUntilDate, // raw DB value (UTC); null means "Indefinitely"
         public string  $cpEditUrl,
-    ) {}
+    ) {
+    }
 
     /**
      * Hydrate from a raw reviewer/expired query row.

@@ -18,7 +18,7 @@ use webhubworks\verifiedelements\services\VerificationFieldsSetter;
 // resolveReviewerId() tests
 // =================================================================================================
 
-it('returns null when section has no default reviewer', function () {
+it('returns null when section has no default reviewer', function() {
     $setter = mockVerificationFieldsSetter(
         null,
         new DateTime('+30 days'),
@@ -30,7 +30,7 @@ it('returns null when section has no default reviewer', function () {
     expect($setter->resolveReviewerId())->toBeNull();
 });
 
-it('returns null when entry already has a reviewer', function () {
+it('returns null when entry already has a reviewer', function() {
     $setter = mockVerificationFieldsSetter(
         5,
         new DateTime('+30 days'),
@@ -42,7 +42,7 @@ it('returns null when entry already has a reviewer', function () {
     expect($setter->resolveReviewerId())->toBeNull();
 });
 
-it('returns null when entry has no date and no date is about to be set', function () {
+it('returns null when entry has no date and no date is about to be set', function() {
     $setter = mockVerificationFieldsSetter(
         null,
         null,
@@ -54,7 +54,7 @@ it('returns null when entry has no date and no date is about to be set', functio
     expect($setter->resolveReviewerId())->toBeNull();
 });
 
-it('returns default reviewer when entry has an existing date', function () {
+it('returns default reviewer when entry has an existing date', function() {
     $setter = mockVerificationFieldsSetter(
         null,
         new DateTime('+30 days'),
@@ -66,7 +66,7 @@ it('returns default reviewer when entry has an existing date', function () {
     expect($setter->resolveReviewerId())->toBe(10);
 });
 
-it('returns default reviewer on first save when date is about to be set', function () {
+it('returns default reviewer on first save when date is about to be set', function() {
     $setter = mockVerificationFieldsSetter(
         null,
         null,
@@ -82,7 +82,7 @@ it('returns default reviewer on first save when date is about to be set', functi
 // resolveVerificationDate() tests
 // =================================================================================================
 
-it('returns null when not the first save', function () {
+it('returns null when not the first save', function() {
     $setter = mockVerificationFieldsSetter(
         null,
         null,
@@ -94,7 +94,7 @@ it('returns null when not the first save', function () {
     expect($setter->resolveVerificationDate())->toBeNull();
 });
 
-it('returns null when entry already has a verification date', function () {
+it('returns null when entry already has a verification date', function() {
     $setter = mockVerificationFieldsSetter(
         null,
         new DateTime('+30 days'),
@@ -106,7 +106,7 @@ it('returns null when entry already has a verification date', function () {
     expect($setter->resolveVerificationDate())->toBeNull();
 });
 
-it('returns null when section has no default period', function () {
+it('returns null when section has no default period', function() {
     $setter = mockVerificationFieldsSetter(
         null,
         null,
@@ -118,7 +118,7 @@ it('returns null when section has no default period', function () {
     expect($setter->resolveVerificationDate())->toBeNull();
 });
 
-it('returns null when the default period string is invalid', function () {
+it('returns null when the default period string is invalid', function() {
     $setter = mockVerificationFieldsSetter(
         null,
         null,
@@ -130,7 +130,7 @@ it('returns null when the default period string is invalid', function () {
     expect($setter->resolveVerificationDate())->toBeNull();
 });
 
-it('returns a date offset from now by the default period', function () {
+it('returns a date offset from now by the default period', function() {
     Carbon::setTestNow('2026-01-01 00:00:00');
 
     $setter = mockVerificationFieldsSetter(

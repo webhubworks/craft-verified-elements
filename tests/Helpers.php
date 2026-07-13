@@ -1,24 +1,22 @@
 <?php
 
-use Mockery\MockInterface;
-use Random\RandomException;
+use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\elements\db\EntryQuery;
 use craft\errors\SiteNotFoundException;
 use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\models\Site;
+use Mockery\MockInterface;
+use Random\RandomException;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedelements\helpers\Log;
-use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\models\ContainerDefaults;
+use webhubworks\verifiedelements\models\ElementData;
 use webhubworks\verifiedelements\services\ExpiredVerificationNotifier;
-use webhubworks\verifiedelements\services\VerificationFieldsSetter;
 use webhubworks\verifiedelements\services\singletons\PluginSettings;
-
-
+use webhubworks\verifiedelements\services\VerificationFieldsSetter;
 
 /*
 |---------------------------------------------------------------------------------------------------
@@ -37,14 +35,13 @@ function cleanUpSites(): void
 {
     $sites = Craft::$app->getSites();
     foreach ($sites->getAllSites() as $site) {
-        if (! str_starts_with($site->handle, TEST_PREFIX)) {
+        if (!str_starts_with($site->handle, TEST_PREFIX)) {
             continue;
         }
 
         try {
             $sites->deleteSite($site);
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error(sprintf(
                 'Error deleting Site [%s] "%s":',
                 $site->id,
@@ -69,8 +66,7 @@ function cleanUpSections(): void
 
         try {
             $entries->deleteSection($section);
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error(sprintf(
                 'Error deleting Section [%s] "%s":',
                 $section->id,
@@ -96,8 +92,7 @@ function cleanUpUsers(): void
 
         try {
             $elements->deleteElement($user);
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error(sprintf(
                 'Error deleting User [%s] "%s":',
                 $user->getId(),
@@ -120,7 +115,9 @@ function cleanUpUsers(): void
  */
 class TestableExpiredVerificationNotifier extends ExpiredVerificationNotifier
 {
-    protected function setExpiredElements(): void {}
+    protected function setExpiredElements(): void
+    {
+    }
 
     public function seed(array $byReviewer, array $unassigned): void
     {
@@ -177,8 +174,7 @@ function mockVerificationFieldsSetter(
     bool      $isFirstSave,
     ?int      $defaultReviewerId,
     ?string   $defaultPeriod,
-): VerificationFieldsSetter
-{
+): VerificationFieldsSetter {
     return new VerificationFieldsSetter(
         1,
         1,
@@ -210,8 +206,7 @@ function mockElementData(
     int     $id = 1,
     int     $siteId = 1,
     int     $containerId = 1,
-): ElementData
-{
+): ElementData {
     return new ElementData(
         type: Entry::class,
         rowId: null,
@@ -251,7 +246,7 @@ function pestHandle(string $type, ?string $name = null): string
 {
     $parts = [
         TEST_PREFIX, // so we can identify all test items and delete them after the tests run
-        $type
+        $type,
     ];
 
     if ($name) {
@@ -329,7 +324,7 @@ function createSite(string $name): Site
     ]);
 
     $isSaved = Craft::$app->getSites()->saveSite($site);
-    if (! $isSaved) {
+    if (!$isSaved) {
         throw new RuntimeException('Failed to save site: ' . implode(', ', $site->getFirstErrors()));
     }
 

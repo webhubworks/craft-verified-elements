@@ -16,8 +16,8 @@ use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\helpers\Log;
-use webhubworks\verifiedelements\services\singletons\PluginSettings;
 use webhubworks\verifiedelements\Plugin;
+use webhubworks\verifiedelements\services\singletons\PluginSettings;
 
 /**
  * Construct the HTML for the "Reviewer" and "Verified until" date fields that appear in the
@@ -30,8 +30,9 @@ readonly class VerificationFieldsRenderer
     public function __construct(
         private Element        $element,
         private bool           $canVerifyElements,
-        private PluginSettings $settings
-    ) {}
+        private PluginSettings $settings,
+    ) {
+    }
 
     /**
      * @return string
@@ -51,13 +52,12 @@ readonly class VerificationFieldsRenderer
                 'status' => 'active',
                 'can' => ElementType::fromElement($this->element)->verifyPermission()->value,
             ],
-            'disabled' => ! $this->canVerifyElements,
+            'disabled' => !$this->canVerifyElements,
         ];
 
         try {
             return Cp::elementSelectHtml($config);
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error('Error rendering "Reviewer" field', $exception);
             return '';
         }
@@ -89,13 +89,12 @@ readonly class VerificationFieldsRenderer
             'value' => $this->getVerifiedUntilDateValue(),
             'addOptionLabel' => 'specificDate',
             'addOptionFn' => self::jsFunctionToAddCustomDate(),
-            'disabled' => ! $this->canVerifyElements,
+            'disabled' => !$this->canVerifyElements,
         ];
 
         try {
             return Cp::selectizeFieldHtml($config);
-        }
-        catch (Throwable $exception) {
+        } catch (Throwable $exception) {
             Log::error('Error rendering "Verified until" date field', $exception);
             return '';
         }
@@ -125,9 +124,8 @@ readonly class VerificationFieldsRenderer
         int            $siteId,
         string         $elementType,
         PluginSettings $settings,
-        ?DateTime      $currentUntilDate
-    ): array
-    {
+        ?DateTime      $currentUntilDate,
+    ): array {
         $formatter = new Formatter();
         $containerDefaults = $settings->getDefaultSettingsForContainer(
             $containerId,
@@ -263,7 +261,7 @@ readonly class VerificationFieldsRenderer
      */
     private function getVerifiedUntilDateValue(): false|string
     {
-        if (! $this->element->getVerifiedUntilDate()) {
+        if (!$this->element->getVerifiedUntilDate()) {
             return false;
         }
 

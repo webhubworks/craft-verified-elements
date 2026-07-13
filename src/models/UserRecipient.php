@@ -13,9 +13,8 @@ use webhubworks\verifiedelements\base\NotifiableInterface;
 class UserRecipient implements NotifiableInterface
 {
     public function __construct(
-        protected User $user
-    )
-    {
+        protected User $user,
+    ) {
     }
 
     /** @inheritDoc */
@@ -41,7 +40,7 @@ class UserRecipient implements NotifiableInterface
     {
         $locale = $this->user->getPreferredLocale();
 
-        if (! $locale) {
+        if (!$locale) {
             $locale = Craft::$app->language;
         }
 

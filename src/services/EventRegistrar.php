@@ -75,7 +75,8 @@ readonly class EventRegistrar
         private Plugin $plugin,
         private bool   $isCpRequest,
         private bool   $isConsoleRequest,
-    ) {}
+    ) {
+    }
 
 
     // PLUGIN EARLY INIT events
@@ -92,7 +93,7 @@ readonly class EventRegistrar
      */
     public function registerPluginEarlyInitEvents(): void
     {
-        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
+        if (!$this->isCpRequest && !$this->isConsoleRequest) {
             return;
         }
 
@@ -100,7 +101,7 @@ readonly class EventRegistrar
             Event::on(
                 EntryCondition::class,
                 BaseCondition::EVENT_REGISTER_CONDITION_RULES,
-                static function (RegisterConditionRulesEvent $event) {
+                static function(RegisterConditionRulesEvent $event) {
                     $event->conditionRules[] = VerifiedConditionRule::class;
                     $event->conditionRules[] = VerifiedUntilDateConditionRule::class;
                     $event->conditionRules[] = ReviewerConditionRule::class;
@@ -112,7 +113,7 @@ readonly class EventRegistrar
             Event::on(
                 AssetCondition::class,
                 BaseCondition::EVENT_REGISTER_CONDITION_RULES,
-                static function (RegisterConditionRulesEvent $event) {
+                static function(RegisterConditionRulesEvent $event) {
                     $event->conditionRules[] = VerifiedConditionRule::class;
                     $event->conditionRules[] = VerifiedUntilDateConditionRule::class;
                     $event->conditionRules[] = ReviewerConditionRule::class;
@@ -122,7 +123,7 @@ readonly class EventRegistrar
 
         Event::on(Gc::class, Gc::EVENT_RUN, $this->onRunGarbageCollection(...));
 
-        if (! $this->isCpRequest) {
+        if (!$this->isCpRequest) {
             return;
         }
 
@@ -147,7 +148,7 @@ readonly class EventRegistrar
         foreach ($service->getExpiredElementsByReviewer() as $reviewerId => $expiredElements) {
 
             // 1. Find the Reviewer
-            if (! $reviewer = $service->getReviewer($reviewerId)) {
+            if (!$reviewer = $service->getReviewer($reviewerId)) {
                 Log::warning(
                     "Reviewer $reviewerId not found or inactive. Skipping expired notification.",
                     __METHOD__
@@ -162,7 +163,7 @@ readonly class EventRegistrar
                 $expiredElements
             );
 
-            if (! $isSent) {
+            if (!$isSent) {
                 Log::warning(
                     "Failed to send expired notification to User $reviewer->id.",
                     __METHOD__
@@ -170,7 +171,7 @@ readonly class EventRegistrar
             }
         }
 
-        if (! $service->hasUnassignedExpiredElements()) {
+        if (!$service->hasUnassignedExpiredElements()) {
             return;
         }
 
@@ -181,7 +182,7 @@ readonly class EventRegistrar
             $service->getUnassignedExpiredElements()
         );
 
-        if (! $isSent) {
+        if (!$isSent) {
             Log::warning(
                 "Failed to send expired notification to " . $recipient->getEmail() . '.',
                 __METHOD__
@@ -246,13 +247,13 @@ readonly class EventRegistrar
      */
     public function registerPluginReadyEvents(): void
     {
-        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
+        if (!$this->isCpRequest && !$this->isConsoleRequest) {
             return;
         }
 
         Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, $this->onRegisterElementTypes(...));
 
-        if (! $this->isCpRequest) {
+        if (!$this->isCpRequest) {
             return;
         }
 
@@ -317,7 +318,7 @@ readonly class EventRegistrar
         ];
 
         foreach (ElementType::cases() as $elementType) {
-            if (! $elementType->feature()->isEnabled()) {
+            if (!$elementType->feature()->isEnabled()) {
                 continue;
             }
 
@@ -348,7 +349,7 @@ readonly class EventRegistrar
      */
     protected function onRegisterWidgets(RegisterComponentTypesEvent $event): void
     {
-        if (! Permission::AccessPlugin->isGranted()) {
+        if (!Permission::AccessPlugin->isGranted()) {
             return;
         }
 
@@ -368,7 +369,7 @@ readonly class EventRegistrar
      */
     protected function onDefineEditScreens(DefineEditUserScreensEvent $event): void
     {
-        if (! $event->editedUser->can(Permission::AccessPlugin->value)) {
+        if (!$event->editedUser->can(Permission::AccessPlugin->value)) {
             return;
         }
 
@@ -393,13 +394,13 @@ readonly class EventRegistrar
      */
     public function registerEntryEvents(): void
     {
-        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
+        if (!$this->isCpRequest && !$this->isConsoleRequest) {
             return;
         }
 
         $this->registerElementBehaviors(Entry::class, EntryQuery::class);
 
-        if (! $this->isCpRequest) {
+        if (!$this->isCpRequest) {
             return;
         }
 
@@ -473,18 +474,18 @@ readonly class EventRegistrar
             $entry->siteId,
             Entry::class
         );
-        if (! $isSectionEnabledForSite) {
+        if (!$isSectionEnabledForSite) {
             return;
         }
 
         // Existing drafts and revisions never sync verification state.
-        if (ElementHelper::isDraftOrRevision($entry) && ! $event->isNew) {
+        if (ElementHelper::isDraftOrRevision($entry) && !$event->isNew) {
             return;
         }
 
         // On editions without multi-site, ignore saves for any site but the primary -
         // this also stops propagation invocations from seeding non-primary records.
-        if (! $settings->isSiteInScope($entry->siteId)) {
+        if (!$settings->isSiteInScope($entry->siteId)) {
             return;
         }
 
@@ -549,12 +550,12 @@ readonly class EventRegistrar
         $settings = $this->plugin->getPluginSettings();
 
         // The plugin manages only in-scope sites; omit verification metadata on others.
-        if (! $settings->isSiteInScope($entry->siteId)) {
+        if (!$settings->isSiteInScope($entry->siteId)) {
             return;
         }
 
         // Only sections enabled for verification show a status.
-        if (! $settings->isContainerEnabledForSite($entry->sectionId, $entry->siteId, Entry::class)) {
+        if (!$settings->isContainerEnabledForSite($entry->sectionId, $entry->siteId, Entry::class)) {
             return;
         }
 
@@ -578,7 +579,7 @@ readonly class EventRegistrar
      */
     protected function onDefineEntrySidebarHtml(DefineHtmlEvent $event): void
     {
-        if (! Permission::VerifyEntries->isGranted()) {
+        if (!Permission::VerifyEntries->isGranted()) {
             return;
         }
 
@@ -591,7 +592,7 @@ readonly class EventRegistrar
         $settings = $this->plugin->getPluginSettings();
 
         // The plugin manages only in-scope sites; omit the sidebar on others.
-        if (! $settings->isSiteInScope($entry->siteId)) {
+        if (!$settings->isSiteInScope($entry->siteId)) {
             return;
         }
 
@@ -601,7 +602,7 @@ readonly class EventRegistrar
             Entry::class
         );
 
-        if (! $isSectionEnabled) {
+        if (!$isSectionEnabled) {
             return;
         }
 
@@ -623,7 +624,7 @@ readonly class EventRegistrar
 
         // The plugin manages only in-scope sites; render no fields on others.
         /** @noinspection DuplicatedCode */
-        if (! $this->plugin->getPluginSettings()->isSiteInScope($entry->siteId)) {
+        if (!$this->plugin->getPluginSettings()->isSiteInScope($entry->siteId)) {
             return;
         }
 
@@ -635,8 +636,7 @@ readonly class EventRegistrar
 
         if ($event->attribute === 'reviewer') {
             $event->html = $service->buildReviewerFieldHtml();
-        }
-        elseif ($event->attribute === 'verifiedUntilDate') {
+        } elseif ($event->attribute === 'verifiedUntilDate') {
             $event->html = $service->buildVerifiedUntilDateFieldHtml();
         }
     }
@@ -652,7 +652,7 @@ readonly class EventRegistrar
      */
     protected function onRegisterEntryIndexActions(RegisterElementActionsEvent $event): void
     {
-        if (! Permission::VerifyEntries->isGranted()) {
+        if (!Permission::VerifyEntries->isGranted()) {
             return;
         }
 
@@ -676,13 +676,13 @@ readonly class EventRegistrar
      */
     public function registerAssetEvents(): void
     {
-        if (! $this->isCpRequest && ! $this->isConsoleRequest) {
+        if (!$this->isCpRequest && !$this->isConsoleRequest) {
             return;
         }
 
         $this->registerElementBehaviors(Asset::class, AssetQuery::class);
 
-        if (! $this->isCpRequest) {
+        if (!$this->isCpRequest) {
             return;
         }
 
@@ -782,13 +782,13 @@ readonly class EventRegistrar
             $asset->siteId,
             Asset::class
         );
-        if (! $isVolumeEnabledForSite) {
+        if (!$isVolumeEnabledForSite) {
             return;
         }
 
         // On editions without multi-site, ignore saves for any site but the primary -
         // this also stops propagation invocations from seeding non-primary records.
-        if (! $settings->isSiteInScope($asset->siteId)) {
+        if (!$settings->isSiteInScope($asset->siteId)) {
             return;
         }
 
@@ -850,12 +850,12 @@ readonly class EventRegistrar
         $settings = $this->plugin->getPluginSettings();
 
         // The plugin manages only in-scope sites; omit verification metadata on others.
-        if (! $settings->isSiteInScope($asset->siteId)) {
+        if (!$settings->isSiteInScope($asset->siteId)) {
             return;
         }
 
         // Only volumes enabled for verification show a status.
-        if (! $settings->isContainerEnabledForSite($asset->volumeId, $asset->siteId, Asset::class)) {
+        if (!$settings->isContainerEnabledForSite($asset->volumeId, $asset->siteId, Asset::class)) {
             return;
         }
 
@@ -879,7 +879,7 @@ readonly class EventRegistrar
      */
     protected function onDefineAssetSidebarHtml(DefineHtmlEvent $event): void
     {
-        if (! Permission::VerifyAssets->isGranted()) {
+        if (!Permission::VerifyAssets->isGranted()) {
             return;
         }
 
@@ -894,7 +894,7 @@ readonly class EventRegistrar
         $settings = $this->plugin->getPluginSettings();
 
         // The plugin manages only in-scope sites; omit the sidebar on others.
-        if (! $settings->isSiteInScope($asset->siteId)) {
+        if (!$settings->isSiteInScope($asset->siteId)) {
             return;
         }
 
@@ -904,7 +904,7 @@ readonly class EventRegistrar
             Asset::class
         );
 
-        if (! $isVolumeEnabled) {
+        if (!$isVolumeEnabled) {
             return;
         }
 
@@ -931,7 +931,7 @@ readonly class EventRegistrar
 
         // The plugin manages only in-scope sites; render no fields on others.
         /** @noinspection DuplicatedCode */
-        if (! $this->plugin->getPluginSettings()->isSiteInScope($asset->siteId)) {
+        if (!$this->plugin->getPluginSettings()->isSiteInScope($asset->siteId)) {
             return;
         }
 
@@ -943,8 +943,7 @@ readonly class EventRegistrar
 
         if ($event->attribute === 'reviewer') {
             $event->html = $service->buildReviewerFieldHtml();
-        }
-        elseif ($event->attribute === 'verifiedUntilDate') {
+        } elseif ($event->attribute === 'verifiedUntilDate') {
             $event->html = $service->buildVerifiedUntilDateFieldHtml();
         }
     }
@@ -960,7 +959,7 @@ readonly class EventRegistrar
      */
     protected function onRegisterAssetIndexActions(RegisterElementActionsEvent $event): void
     {
-        if (! Permission::VerifyAssets->isGranted()) {
+        if (!Permission::VerifyAssets->isGranted()) {
             return;
         }
 
@@ -989,7 +988,7 @@ readonly class EventRegistrar
         Event::on(
             $elementClass,
             Model::EVENT_DEFINE_RULES,
-            static function (DefineRulesEvent $event) {
+            static function(DefineRulesEvent $event) {
                 $event->rules[] = [['reviewerId'], 'number', 'integerOnly' => true];
                 $event->rules[] = [['verifiedUntilDate'], DateTimeValidator::class];
             }
@@ -998,7 +997,7 @@ readonly class EventRegistrar
         Event::on(
             $elementClass,
             Model::EVENT_DEFINE_BEHAVIORS,
-            static function (DefineBehaviorsEvent $event) {
+            static function(DefineBehaviorsEvent $event) {
                 $event->behaviors[VerifiableBehavior::NAME] = VerifiableBehavior::class;
             }
         );
@@ -1006,7 +1005,7 @@ readonly class EventRegistrar
         Event::on(
             $queryClass,
             Query::EVENT_DEFINE_BEHAVIORS,
-            static function (DefineBehaviorsEvent $event) {
+            static function(DefineBehaviorsEvent $event) {
                 $event->behaviors[VerifiableQueryBehavior::NAME] = VerifiableQueryBehavior::class;
             }
         );
@@ -1043,7 +1042,7 @@ readonly class EventRegistrar
     protected function onRegisterElementIndexTableAttributes(RegisterElementTableAttributesEvent $event): void
     {
         $event->tableAttributes['verifiedUntilDate'] = [
-            'label' => Craft::t(Plugin::HANDLE, 'Verified until')
+            'label' => Craft::t(Plugin::HANDLE, 'Verified until'),
         ];
 
         $event->tableAttributes['isVerified'] = [

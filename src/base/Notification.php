@@ -25,8 +25,7 @@ abstract class Notification implements NotificationInterface
     public function __construct(
         protected NotifiableInterface $recipient,
         protected ?string $locale = null,
-    )
-    {
+    ) {
         if (!$this->locale) {
             $this->locale = $this->recipient->getLocale();
         }

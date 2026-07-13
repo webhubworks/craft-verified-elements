@@ -4,9 +4,9 @@ namespace webhubworks\verifiedelements\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseElementSelectConditionRule;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
@@ -38,7 +38,7 @@ class ReviewerConditionRule extends BaseElementSelectConditionRule implements El
     }
 
     /** @inheritDoc */
-    protected  function allowMultiple(): bool
+    protected function allowMultiple(): bool
     {
         return true;
     }

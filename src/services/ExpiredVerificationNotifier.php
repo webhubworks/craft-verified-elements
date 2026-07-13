@@ -27,7 +27,8 @@ class ExpiredVerificationNotifier
     public function __construct(
         private readonly string $target,
         private readonly array  $inScopeSiteIds,
-    ) {}
+    ) {
+    }
 
     /**
      * @var array<int, ElementData[]>|null
@@ -46,7 +47,7 @@ class ExpiredVerificationNotifier
      */
     public function hasExpiredElementsByReviewer(): bool
     {
-        return ! empty($this->getExpiredElementsByReviewer());
+        return !empty($this->getExpiredElementsByReviewer());
     }
 
     /**
@@ -56,7 +57,7 @@ class ExpiredVerificationNotifier
      */
     public function hasUnassignedExpiredElements(): bool
     {
-        return ! empty($this->getUnassignedExpiredElements());
+        return !empty($this->getUnassignedExpiredElements());
     }
 
     /**
@@ -110,7 +111,7 @@ class ExpiredVerificationNotifier
     {
         $isSent = $this->buildExpiredNotification($expiredElements, $recipient)->send();
 
-        if (! $isSent) {
+        if (!$isSent) {
             Log::warning(
                 sprintf('Failed to send expired verification digest to %s.', $recipient->getEmail()),
                 $this->target

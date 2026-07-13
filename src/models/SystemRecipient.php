@@ -12,7 +12,6 @@ use webhubworks\verifiedelements\base\NotifiableInterface;
  */
 class SystemRecipient implements NotifiableInterface
 {
-
     /** @inheritDoc */
     public function getEmail(): string
     {

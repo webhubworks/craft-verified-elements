@@ -61,8 +61,7 @@ function makeSourcesBuilder(
     ?string $siteHandle = null,
     array   $reviewers = [],
     array   $inScopeSiteIds = [1, 2],
-): TestableElementIndexSourcesBuilder
-{
+): TestableElementIndexSourcesBuilder {
     /** @var PluginSettings|MockInterface $settings */
     $settings = Mockery::mock(PluginSettings::class);
     $settings->allows('getEnabledContainerIds')->with($elementType)->andReturn($enabledContainerIds);
@@ -117,7 +116,7 @@ function findSourceByKey(array $sources, string $key): ?array
 // Status sources
 // =================================================================================================
 
-it('builds the expired, upcoming, verified, and unassigned sources', function () {
+it('builds the expired, upcoming, verified, and unassigned sources', function() {
     $sources = makeSourcesBuilder()->defineSources();
 
     expect(findSourceByKey($sources, VerificationStatus::Expired->handle()))->not->toBeNull();
@@ -126,7 +125,7 @@ it('builds the expired, upcoming, verified, and unassigned sources', function ()
     expect(findSourceByKey($sources, ReviewerStatus::Unassigned->handle()))->not->toBeNull();
 });
 
-it('filters the expired and verified sources by verification state', function () {
+it('filters the expired and verified sources by verification state', function() {
     $sources = makeSourcesBuilder()->defineSources();
 
     $expired = findSourceByKey($sources, VerificationStatus::Expired->handle());
@@ -136,7 +135,7 @@ it('filters the expired and verified sources by verification state', function ()
     expect($verified['criteria']['isVerified'])->toBeTrue();
 });
 
-it('limits the upcoming source to the imminent window', function () {
+it('limits the upcoming source to the imminent window', function() {
     Carbon::setTestNow('2026-01-01 12:00:00');
 
     $sources = makeSourcesBuilder()->defineSources();
@@ -151,7 +150,7 @@ it('limits the upcoming source to the imminent window', function () {
 // Container scoping (the element-agnostic part)
 // =================================================================================================
 
-it('scopes every source to the enabled sections for entries', function () {
+it('scopes every source to the enabled sections for entries', function() {
     $sources = makeSourcesBuilder(
         elementType: Entry::class,
         containerIdQueryParam: 'sectionId',
@@ -159,7 +158,7 @@ it('scopes every source to the enabled sections for entries', function () {
     )->defineSources();
 
     foreach ($sources as $source) {
-        if (! isset($source['criteria'])) {
+        if (!isset($source['criteria'])) {
             continue;
         }
 
@@ -167,7 +166,7 @@ it('scopes every source to the enabled sections for entries', function () {
     }
 });
 
-it('scopes every source to the enabled volumes for assets', function () {
+it('scopes every source to the enabled volumes for assets', function() {
     $sources = makeSourcesBuilder(
         elementType: Asset::class,
         containerIdQueryParam: 'volumeId',
@@ -175,7 +174,7 @@ it('scopes every source to the enabled volumes for assets', function () {
     )->defineSources();
 
     foreach ($sources as $source) {
-        if (! isset($source['criteria'])) {
+        if (!isset($source['criteria'])) {
             continue;
         }
 
@@ -184,14 +183,14 @@ it('scopes every source to the enabled volumes for assets', function () {
     }
 });
 
-it('restricts every source to the in-scope sites', function () {
+it('restricts every source to the in-scope sites', function() {
     // Craft narrows the index site menu to each source's sites, so this is what keeps a
     // non-multi-site edition confined to the primary site (see PluginSettings::getInScopeSiteIds).
     $sources = makeSourcesBuilder(inScopeSiteIds: [1, 3])->defineSources();
 
     foreach ($sources as $source) {
         // The Reviewer heading is not a real source and carries no sites.
-        if (! isset($source['key'])) {
+        if (!isset($source['key'])) {
             continue;
         }
 
@@ -203,7 +202,7 @@ it('restricts every source to the in-scope sites', function () {
 // Unassigned badge count
 // =================================================================================================
 
-it('shows the badge count when expiring unassigned elements exist', function () {
+it('shows the badge count when expiring unassigned elements exist', function() {
     $sources = makeSourcesBuilder(expiringUnassignedCount: 3)->defineSources();
 
     $unassigned = findSourceByKey($sources, ReviewerStatus::Unassigned->handle());
@@ -211,7 +210,7 @@ it('shows the badge count when expiring unassigned elements exist', function () 
     expect($unassigned['badgeCount'])->toBe(3);
 });
 
-it('hides the badge count when no unassigned element is going to expire', function () {
+it('hides the badge count when no unassigned element is going to expire', function() {
     $sources = makeSourcesBuilder(expiringUnassignedCount: 0)->defineSources();
 
     $unassigned = findSourceByKey($sources, ReviewerStatus::Unassigned->handle());
@@ -219,7 +218,7 @@ it('hides the badge count when no unassigned element is going to expire', functi
     expect($unassigned['badgeCount'])->toBeNull();
 });
 
-it('keeps the unassigned list criteria broad while the badge counts a narrower subset', function () {
+it('keeps the unassigned list criteria broad while the badge counts a narrower subset', function() {
     // Deliberate asymmetry (WBHB-9500, re-scoped during WBHB-9773): the LIST is a pure
     // reviewer filter, while the BADGE only prompts action for elements that will expire.
     // The date filter lives solely on the badge-count query, never in the criteria.
@@ -232,7 +231,7 @@ it('keeps the unassigned list criteria broad while the badge counts a narrower s
     expect($unassigned['criteria'])->not->toHaveKey('verifiedUntilDate');
 });
 
-it('explains the badge to screen readers and as a tooltip', function () {
+it('explains the badge to screen readers and as a tooltip', function() {
     $sources = makeSourcesBuilder(expiringUnassignedCount: 1)->defineSources();
 
     $unassigned = findSourceByKey($sources, ReviewerStatus::Unassigned->handle());
@@ -248,7 +247,7 @@ it('explains the badge to screen readers and as a tooltip', function () {
 // Reviewer sources
 // =================================================================================================
 
-it("labels the 'mine' source with the current user's name and reviewer criteria", function () {
+it("labels the 'mine' source with the current user's name and reviewer criteria", function() {
     $sources = makeSourcesBuilder(
         currentUserId: 42,
         currentUserFriendlyName: 'Ada',
@@ -260,7 +259,7 @@ it("labels the 'mine' source with the current user's name and reviewer criteria"
     expect($mine['criteria']['reviewerId'])->toBe(42);
 });
 
-it('appends one source per reviewer under the Reviewer heading', function () {
+it('appends one source per reviewer under the Reviewer heading', function() {
     $sources = makeSourcesBuilder(reviewers: [
         new User(['id' => 7, 'firstName' => 'Rita']),
         new User(['id' => 8, 'firstName' => 'Sam']),
