@@ -127,17 +127,21 @@ class IndexController extends Controller
         $verificationPeriod = $this->request->getRequiredBodyParam('verificationPeriod');
 
         if ($verificationPeriod === VerificationPeriod::SpecificDate->value) {
-            $inputDate = $this->request->getRequiredBodyParam('specificDate');
-            $date = DateHelper::toDateTime($inputDate);
+            $date = DateHelper::toDateTime($this->request->getRequiredBodyParam('specificDate'));
+
+            if ($date === null) {
+                return $this->asFailure(Craft::t(Plugin::HANDLE, 'Not a valid date.'));
+            }
         } elseif ($verificationPeriod === VerificationPeriod::Indefinitely->value) {
             $date = null;
         } else {
             $interval = DateHelper::createDateInterval($verificationPeriod);
-            $date = DateTimeHelper::now()->add($interval);
-        }
 
-        if ($date === false) {
-            return $this->asFailure(Craft::t(Plugin::HANDLE, 'Not a valid date.'));
+            if ($interval === null) {
+                return $this->asFailure(Craft::t(Plugin::HANDLE, 'Not a valid date.'));
+            }
+
+            $date = DateTimeHelper::now()->add($interval);
         }
 
         return $this->asJson([
