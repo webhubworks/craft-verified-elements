@@ -7,15 +7,17 @@ use craft\helpers\AdminTable;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use webhubworks\verifiedelements\Plugin;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\Feature;
+use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\services\VerificationFieldsRenderer;
-use webhubworks\verifiedelements\Plugin;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\MethodNotAllowedHttpException;
 use yii\web\Response;
 
@@ -30,6 +32,20 @@ class IndexController extends Controller
     public function beforeAction($action): bool
     {
         $this->requireCpRequest();
+
+        // Most actions in this controller support the plugin's own CP pages, so they require
+        // plugin access.
+        if (in_array($action->id, ['request-period', 'resolve-date'], true)) {
+            // These two modal endpoints are the exception: they're opened by the "Verify" bulk
+            // action, which are also available on Craft's regular Entries and Assets indexes.
+            // Users who verify content from there don't necessarily have access to the plugin's
+            // pages, so these endpoints only require a verify permission.
+            $this->requireVerifyPermission();
+        }
+        else {
+            $this->requirePermission(Permission::AccessPlugin->value);
+        }
+
         return parent::beforeAction($action);
     }
 
@@ -191,5 +207,23 @@ class IndexController extends Controller
             'pagination' => $pagination,
             'data' => $results,
         ]);
+    }
+
+
+    // PRIVATE HELPERS
+    // =============================================================================================
+
+    /**
+     * Requires the current user to hold at least one per-type verify permission.
+     *
+     * @throws ForbiddenHttpException
+     */
+    private function requireVerifyPermission(): void
+    {
+        if (Permission::VerifyEntries->isGranted() || Permission::VerifyAssets->isGranted()) {
+            return;
+        }
+
+        throw new ForbiddenHttpException('User is not authorized to perform this action.');
     }
 }
