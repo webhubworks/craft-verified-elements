@@ -10,7 +10,7 @@ use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use DateTime;
 use Throwable;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\Plugin;
 
 /**
@@ -76,7 +76,7 @@ class VerifyElement extends ElementAction
             array_filter(
                 $elements,
                 function(Element $element) use ($elementsService) {
-                    /** @var Element|VerifiableBehavior $element */
+                    /** @var Element&VerifiableElementInterface $element */
                     try {
                         $element->setVerifiedUntilDate($this->date);
                         $elementsService->saveElement($element);

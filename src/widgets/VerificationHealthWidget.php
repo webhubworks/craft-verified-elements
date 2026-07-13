@@ -11,7 +11,7 @@ use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\helpers\Cp;
 use Throwable;
-use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\base\VerifiableQueryInterface;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\Log;
@@ -230,7 +230,7 @@ class VerificationHealthWidget extends Widget
             return 0;
         }
 
-        /** @var (EntryQuery|AssetQuery)&VerifiableQueryBehavior $query */
+        /** @var (EntryQuery|AssetQuery)&VerifiableQueryInterface $query */
         $query = $this->liveElementsQuery($elementType);
 
         match ($elementType) {

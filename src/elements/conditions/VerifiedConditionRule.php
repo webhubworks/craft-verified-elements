@@ -9,8 +9,8 @@ use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
-use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
+use webhubworks\verifiedelements\base\VerifiableQueryInterface;
 use webhubworks\verifiedelements\Plugin;
 
 /**
@@ -41,14 +41,14 @@ class VerifiedConditionRule extends BaseLightswitchConditionRule implements Elem
     /** @inheritDoc */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var ElementQuery|VerifiableQueryBehavior $query */
+        /** @var ElementQuery&VerifiableQueryInterface $query */
         $query->isVerified($this->value);
     }
 
     /** @inheritDoc */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Element|VerifiableBehavior $element */
+        /** @var Element&VerifiableElementInterface $element */
         return $element->getIsVerified() === $this->value;
     }
 }

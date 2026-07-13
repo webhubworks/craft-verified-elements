@@ -6,7 +6,7 @@ use Craft;
 use craft\base\Element;
 use craft\helpers\Html;
 use Throwable;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\Plugin;
@@ -21,7 +21,7 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
 readonly class CpEditSidebarRenderer
 {
     /**
-     * @param Element&VerifiableBehavior $element
+     * @param Element&VerifiableElementInterface $element
      * @param PluginSettings $settings
      */
     public function __construct(

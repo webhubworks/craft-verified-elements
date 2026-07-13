@@ -10,8 +10,8 @@ use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use Throwable;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
-use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
+use webhubworks\verifiedelements\base\VerifiableQueryInterface;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\Plugin;
 
@@ -41,14 +41,14 @@ class VerifiedUntilDateConditionRule extends BaseDateRangeConditionRule implemen
     /** @inheritDoc */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var ElementQuery|VerifiableQueryBehavior $query */
+        /** @var ElementQuery&VerifiableQueryInterface $query */
         $query->verifiedUntilDate($this->queryParamValue());
     }
 
     /** @inheritDoc */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Element|VerifiableBehavior $element */
+        /** @var Element&VerifiableElementInterface $element */
         try {
             return $this->matchValue($element->getVerifiedUntilDate());
         } catch (Throwable $exception) {

@@ -3,7 +3,7 @@
 namespace webhubworks\verifiedelements\helpers;
 
 use craft\elements\Asset;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 
 /**
  * Helper methods for Asset elements.
@@ -16,11 +16,11 @@ class AssetHelper
      * custom field. Assets also fire saves for moves, renames, focal-point changes,
      * and indexing - those are noise, not content changes.
      *
-     * @param Asset|VerifiableBehavior $asset
+     * @param Asset&VerifiableElementInterface $asset
      * @param bool $isNew
      * @return bool
      */
-    public static function hasNotifiableContentChange(Asset|VerifiableBehavior $asset, bool $isNew): bool
+    public static function hasNotifiableContentChange(Asset $asset, bool $isNew): bool
     {
         // A fresh upload (or a duplicate) is a creation, not a change.
         if ($isNew) {

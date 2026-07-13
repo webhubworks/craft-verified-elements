@@ -11,6 +11,7 @@ use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use JsonSerializable;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationStatus;
@@ -70,7 +71,7 @@ readonly class ElementData implements JsonSerializable
     /**
      * Snapshot a live element (with VerifiableBehavior attached).
      *
-     * @param Element&VerifiableBehavior $element
+     * @param Element&VerifiableElementInterface $element
      * @return self
      */
     public static function fromElement(Element $element): self

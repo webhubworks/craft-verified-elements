@@ -10,7 +10,7 @@ use craft\helpers\DateTimeHelper;
 use craft\i18n\Formatter;
 use DateTime;
 use Throwable;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\enums\DateStatus;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationPeriod;
@@ -26,7 +26,7 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
 readonly class VerificationFieldsRenderer
 {
     /**
-     * @param Element&VerifiableBehavior $element
+     * @param Element&VerifiableElementInterface $element
      * @param bool $canVerifyElements
      * @param PluginSettings $settings
      */

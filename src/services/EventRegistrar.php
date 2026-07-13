@@ -42,6 +42,7 @@ use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use DateTime;
 use Twig\TwigFilter;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\behaviors\VerifiableQueryBehavior;
 use webhubworks\verifiedelements\elements\actions\AssignReviewer;
@@ -430,7 +431,7 @@ readonly class EventRegistrar
      */
     protected function onBeforeSaveEntry(ModelEvent $event): void
     {
-        /** @var Entry|VerifiableBehavior $entry */
+        /** @var Entry&VerifiableElementInterface $entry */
         $entry = $event->sender;
 
         // Skip for propagation, matrix entries, drafts, and revisions.
@@ -460,7 +461,7 @@ readonly class EventRegistrar
      */
     protected function onAfterSaveEntry(ModelEvent $event): void
     {
-        /** @var Entry|VerifiableBehavior $entry */
+        /** @var Entry&VerifiableElementInterface $entry */
         $entry = $event->sender;
 
         // Matrix entries have no section and are never verifiable.
@@ -539,7 +540,7 @@ readonly class EventRegistrar
      */
     protected function onDefineEntryMetadata(DefineMetadataEvent $event): void
     {
-        /** @var Entry|VerifiableBehavior $entry */
+        /** @var Entry&VerifiableElementInterface $entry */
         $entry = $event->sender;
 
         // Matrix entries have no section and are never verifiable.
@@ -583,7 +584,7 @@ readonly class EventRegistrar
             return;
         }
 
-        /** @var Entry|VerifiableBehavior $entry */
+        /** @var Entry&VerifiableElementInterface $entry */
         $entry = $event->sender;
         if ($entry->sectionId === null) {
             return;
@@ -619,7 +620,7 @@ readonly class EventRegistrar
      */
     protected function onDefineEntryInlineInputHtml(DefineAttributeHtmlEvent $event): void
     {
-        /** @var Entry|VerifiableBehavior $entry */
+        /** @var Entry&VerifiableElementInterface $entry */
         $entry = $event->sender;
 
         // The plugin manages only in-scope sites; render no fields on others.
@@ -713,7 +714,7 @@ readonly class EventRegistrar
      */
     protected function onBeforeSaveAsset(ModelEvent $event): void
     {
-        /** @var Asset|VerifiableBehavior $asset */
+        /** @var Asset&VerifiableElementInterface $asset */
         $asset = $event->sender;
 
         // Skip for propagation, folders, and temporary uploads (no volume yet).
@@ -768,7 +769,7 @@ readonly class EventRegistrar
      */
     protected function onAfterSaveAsset(ModelEvent $event): void
     {
-        /** @var Asset|VerifiableBehavior $asset */
+        /** @var Asset&VerifiableElementInterface $asset */
         $asset = $event->sender;
 
         // Folders and temporary uploads (no volume yet) are never verifiable.
@@ -839,7 +840,7 @@ readonly class EventRegistrar
      */
     protected function onDefineAssetMetadata(DefineMetadataEvent $event): void
     {
-        /** @var Asset|VerifiableBehavior $asset */
+        /** @var Asset&VerifiableElementInterface $asset */
         $asset = $event->sender;
 
         // Folders and temporary uploads (no volume yet) are never verifiable.
@@ -883,7 +884,7 @@ readonly class EventRegistrar
             return;
         }
 
-        /** @var Asset|VerifiableBehavior $asset */
+        /** @var Asset&VerifiableElementInterface $asset */
         $asset = $event->sender;
 
         // Folders and temporary uploads (no volume yet) are never verifiable.
@@ -921,7 +922,7 @@ readonly class EventRegistrar
      */
     protected function onDefineAssetInlineInputHtml(DefineAttributeHtmlEvent $event): void
     {
-        /** @var Asset|VerifiableBehavior $asset */
+        /** @var Asset&VerifiableElementInterface $asset */
         $asset = $event->sender;
 
         // Folders and temporary uploads (no volume yet) are never verifiable.
@@ -1065,7 +1066,7 @@ readonly class EventRegistrar
      */
     protected function onDefineElementIndexAttributeHtml(DefineAttributeHtmlEvent $event): void
     {
-        /** @var Element|VerifiableBehavior $element */
+        /** @var Element&VerifiableElementInterface $element */
         $element = $event->sender;
 
         if ($event->attribute === 'isVerified') {

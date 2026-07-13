@@ -8,6 +8,7 @@ use craft\base\Element;
 use craft\elements\User;
 use DateTime;
 use Exception;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\DateHelper;
 use webhubworks\verifiedelements\helpers\Log;
@@ -25,7 +26,7 @@ use yii\base\Behavior;
  * @property-read VerificationStatus $verificationStatus
  * @property-read User|null $reviewer
  */
-class VerifiableBehavior extends Behavior
+class VerifiableBehavior extends Behavior implements VerifiableElementInterface
 {
     public const NAME = 'verified-elements.verifiable';
 
@@ -40,28 +41,13 @@ class VerifiableBehavior extends Behavior
 
     private ?int $_reviewerId = null;
 
-    /**
-     * Get the Reviewer's ID.
-     *
-     * The "Reviewer" is a Craft User who has been assigned to review the element when its
-     * "Verified Until" date expires.
-     *
-     * @return int|null
-     */
+    /** @inheritDoc */
     public function getReviewerId(): ?int
     {
         return $this->_reviewerId;
     }
 
-    /**
-     * Set the Reviewer's user ID.
-     *
-     * The "Reviewer" is a Craft User who has been assigned to review the element when its
-     * "Verified Until" date expires.
-     *
-     * @param mixed $value
-     * @return void
-     */
+    /** @inheritDoc */
     public function setReviewerId(mixed $value): void
     {
         if (is_int($value)) {
@@ -87,17 +73,7 @@ class VerifiableBehavior extends Behavior
         $this->_reviewerId = null;
     }
 
-    /**
-     * Get the Reviewer's User object.
-     *
-     * The "Reviewer" is a Craft User who has been assigned to review the element when its
-     * "Verified Until" date expires.
-     *
-     * NOTE that this method does NOT memoize the User, so repeated calls means a new query to
-     * the database. If you call this, save it to a variable for reuse.
-     *
-     * @return User|null
-     */
+    /** @inheritDoc */
     public function getReviewer(): ?User
     {
         if (!$this->getReviewerId()) {
@@ -113,12 +89,7 @@ class VerifiableBehavior extends Behavior
 
     private ?DateTime $_verifiedUntilDate = null;
 
-    /**
-     * Set the "Verified Until" select field's value.
-     *
-     * @param mixed $value Any value that can be converted to a DateTime object.
-     * @return void
-     */
+    /** @inheritDoc */
     public function setVerifiedUntilDate(mixed $value): void
     {
         $systemTimeZone = DateHelper::createDateTimeZone();
@@ -159,42 +130,25 @@ class VerifiableBehavior extends Behavior
         $this->_verifiedUntilDate = null;
     }
 
-    /**
-     * Get the "Verified Until" select field's value.
-     *
-     * @return DateTime|null
-     */
+    /** @inheritDoc */
     public function getVerifiedUntilDate(): ?DateTime
     {
         return $this->_verifiedUntilDate;
     }
 
-    /**
-     * Checks if the "Verified Until" select field has a value other than null.
-     *
-     * @return bool
-     */
+    /** @inheritDoc */
     public function getHasVerifiedUntilDate(): bool
     {
         return $this->_verifiedUntilDate !== null;
     }
 
-    /**
-     * Returns the element's current verification status.
-     *
-     * @return VerificationStatus
-     */
+    /** @inheritDoc */
     public function getVerificationStatus(): VerificationStatus
     {
         return VerificationStatus::fromDate($this->getVerifiedUntilDate());
     }
 
-    /**
-     * Checks if the "Verified until" select field's value is still in the future. If the value is
-     * null, this returns true because the value means "indefinitely".
-     *
-     * @return bool
-     */
+    /** @inheritDoc */
     public function getIsVerified(): bool
     {
         return $this->getVerificationStatus() !== VerificationStatus::Expired;

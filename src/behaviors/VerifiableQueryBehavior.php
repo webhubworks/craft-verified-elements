@@ -7,6 +7,7 @@ namespace webhubworks\verifiedelements\behaviors;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\helpers\Db;
+use webhubworks\verifiedelements\base\VerifiableQueryInterface;
 use webhubworks\verifiedelements\db\PluginTable;
 use yii\base\Behavior;
 
@@ -26,7 +27,7 @@ use yii\base\Behavior;
  *
  * @property ElementQuery $owner
  */
-class VerifiableQueryBehavior extends Behavior
+class VerifiableQueryBehavior extends Behavior implements VerifiableQueryInterface
 {
     public const NAME = 'verified-elements.verifiable-query';
     public ?bool $isVerified = null;
@@ -113,13 +114,7 @@ class VerifiableQueryBehavior extends Behavior
         }
     }
 
-    /**
-     * Query param for filtering elements by whether their "Verified until" date field is still in
-     * the future.
-     *
-     * @param bool $value
-     * @return ElementQuery
-     */
+    /** @inheritDoc */
     public function isVerified(bool $value = true): ElementQuery
     {
         $query = $this->owner;
@@ -139,12 +134,7 @@ class VerifiableQueryBehavior extends Behavior
         return $query;
     }
 
-    /**
-     * Query param for filtering elements that have or haven't been assigned to a Reviewer.
-     *
-     * @param bool $value
-     * @return ElementQuery
-     */
+    /** @inheritDoc */
     public function isAssigned(bool $value = true): ElementQuery
     {
         $query = $this->owner;
@@ -158,12 +148,7 @@ class VerifiableQueryBehavior extends Behavior
         return $query;
     }
 
-    /**
-     * Query param for filtering elements by their Reviewer (Craft User) ID.
-     *
-     * @param int|array|null $value
-     * @return ElementQuery
-     */
+    /** @inheritDoc */
     public function reviewerId(int|array|null $value = null): ElementQuery
     {
         $query = $this->owner;
@@ -177,12 +162,7 @@ class VerifiableQueryBehavior extends Behavior
         return $query;
     }
 
-    /**
-     * Query param for filtering elements by their "Verified until" date field.
-     *
-     * @param mixed $value
-     * @return ElementQuery
-     */
+    /** @inheritDoc */
     public function verifiedUntilDate(mixed $value): ElementQuery
     {
         $query = $this->owner;

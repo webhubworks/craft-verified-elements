@@ -4,6 +4,7 @@ namespace webhubworks\verifiedelements\services;
 
 use craft\base\Element;
 use DateTime;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\enums\ElementType;
@@ -47,7 +48,7 @@ class VerificationFieldsSetter
     /**
      * Instantiate this class from a live element (with VerifiableBehavior attached).
      *
-     * @param Element&VerifiableBehavior $element
+     * @param Element&VerifiableElementInterface $element
      * @param PluginSettings $settings
      * @return self
      */
@@ -158,14 +159,12 @@ class VerificationFieldsSetter
     /**
      * Update an element's "Reviewer" and "Verified until" fields before saving it.
      *
-     * @param Element $element
-     * @return Element
+     * @param Element&VerifiableElementInterface $element
+     * @return Element&VerifiableElementInterface
      * @see VerifiableBehavior
      */
     public function updateElementFields(Element $element): Element
     {
-        /** @var Element|VerifiableBehavior $element */
-
         if ($reviewerId = $this->resolveReviewerId()) {
             $element->setReviewerId($reviewerId);
         }

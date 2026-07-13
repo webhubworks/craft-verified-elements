@@ -9,7 +9,7 @@ use craft\base\Element;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use Throwable;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\Plugin;
 
@@ -81,7 +81,7 @@ class AssignReviewer extends ElementAction
             $elements,
             function(Element $element) use ($elementsService) {
                 try {
-                    /** @var Element|VerifiableBehavior $element */
+                    /** @var Element&VerifiableElementInterface $element */
                     $element->setReviewerId($this->reviewerId);
                     $elementsService->saveElement($element);
                     return true;
