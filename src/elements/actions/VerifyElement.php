@@ -7,6 +7,7 @@ namespace webhubworks\verifiedelements\elements\actions;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
+use craft\elements\db\ElementQueryInterface;
 use DateTime;
 use Throwable;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
@@ -66,7 +67,7 @@ class VerifyElement extends ElementAction
     }
 
     /** @inheritDoc */
-    public function performAction(Craft\elements\db\ElementQueryInterface $query): bool
+    public function performAction(ElementQueryInterface $query): bool
     {
         $elements = $query->all();
         $elementsService = Craft::$app->getElements();
