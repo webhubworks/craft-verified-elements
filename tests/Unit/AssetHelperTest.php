@@ -18,7 +18,7 @@ use webhubworks\verifiedelements\helpers\AssetHelper;
 it('never treats a new asset as a content change, even when a save looks change-like', function() {
     $asset = withVerifiableBehavior(new Asset());
     $asset->setScenario(Asset::SCENARIO_REPLACE);
-    $asset->altChanged = true;
+    $asset->setIsAltChanged(true);
 
     expect(AssetHelper::hasNotifiableContentChange($asset, isNew: true))->toBeFalse();
 });
@@ -32,7 +32,7 @@ it('treats a file replacement as a content change', function() {
 
 it('treats an alt-text change as a content change', function() {
     $asset = withVerifiableBehavior(new Asset());
-    $asset->altChanged = true;
+    $asset->setIsAltChanged(true);
 
     expect(AssetHelper::hasNotifiableContentChange($asset, isNew: false))->toBeTrue();
 });

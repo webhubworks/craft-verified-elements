@@ -19,7 +19,6 @@ use webhubworks\verifiedelements\enums\VerificationStatus;
  * VerifiableBehavior implements this interface, so PHP itself keeps the contract and the
  * real signatures in sync.
  *
- * @property bool $altChanged Whether the BEFORE_SAVE handler detected an alt-text change
  * @see VerifiableBehavior
  */
 interface VerifiableElementInterface
@@ -101,4 +100,23 @@ interface VerifiableElementInterface
      * @return bool
      */
     public function getIsVerified(): bool;
+
+
+    // ASSETS
+    // =============================================================================================
+
+    /**
+     * Returns whether an asset's alt text was edited.
+     *
+     * @return bool
+     */
+    public function getIsAltChanged(): bool;
+
+    /**
+     * Set whether an asset's alt text was edited.
+     *
+     * @param bool $value
+     * @return void
+     */
+    public function setIsAltChanged(bool $value): void;
 }

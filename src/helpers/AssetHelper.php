@@ -33,7 +33,7 @@ class AssetHelper
 
         // Alt is a native attribute, not a custom field, so it never appears in
         // getDirtyFields(); onBeforeSaveAsset() compared it against the stored value.
-        if ($asset->altChanged) {
+        if ($asset->getIsAltChanged()) {
             return true;
         }
 

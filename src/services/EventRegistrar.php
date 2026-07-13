@@ -754,7 +754,7 @@ readonly class EventRegistrar
             $storedAlt = null;
         }
 
-        $asset->altChanged = $asset->alt !== $storedAlt;
+        $asset->setIsAltChanged($asset->alt !== $storedAlt);
     }
 
     /**

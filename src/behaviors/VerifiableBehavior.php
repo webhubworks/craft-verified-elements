@@ -24,16 +24,12 @@ use yii\base\Behavior;
  * @property-read bool $isVerified
  * @property null|mixed|DateTime $verifiedUntilDate
  * @property-read VerificationStatus $verificationStatus
+ * @property bool $isAltChanged
  * @property-read User|null $reviewer
  */
 class VerifiableBehavior extends Behavior implements VerifiableElementInterface
 {
     public const NAME = 'verified-elements.verifiable';
-
-    /**
-     * @var bool Whether an asset's alt text was edited.
-     */
-    public bool $altChanged = false;
 
 
     // REVIEWER (Craft User element)
@@ -152,5 +148,23 @@ class VerifiableBehavior extends Behavior implements VerifiableElementInterface
     public function getIsVerified(): bool
     {
         return $this->getVerificationStatus() !== VerificationStatus::Expired;
+    }
+
+
+    // ASSETS
+    // =============================================================================================
+
+    private bool $altChanged = false;
+
+    /** @inheritDoc */
+    public function getIsAltChanged(): bool
+    {
+        return $this->altChanged;
+    }
+
+    /** @inheritDoc */
+    public function setIsAltChanged(bool $value): void
+    {
+        $this->altChanged = $value;
     }
 }
