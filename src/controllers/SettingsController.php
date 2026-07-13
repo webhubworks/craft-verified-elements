@@ -26,6 +26,8 @@ class SettingsController extends Controller
     public function beforeAction($action): bool
     {
         $this->requireCpRequest();
+        $this->requirePermission(Permission::ManagePluginSettings->value);
+
         return parent::beforeAction($action);
     }
 
