@@ -39,7 +39,6 @@ class VerifiedAsset extends Asset
 
         $service = new ElementIndexSourcesBuilder(
             elementType: Asset::class,
-            containerIdQueryParam: 'volumeId',
             currentUserId: $currentUser->id,
             currentUserName: $currentUser->getFriendlyName(),
             unassignedCountBaseQuery: Asset::find(),

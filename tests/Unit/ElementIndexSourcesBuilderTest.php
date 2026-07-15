@@ -40,7 +40,6 @@ class TestableElementIndexSourcesBuilder extends ElementIndexSourcesBuilder
  * Generate the builder with all of its DB touchpoints mocked.
  *
  * @param string $elementType
- * @param string $containerIdQueryParam
  * @param array $enabledContainerIds
  * @param int $expiringUnassignedCount What the badge-count query reports: unassigned elements
  *                                     with a real (expiring) "Verified until" date.
@@ -53,7 +52,6 @@ class TestableElementIndexSourcesBuilder extends ElementIndexSourcesBuilder
  */
 function makeSourcesBuilder(
     string  $elementType = Entry::class,
-    string  $containerIdQueryParam = 'sectionId',
     array   $enabledContainerIds = [1, 2],
     int     $expiringUnassignedCount = 0,
     int     $currentUserId = 99,
@@ -68,6 +66,7 @@ function makeSourcesBuilder(
     $settings->allows('getInScopeSiteIds')->andReturn($inScopeSiteIds);
 
     $queryClass = $elementType === Asset::class ? AssetQuery::class : EntryQuery::class;
+    $containerIdQueryParam = $elementType === Asset::class ? 'volumeId' : 'sectionId';
 
     // The `with(...)` constraints double as pins: the badge-count query must filter by
     // no-reviewer AND a non-empty date - a differently-parameterized call fails the mock.
@@ -81,7 +80,6 @@ function makeSourcesBuilder(
 
     $builder = new TestableElementIndexSourcesBuilder(
         elementType: $elementType,
-        containerIdQueryParam: $containerIdQueryParam,
         currentUserId: $currentUserId,
         currentUserName: $currentUserName,
         unassignedCountBaseQuery: $unassignedCountBaseQuery,
@@ -153,7 +151,6 @@ it('limits the upcoming source to the imminent window', function() {
 it('scopes every source to the enabled sections for entries', function() {
     $sources = makeSourcesBuilder(
         elementType: Entry::class,
-        containerIdQueryParam: 'sectionId',
         enabledContainerIds: [3, 4],
     )->defineSources();
 
@@ -169,7 +166,6 @@ it('scopes every source to the enabled sections for entries', function() {
 it('scopes every source to the enabled volumes for assets', function() {
     $sources = makeSourcesBuilder(
         elementType: Asset::class,
-        containerIdQueryParam: 'volumeId',
         enabledContainerIds: [5],
     )->defineSources();
 

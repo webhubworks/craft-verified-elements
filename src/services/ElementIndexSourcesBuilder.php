@@ -27,15 +27,17 @@ use webhubworks\verifiedelements\services\singletons\PluginSettings;
  */
 class ElementIndexSourcesBuilder
 {
+    private readonly string $containerIdQueryParam;
+
     public function __construct(
         private readonly string                $elementType,
-        private readonly string                $containerIdQueryParam,
         private readonly int                   $currentUserId,
         private readonly string                $currentUserName,
         private readonly ElementQueryInterface $unassignedCountBaseQuery,
         private readonly ?string               $siteHandle,
         private readonly PluginSettings        $settings,
     ) {
+        $this->containerIdQueryParam = ElementType::from($elementType)->containerIdColumn();
     }
 
     /**

@@ -40,7 +40,6 @@ class VerifiedEntry extends Entry
 
         $service = new ElementIndexSourcesBuilder(
             elementType: Entry::class,
-            containerIdQueryParam: 'sectionId',
             currentUserId: $currentUser->id,
             currentUserName: $currentUser->getFriendlyName(),
             unassignedCountBaseQuery: Entry::find()->status(Entry::STATUS_LIVE),
