@@ -4,15 +4,12 @@ namespace webhubworks\verifiedelements\models;
 
 use Craft;
 use craft\base\Element;
-use craft\elements\Asset;
-use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
 use JsonSerializable;
 use webhubworks\verifiedelements\base\VerifiableElementInterface;
-use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
 use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\DateHelper;
@@ -176,23 +173,25 @@ readonly class ElementData implements JsonSerializable
 
     /**
      * Build the CP edit URL from a raw query row (no live element to call getCpEditUrl() on).
-     * This is the ONE place per-type URL construction lives for the query path; new element types
-     * add an arm here. `slug` is used transiently for entries and never becomes a VO field.
+     * The per-type URI shape lives in the ElementType registry; an unregistered discriminator
+     * degrades to an empty URL. `slug` is used transiently for entries and never becomes a VO field.
      *
      * @param array $row
      * @return string
      */
     private static function buildCpUrl(array $row): string
     {
-        $uri = match ($row['type']) {
-            Entry::class => sprintf('entries/%s/%s-%s', $row['containerHandle'], $row['id'], $row['slug']),
-            Asset::class => sprintf('assets/edit/%s', $row['id']),
-            default => '',
-        };
+        $elementType = ElementType::tryFrom($row['type']);
 
-        if ($uri === '') {
+        if ($elementType === null) {
             return '';
         }
+
+        $uri = $elementType->cpEditUri(
+            (int)$row['id'],
+            $row['containerHandle'],
+            $row['slug'] ?? null,
+        );
 
         return UrlHelper::cpUrl($uri, ['site' => $row['siteHandle']]);
     }

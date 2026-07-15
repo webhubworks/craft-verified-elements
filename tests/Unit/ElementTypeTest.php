@@ -61,6 +61,13 @@ it('throws for unsupported element class names', function() {
     ElementType::fromElementClass(User::class);
 })->throws(InvalidArgumentException::class);
 
+it('builds the CP edit URI per type', function() {
+    expect(ElementType::Entry->cpEditUri(128, 'testEntries', 'test-2-en'))
+        ->toBe('entries/testEntries/128-test-2-en');
+    expect(ElementType::Asset->cpEditUri(128, 'testVolume', null))
+        ->toBe('assets/edit/128');
+});
+
 
 // Per-type knowledge
 // =================================================================================================

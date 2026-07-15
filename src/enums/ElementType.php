@@ -239,6 +239,24 @@ enum ElementType : string
     }
 
     /**
+     * Builds the CP edit URI (path only) for an element of this type from the raw pieces a
+     * verification-query row provides. The caller wraps the result with UrlHelper::cpUrl() and the
+     * site param - that wrapping is identical across types, so only the per-type path lives here.
+     *
+     * @param int $id
+     * @param string $containerHandle
+     * @param string|null $slug used only for entries; other types ignore it
+     * @return string
+     */
+    public function cpEditUri(int $id, string $containerHandle, ?string $slug): string
+    {
+        return match ($this) {
+            self::Entry => sprintf('entries/%s/%s-%s', $containerHandle, $id, $slug),
+            self::Asset => sprintf('assets/edit/%s', $id),
+        };
+    }
+
+    /**
      * Returns the plugin's element subtype that powers the dashboard element index for this type.
      *
      * @return string
