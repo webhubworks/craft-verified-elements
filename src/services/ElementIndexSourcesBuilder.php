@@ -48,13 +48,13 @@ class ElementIndexSourcesBuilder
      */
     public function defineSources(): array
     {
-        // "Containers" are sections (for entries), volumes (for assets), etc.
-        $containerIds = $this->settings->getEnabledContainerIds($this->elementType);
-
         // Restrict each source (and so the index's site menu) to the sites this edition may
         // surface. Craft narrows the menu to the current source's sites, intersected with the
         // user's editable sites - so without multi-site, only the primary site is reachable.
         $siteIds = $this->settings->getInScopeSiteIds();
+
+        // "Containers" are sections (for entries), volumes (for assets), etc.
+        $containerIds = $this->settings->getEnabledContainerIds($this->elementType, $siteIds);
 
         $sources = [
             $this->expiredSource($containerIds, $siteIds),

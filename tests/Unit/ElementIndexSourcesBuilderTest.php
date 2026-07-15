@@ -62,7 +62,7 @@ function makeSourcesBuilder(
 ): TestableElementIndexSourcesBuilder {
     /** @var PluginSettings|MockInterface $settings */
     $settings = Mockery::mock(PluginSettings::class);
-    $settings->allows('getEnabledContainerIds')->with($elementType)->andReturn($enabledContainerIds);
+    $settings->allows('getEnabledContainerIds')->with($elementType, $inScopeSiteIds)->andReturn($enabledContainerIds);
     $settings->allows('getInScopeSiteIds')->andReturn($inScopeSiteIds);
 
     $queryClass = $elementType === Asset::class ? AssetQuery::class : EntryQuery::class;
