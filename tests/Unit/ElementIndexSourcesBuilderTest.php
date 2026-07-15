@@ -45,7 +45,7 @@ class TestableElementIndexSourcesBuilder extends ElementIndexSourcesBuilder
  * @param int $expiringUnassignedCount What the badge-count query reports: unassigned elements
  *                                     with a real (expiring) "Verified until" date.
  * @param int $currentUserId
- * @param string $currentUserFriendlyName
+ * @param string $currentUserName
  * @param string|null $siteHandle
  * @param User[] $reviewers Unsaved User elements returned by the reviewers lookup seam.
  * @param int[] $inScopeSiteIds Sites the edition may surface; each source is restricted to these.
@@ -57,7 +57,7 @@ function makeSourcesBuilder(
     array   $enabledContainerIds = [1, 2],
     int     $expiringUnassignedCount = 0,
     int     $currentUserId = 99,
-    string  $currentUserFriendlyName = 'Current User',
+    string  $currentUserName = 'Current User',
     ?string $siteHandle = null,
     array   $reviewers = [],
     array   $inScopeSiteIds = [1, 2],
@@ -83,7 +83,7 @@ function makeSourcesBuilder(
         elementType: $elementType,
         containerIdQueryParam: $containerIdQueryParam,
         currentUserId: $currentUserId,
-        currentUserFriendlyName: $currentUserFriendlyName,
+        currentUserName: $currentUserName,
         unassignedCountBaseQuery: $unassignedCountBaseQuery,
         siteHandle: $siteHandle,
         settings: $settings,
@@ -250,7 +250,7 @@ it('explains the badge to screen readers and as a tooltip', function() {
 it("labels the 'mine' source with the current user's name and reviewer criteria", function() {
     $sources = makeSourcesBuilder(
         currentUserId: 42,
-        currentUserFriendlyName: 'Ada',
+        currentUserName: 'Ada',
     )->defineSources();
 
     $mine = findSourceByKey($sources, 'mine');

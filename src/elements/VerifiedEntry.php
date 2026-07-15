@@ -42,7 +42,7 @@ class VerifiedEntry extends Entry
             elementType: Entry::class,
             containerIdQueryParam: 'sectionId',
             currentUserId: $currentUser->id,
-            currentUserFriendlyName: $currentUser->getFriendlyName(),
+            currentUserName: $currentUser->getFriendlyName(),
             unassignedCountBaseQuery: Entry::find()->status(Entry::STATUS_LIVE),
             siteHandle: Craft::$app->getRequest()->getQueryParam('site'),
             settings: Plugin::getInstance()->getPluginSettings(),

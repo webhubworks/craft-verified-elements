@@ -41,7 +41,7 @@ class VerifiedAsset extends Asset
             elementType: Asset::class,
             containerIdQueryParam: 'volumeId',
             currentUserId: $currentUser->id,
-            currentUserFriendlyName: $currentUser->getFriendlyName(),
+            currentUserName: $currentUser->getFriendlyName(),
             unassignedCountBaseQuery: Asset::find(),
             siteHandle: Craft::$app->getRequest()->getQueryParam('site'),
             settings: Plugin::getInstance()->getPluginSettings(),

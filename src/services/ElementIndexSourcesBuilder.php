@@ -9,7 +9,6 @@ use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\elements\VerifiedAsset;
 use webhubworks\verifiedelements\elements\VerifiedEntry;
 use webhubworks\verifiedelements\enums\ElementType;
-use webhubworks\verifiedelements\enums\Permission;
 use webhubworks\verifiedelements\enums\ReviewerStatus;
 use webhubworks\verifiedelements\enums\VerificationStatus;
 use webhubworks\verifiedelements\helpers\DateHelper;
@@ -32,7 +31,7 @@ class ElementIndexSourcesBuilder
         private readonly string                $elementType,
         private readonly string                $containerIdQueryParam,
         private readonly int                   $currentUserId,
-        private readonly string                $currentUserFriendlyName,
+        private readonly string                $currentUserName,
         private readonly ElementQueryInterface $unassignedCountBaseQuery,
         private readonly ?string               $siteHandle,
         private readonly PluginSettings        $settings,
@@ -41,96 +40,176 @@ class ElementIndexSourcesBuilder
 
     /**
      * Define the "sources" that filter a list of elements in the CP when viewing what Craft calls
-     * the "element index".
+     * the "element index" (the table that lists entries, for example).
      *
      * @return array[]
      */
     public function defineSources(): array
     {
-        $enabledContainerIds = $this->settings->getEnabledContainerIds($this->elementType);
+        // "Containers" are sections (for entries), volumes (for assets), etc.
+        $containerIds = $this->settings->getEnabledContainerIds($this->elementType);
 
         // Restrict each source (and so the index's site menu) to the sites this edition may
         // surface. Craft narrows the menu to the current source's sites, intersected with the
         // user's editable sites - so without multi-site, only the primary site is reachable.
-        $inScopeSiteIds = $this->settings->getInScopeSiteIds();
+        $siteIds = $this->settings->getInScopeSiteIds();
 
+        $sources = [
+            $this->expiredSource($containerIds, $siteIds),
+            $this->imminentSource($containerIds, $siteIds),
+            $this->verifiedSource($containerIds, $siteIds),
+            $this->unassignedSource($containerIds, $siteIds),
+            ['heading' => Craft::t(Plugin::HANDLE, 'Reviewer')],
+            $this->currentUserSource($containerIds, $siteIds),
+        ];
+
+        foreach ($this->findReviewers() as $reviewer) {
+            $sources[] = $this->reviewerSource($containerIds, $siteIds, $reviewer);
+        }
+
+        return $sources;
+    }
+
+
+    // PRIVATE HELPERS
+    // =============================================================================================
+
+    /**
+     * The "Expired" elements source filter for the elements index table.
+     *
+     * @param array $containerIds section IDs (for entries), volume IDs (for assets), etc.
+     * @param array $siteIds
+     * @return array The source array item Craft uses to add this filter to the element index page.
+     */
+    protected function expiredSource(array $containerIds, array $siteIds): array
+    {
+        return [
+            'key' => VerificationStatus::Expired->handle(),
+            'label' => VerificationStatus::Expired->label(),
+            'sites' => $siteIds,
+            'criteria' => [
+                'isVerified' => false,
+                $this->containerIdQueryParam => $containerIds,
+            ],
+        ];
+    }
+
+    /**
+     * The "Imminent" elements source filter for the elements index table.
+     *
+     * @param array $containerIds section IDs (for entries), volume IDs (for assets), etc.
+     * @param array $siteIds
+     * @return array The source array item Craft uses to add this filter to the element index page.
+     */
+    protected function imminentSource(array $containerIds, array $siteIds): array
+    {
+        return [
+            'key' => 'upcoming',
+            'label' => Craft::t(Plugin::HANDLE, 'Imminent'),
+            'sites' => $siteIds,
+            'criteria' => [
+                'isVerified' => true,
+                $this->containerIdQueryParam => $containerIds,
+                'verifiedUntil' => '< ' . DateHelper::imminentDateMax()->format('Y-m-d'),
+            ],
+        ];
+    }
+
+    /**
+     * The "Verified" elements source filter for the elements index table.
+     *
+     * @param array $containerIds section IDs (for entries), volume IDs (for assets), etc.
+     * @param array $siteIds
+     * @return array The source array item Craft uses to add this filter to the element index page.
+     */
+    protected function verifiedSource(array $containerIds, array $siteIds): array
+    {
+        return [
+            'key' => VerificationStatus::Verified->handle(),
+            'label' => VerificationStatus::Verified->label(),
+            'sites' => $siteIds,
+            'criteria' => [
+                'isVerified' => true,
+                $this->containerIdQueryParam => $containerIds,
+            ],
+        ];
+    }
+
+    /**
+     * The "Unassigned" elements source filter for the elements index table.
+     *
+     * @param array $containerIds section IDs (for entries), volume IDs (for assets), etc.
+     * @param array $siteIds
+     * @return array The source array item Craft uses to add this filter to the element index page.
+     */
+    protected function unassignedSource(array $containerIds, array $siteIds): array
+    {
         // The number of unassigned elements whose "Verified until" dates aren't "Indefinite".
         // The user needs to be prompted to assign these entries to someone to review them.
         $expiringUnassignedCount = $this->unassignedCountBaseQuery
-            ->{$this->containerIdQueryParam}($enabledContainerIds)
+            ->{$this->containerIdQueryParam}($containerIds)
             ->site($this->siteHandle)
             ->isAssigned(false)
             ->verifiedUntilDate('not :empty:')
             ->count();
 
-        $sources = [
-            [
-                'key' => VerificationStatus::Expired->handle(),
-                'label' => VerificationStatus::Expired->label(),
-                'sites' => $inScopeSiteIds,
-                'criteria' => [
-                    'isVerified' => false,
-                    $this->containerIdQueryParam => $enabledContainerIds,
-                ],
-            ],
-            [
-                'key' => 'upcoming',
-                'label' => Craft::t(Plugin::HANDLE, 'Imminent'),
-                'sites' => $inScopeSiteIds,
-                'criteria' => [
-                    'isVerified' => true,
-                    $this->containerIdQueryParam => $enabledContainerIds,
-                    'verifiedUntil' => '< ' . DateHelper::imminentDateMax()->format('Y-m-d'),
-                ],
-            ],
-            [
-                'key' => VerificationStatus::Verified->handle(),
-                'label' => VerificationStatus::Verified->label(),
-                'sites' => $inScopeSiteIds,
-                'criteria' => [
-                    'isVerified' => true,
-                    $this->containerIdQueryParam => $enabledContainerIds,
-                ],
-            ],
-            [
-                'key' => ReviewerStatus::Unassigned->handle(),
-                'label' => ReviewerStatus::Unassigned->label(),
-                'sites' => $inScopeSiteIds,
-                'badgeCount' => $expiringUnassignedCount > 0 ? $expiringUnassignedCount : null,
-                'badgeLabel' => Craft::t(Plugin::HANDLE, 'Number of unassigned entries that will expire.'),
-                'data' => ['badge-title' => Craft::t(Plugin::HANDLE, 'Number of unassigned entries that will expire.')],
-                'criteria' => [
-                    'isAssigned' => false,
-                    $this->containerIdQueryParam => $enabledContainerIds,
-                ],
-            ],
-            [
-                'heading' => Craft::t(Plugin::HANDLE, 'Reviewer'),
-            ],
-            [
-                'key' => 'mine',
-                'label' => $this->currentUserFriendlyName,
-                'sites' => $inScopeSiteIds,
-                'criteria' => [
-                    'reviewerId' => $this->currentUserId,
-                    $this->containerIdQueryParam => $enabledContainerIds,
-                ],
+        $badgeLabel = Craft::t(Plugin::HANDLE, 'Number of unassigned elements that will expire.');
+
+        return [
+            'key' => ReviewerStatus::Unassigned->handle(),
+            'label' => ReviewerStatus::Unassigned->label(),
+            'sites' => $siteIds,
+            'badgeCount' => $expiringUnassignedCount > 0 ? $expiringUnassignedCount : null,
+            'badgeLabel' => $badgeLabel,
+            'data' => ['badge-title' => $badgeLabel],
+            'criteria' => [
+                'isAssigned' => false,
+                $this->containerIdQueryParam => $containerIds,
             ],
         ];
+    }
 
-        foreach ($this->findReviewers() as $reviewer) {
-            $sources[] = [
-                'key' => 'reviewer-' . $reviewer->id,
-                'label' => $reviewer->getFriendlyName(),
-                'sites' => $inScopeSiteIds,
-                'criteria' => [
-                    'reviewerId' => $reviewer->id,
-                    $this->containerIdQueryParam => $enabledContainerIds,
-                ],
-            ];
-        }
+    /**
+     * The source filter for the elements index table that filters elements by those assigned to
+     * the currently logged-in user for review.
+     *
+     * @param array $containerIds section IDs (for entries), volume IDs (for assets), etc.
+     * @param array $siteIds
+     * @return array The source array item Craft uses to add this filter to the element index page.
+     */
+    protected function currentUserSource(array $containerIds, array $siteIds): array
+    {
+        return [
+            'key' => 'mine',
+            'label' => $this->currentUserName,
+            'sites' => $siteIds,
+            'criteria' => [
+                'reviewerId' => $this->currentUserId,
+                $this->containerIdQueryParam => $containerIds,
+            ],
+        ];
+    }
 
-        return $sources;
+    /**
+     * The source filter for the elements index table that filters elements by those assigned to
+     * a given user (the Reviewer).
+     *
+     * @param array $containerIds section IDs (for entries), volume IDs (for assets), etc.
+     * @param array $siteIds
+     * @param User $reviewer
+     * @return array The source array item Craft uses to add this filter to the element index page.
+     */
+    protected function reviewerSource(array $containerIds, array $siteIds, User $reviewer): array
+    {
+        return [
+            'key' => 'reviewer-' . $reviewer->id,
+            'label' => $reviewer->getFriendlyName(),
+            'sites' => $siteIds,
+            'criteria' => [
+                'reviewerId' => $reviewer->id,
+                $this->containerIdQueryParam => $containerIds,
+            ],
+        ];
     }
 
     /**
