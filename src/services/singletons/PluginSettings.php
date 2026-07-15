@@ -12,6 +12,7 @@ use craft\helpers\Db;
 use craft\models\Site;
 use webhubworks\verifiedelements\db\PluginQuery;
 use webhubworks\verifiedelements\db\PluginTable;
+use webhubworks\verifiedelements\enums\ElementType;
 use webhubworks\verifiedelements\enums\Feature;
 use webhubworks\verifiedelements\helpers\Log;
 use webhubworks\verifiedelements\models\ContainerDefaults;
@@ -233,9 +234,53 @@ class PluginSettings extends Component
         return $errors === 0;
     }
 
+    /**
+     * Seeds container settings for a newly created site.
+     *
+     * Site-agnostic element types (e.g. assets) store one set of settings fanned out to a row per
+     * site, snapshot-ed when the settings are saved. A site created afterwards has no rows until
+     * that snapshot is re-run, so on site creation we copy the primary site's rows (the
+     * representative set) to the new site. Per-site types (entries) are untouched.
+     *
+     * @param int $siteId The newly created site's ID.
+     * @return void
+     */
+    public function seedContainerSettingsForNewSite(int $siteId): void
+    {
+        $representativeSiteId = Craft::$app->getSites()->getPrimarySite()->id;
+
+        foreach ($this->siteAgnosticElementTypes() as $elementType) {
+            $rows = PluginQuery::containerSettings($representativeSiteId, $elementType->value)->all();
+
+            foreach ($rows as $row) {
+                $this->upsertContainerSettings(
+                    (int)$row['containerId'],
+                    $siteId,
+                    $elementType->value,
+                    $row,
+                );
+            }
+        }
+    }
+
 
     // PRIVATE HELPERS
     // =============================================================================================
+
+    /**
+     * The enabled element types whose settings are site-agnostic (fanned out across sites), and so
+     * must be seeded when a new site is created.
+     *
+     * @return ElementType[]
+     */
+    private function siteAgnosticElementTypes(): array
+    {
+        return array_values(array_filter(
+            ElementType::cases(),
+            static fn(ElementType $elementType) => $elementType->hasSiteAgnosticSettings()
+                && $elementType->feature()->isEnabled(),
+        ));
+    }
 
     /**
      * Replaces each row's reviewerId with the actual User model under a 'reviewer' key, fetching

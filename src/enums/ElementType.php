@@ -207,6 +207,25 @@ enum ElementType : string
     }
 
     /**
+     * Whether this element type's per-container settings are the same across every site
+     * (site-agnostic), rather than configured per site.
+     *
+     * Entries are per-site: sections carry a site dimension and the settings UI shows site tabs.
+     * Assets are not - volumes have no site dimension in Craft, so one set of settings fans out to
+     * an identical row per site. Site-agnostic types are the ones that must be seeded for a newly
+     * created site (see PluginSettings::seedContainerSettingsForNewSite()).
+     *
+     * @return bool
+     */
+    public function hasSiteAgnosticSettings(): bool
+    {
+        return match ($this) {
+            self::Entry => false,
+            self::Asset => true,
+        };
+    }
+
+    /**
      * Returns the URI segment used for this type's index pages in the plugin's CP section,
      * e.g. the 'entries' in `verified-elements/entries`.
      *

@@ -186,6 +186,22 @@ abstract class PluginQuery
     }
 
     /**
+     * Returns the raw container-settings rows (reviewer, enabled flag, default period) stored for
+     * one element type on one site. Element-agnostic: pass any registered element type's value.
+     *
+     * @param int $siteId
+     * @param string $elementType
+     * @return Query
+     */
+    public static function containerSettings(int $siteId, string $elementType): Query
+    {
+        return (new Query())
+            ->select(['containerId', 'reviewerId', 'enabled', 'defaultPeriod'])
+            ->from(PluginTable::CONTAINERS)
+            ->where(['siteId' => $siteId, 'elementType' => $elementType]);
+    }
+
+    /**
      * Returns a query for a container's default settings saved on the plugin's Settings CP page.
      * The container's name/handle come from the table matching its element type (sections for
      * entries, volumes for assets).

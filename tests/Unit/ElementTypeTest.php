@@ -109,6 +109,12 @@ it('maps each type to its DB tables and container column', function() {
     expect(ElementType::Asset->containerIdColumn())->toBe('volumeId');
 });
 
+it('flags which types have site-agnostic settings', function() {
+    // Entries are configured per site; assets (site-less volumes) fan one config out to every site.
+    expect(ElementType::Entry->hasSiteAgnosticSettings())->toBeFalse();
+    expect(ElementType::Asset->hasSiteAgnosticSettings())->toBeTrue();
+});
+
 it('builds singular, plural, and capitalized labels', function() {
     expect(ElementType::Entry->label())->toBe('Entry');
     expect(ElementType::Entry->label(plural: true, capitalize: false))->toBe('entries');

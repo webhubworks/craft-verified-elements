@@ -30,6 +30,7 @@ use craft\events\RegisterElementSortOptionsEvent;
 use craft\events\RegisterElementTableAttributesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\events\SiteEvent;
 use craft\helpers\Cp;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
@@ -37,10 +38,12 @@ use craft\log\Dispatcher;
 use craft\services\Dashboard;
 use craft\services\Elements;
 use craft\services\Gc;
+use craft\services\Sites;
 use craft\services\UserPermissions;
 use craft\validators\DateTimeValidator;
 use craft\web\UrlManager;
 use DateTime;
+use Throwable;
 use Twig\TwigFilter;
 use webhubworks\verifiedelements\base\VerifiableElementInterface;
 use webhubworks\verifiedelements\behaviors\VerifiableBehavior;
@@ -253,6 +256,7 @@ readonly class EventRegistrar
         }
 
         Event::on(Elements::class, Elements::EVENT_REGISTER_ELEMENT_TYPES, $this->onRegisterElementTypes(...));
+        Event::on(Sites::class, Sites::EVENT_AFTER_SAVE_SITE, $this->onAfterSaveSite(...));
 
         if (!$this->isCpRequest) {
             return;
@@ -299,6 +303,28 @@ readonly class EventRegistrar
 
         if (Feature::AssetVerification->isEnabled()) {
             $event->types[] = VerifiedAsset::class;
+        }
+    }
+
+    /**
+     * Seeds site-agnostic container settings (e.g. assets) for a newly created site.
+     *
+     * @param SiteEvent $event
+     * @return void
+     */
+    protected function onAfterSaveSite(SiteEvent $event): void
+    {
+        if (!$event->isNew) {
+            return;
+        }
+
+        try {
+            $this->plugin->getPluginSettings()->seedContainerSettingsForNewSite($event->site->id);
+        } catch (Throwable $exception) {
+            Log::error(sprintf(
+                'Failed to seed container settings for new site [%s]',
+                $event->site->id,
+            ), $exception);
         }
     }
 
