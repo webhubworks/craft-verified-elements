@@ -25,7 +25,7 @@ use yii\base\InvalidArgumentException;
  * display labels) lives here. Adding a new element type means adding a case and filling in the
  * `match` arms below; static analysis flags any arm that's missed.
  */
-enum ElementType: string
+enum ElementType : string
 {
     case Entry = Entry::class;
     case Asset = Asset::class;

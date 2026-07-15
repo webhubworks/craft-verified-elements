@@ -66,7 +66,7 @@ abstract class Notification implements NotificationInterface
      *
      * @param string $key
      * @return string
-     * @see Notification::parentStyles()
+     * @see Notification::wrapperStyles()
      */
     protected function tableStyle(string $key): string
     {
