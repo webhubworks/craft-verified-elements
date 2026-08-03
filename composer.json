@@ -5,10 +5,10 @@
   "license": "proprietary",
   "support": {
     "email": "support@webhub.de",
-    "issues": "https://github.com/webhubworks/craft-verified-entries/issues?state=open",
-    "source": "https://github.com/webhubworks/craft-verified-entries",
-    "docs": "https://github.com/webhubworks/craft-verified-entries",
-    "rss": "https://github.com/webhubworks/craft-verified-entries/releases.atom"
+    "issues": "https://github.com/webhubworks/craft-verified-elements/issues?state=open",
+    "source": "https://github.com/webhubworks/craft-verified-elements",
+    "docs": "https://github.com/webhubworks/craft-verified-elements",
+    "rss": "https://github.com/webhubworks/craft-verified-elements/releases.atom"
   },
   "require": {
     "php": ">=8.2",
@@ -29,7 +29,7 @@
     "handle": "verified-elements",
     "name": "Verified Elements",
     "developer": "webhubworks",
-    "documentationUrl": "https://github.com/webhubworks/craft-verified-entries",
+    "documentationUrl": "https://github.com/webhubworks/craft-verified-elements",
     "class": "webhubworks\\verifiedelements\\Plugin"
   },
   "scripts": {
