@@ -67,8 +67,8 @@ composer require webhubworks/craft-verified-elements
 Please see [CHANGELOG](CHANGELOG.md) for more information on verstion-to-version updates.
 
 ## Screenshots
-<img width="1650" height="1000" alt="verified-elements-plugin-verify" src="https://github.com/user-attachments/assets/caada916-0d31-41d1-a88f-7f290df6dc0e" />
-<img width="1650" height="1000" alt="verified-elements-plugin-widget" src="https://github.com/user-attachments/assets/b4134632-b736-4077-bec3-90cb2098f12e" />
-<img width="1650" height="1000" alt="verified-elements-plugin-dashboard" src="https://github.com/user-attachments/assets/ff6bc8dc-2dae-4c79-8cfe-4950330180ce" />
-<img width="1650" height="1000" alt="verified-elements-plugin-notifications" src="https://github.com/user-attachments/assets/8037b2d1-242c-4afe-9892-e8770341e8b3" />
-<img width="1650" height="1000" alt="verified-elements-plugin-settings" src="https://github.com/user-attachments/assets/d7f0997b-70ca-400d-9a9b-a9c059453960" />
+<img width="1650" height="1000" alt="section-control" src="https://github.com/user-attachments/assets/7a090682-fb7e-4345-9338-ad4d18f43e6b" />
+<img width="1650" height="1000" alt="single-bulk" src="https://github.com/user-attachments/assets/892d9b9a-36fa-46fe-b4c4-e51fa09bb2fc" />
+<img width="1650" height="1000" alt="widget" src="https://github.com/user-attachments/assets/9d450dd6-ae9a-4ec1-9b6a-686a63513998" />
+<img width="1650" height="1000" alt="filter-search" src="https://github.com/user-attachments/assets/df0adf5f-7cfd-4f66-be46-8fe835c87c86" />
+<img width="1650" height="1000" alt="notifications" src="https://github.com/user-attachments/assets/c7e6cc51-4cf3-48e0-b5c3-1b4772ad026b" />
