@@ -1,6 +1,6 @@
 # Release Notes for Verified Elements
 
-## 2.0.0 - Unreleased
+## 2.0.0 - 2026-08-13
 
 ### Added
 - Added asset verification: verify assets, assign reviewers, and configure per-volume
