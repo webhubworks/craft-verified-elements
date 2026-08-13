@@ -1,103 +1,52 @@
 <?php
 
-namespace webhubworks\verifiedentries\elements;
+/** @noinspection PhpUnhandledExceptionInspection */
+
+namespace webhubworks\verifiedelements\elements;
 
 use Craft;
-use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
-use craft\elements\User;
-use craft\helpers\DateTimeHelper;
-use webhubworks\verifiedentries\VerifiedEntries;
+use webhubworks\verifiedelements\Plugin;
+use webhubworks\verifiedelements\services\ElementIndexSourcesBuilder;
 
 /**
- * Verified Entry element type
+ * Entry subtype that powers the plugin's dashboard element index, defining its sidebar sources
+ * and default table columns.
  */
 class VerifiedEntry extends Entry
 {
+    /** @inheritDoc */
     public static function refHandle(): ?string
     {
         return 'verifiedEntry';
     }
 
-    public static function find(): EntryQuery
-    {
-        return new EntryQuery(Entry::class);
-    }
-
+    /** @inheritDoc */
     protected static function defineDefaultTableAttributes(string $source): array
     {
         return [
             'section',
-            'postDate',
             'isVerified',
             'verifiedUntilDate',
             'reviewer',
+            'postDate',
         ];
     }
 
-    protected static function defineSources(string $context = null): array
+    /** @inheritDoc */
+    protected static function defineSources(string $context): array
     {
-        /** @var  $verificationService */
-        $plugin = VerifiedEntries::getInstance();
-        $enabledSectionIds = $plugin->sectionSettings->getEnabledSections();
+        $currentUser = Craft::$app->getUser()->getIdentity();
 
-        $currentUser = Craft::$app->user;
-        $reviewers = User::find()
-            ->can('verifyEntries')
-            ->id(['not', $currentUser->id])
-            ->all();
+        $service = new ElementIndexSourcesBuilder(
+            elementType: Entry::class,
+            currentUserId: $currentUser->id,
+            currentUserName: $currentUser->getFriendlyName(),
+            unassignedCountBaseQuery: Entry::find()->status(Entry::STATUS_LIVE),
+            siteHandle: Craft::$app->getRequest()->getQueryParam('site'),
+            settings: Plugin::getInstance()->getPluginSettings(),
+        );
 
-        $sources = [
-            [
-                'key' => 'expired',
-                'label' => Craft::t('verified-entries', 'Expired'),
-                'criteria' => [
-                    'isVerified' => false,
-                    'sectionId' => $enabledSectionIds,
-                ]
-            ],
-            [
-                'key' => 'upcoming',
-                'label' => Craft::t('app', 'Pending'),
-                'criteria' => [
-                    'isVerified' => true,
-                    'sectionId' => $enabledSectionIds,
-                    'verifiedUntil' => '< ' . (DateTimeHelper::nextMonth())->format('Y-m-d'),
-                ]
-            ],
-            [
-                'key' => 'verified',
-                'label' => Craft::t('verified-entries', 'Verified'),
-                'criteria' => [
-                    'isVerified' => true,
-                    'sectionId' => $enabledSectionIds,
-                ]
-            ],
-            [
-                'heading' => Craft::t('verified-entries', 'Reviewer'),
-            ],
-            [
-                'key' => 'mine',
-                'label' => $currentUser->getIdentity()->friendlyName,
-                'criteria' => [
-                    'reviewerId' => $currentUser->id,
-                    'sectionId' => $enabledSectionIds,
-                ]
-            ]
-        ];
-
-        foreach ($reviewers as $reviewer) {
-            /** @var User $reviewer */
-            $sources[] = [
-                'key' => 'reviewer-' . $reviewer->id,
-                'label' => $reviewer->friendlyName,
-                'criteria' => [
-                    'reviewerId' => $reviewer->id,
-                    'sectionId' => $enabledSectionIds,
-                ],
-            ];
-        }
-
-        return $sources;
+        return $service->defineSources();
     }
 }

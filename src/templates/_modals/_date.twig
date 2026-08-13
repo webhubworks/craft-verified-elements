@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.dateField({
-    label: 'Verified until'|t('verified-entries'),
+    label: 'Verified until'|t(pluginHandle),
     id: 'verifiedUntilDate',
     name: 'verifiedUntilDate',
     containerAttributes: {

@@ -1,48 +1,54 @@
 <?php
 
-namespace webhubworks\verifiedentries\elements\conditions;
+namespace webhubworks\verifiedelements\elements\conditions;
 
 use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
+use webhubworks\verifiedelements\base\VerifiableQueryInterface;
+use webhubworks\verifiedelements\Plugin;
 
+/**
+ * Condition rule for filtering elements by their Verification Status.
+ *
+ * To find this in the CP:
+ * 1. Go to an element listing page (entries or assets).
+ * 2. Click the filter icon in the search bar.
+ * 3. Select "Add a filter" and choose "Verified".
+ * 4. A new dropdown field appears. Those options come from this class.
+ *
+ * @see VerificationStatus
+ */
 class VerifiedConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function getLabel(): string
     {
-        return Craft::t('verified-entries', 'Verified');
+        return Craft::t(Plugin::HANDLE, 'Verified');
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function getExclusiveQueryParams(): array
     {
-        return ['verifiedUntilDate'];
+        return ['isVerified'];
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var EntryQuery $query */
+        /** @var ElementQuery&VerifiableQueryInterface $query */
         $query->isVerified($this->value);
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function matchElement(ElementInterface $element): bool
     {
-        /** @var Entry $element */
-        return $element->isVerified === $this->value;
+        /** @var Element&VerifiableElementInterface $element */
+        return $element->getIsVerified() === $this->value;
     }
 }

@@ -1,0 +1,151 @@
+{% extends pluginHandle ~ '/_settings/_layout.twig' %}
+
+{# TODO: replace with the real Plugin Store URL once the plugin is published. #}
+{% set storeUrl = 'https://plugins.craftcms.com/' %}
+
+{% set editionContent = {
+    'lite': {
+        idealFor: 'Ideal for individuals keeping a single site fresh.',
+        addedFeatures: [
+            'Entry verification',
+            'Reviewer assignment',
+            'Verification periods per section',
+            'Expiry email notifications',
+            'Dashboard widgets',
+            'Bulk verification actions',
+        ],
+    },
+    'pro': {
+        idealFor: 'Ideal for teams managing content across multiple sites.',
+        addedFeatures: [
+            'Multi-site support',
+        ],
+    },
+    'pro-plus': {
+        idealFor: 'Ideal for organizations verifying entries and assets at scale.',
+        addedFeatures: [
+            'Asset verification',
+        ],
+    },
+} %}
+
+{% set currentEditionIndex = editions|column('handle')|indexOf(currentEditionHandle) %}
+
+{% block content %}
+    <div class="ve-plans">
+        {% set features = [] %}
+        {% for edition in editions %}
+            {% set content = editionContent[edition.handle] %}
+            {% set features = features|merge(content.addedFeatures) %}
+            {% set isLowerEdition = loop.index0 < currentEditionIndex %}
+            {% set isCurrentEdition = edition.handle == currentEditionHandle %}
+
+            <section class="ve-plan {{ isCurrentEdition ? 've-plan--current' }}">
+                <h2 class="ve-plan__name">
+                    {{ edition.name }}
+                    {% if isCurrentEdition %}
+                        <span class="ve-plan__badge">{{ 'Current plan'|t(pluginHandle) }}</span>
+                    {% endif %}
+                </h2>
+
+                <ul class="ve-plan__features">
+                    {% for feature in features %}
+                        <li>
+                            <span data-icon="check" aria-hidden="true"></span>
+                            {{ feature|t(pluginHandle) }}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                <p class="ve-plan__ideal-for light">{{ content.idealFor|t(pluginHandle) }}</p>
+
+                {% if isCurrentEdition %}
+                    <span class="ve-plan__btn-placeholder"></span>
+                {% elseif isLowerEdition %}
+                    <a href="{{ storeUrl }}" class="btn ve-plan__store-link" target="_blank">
+                        {{ 'Change'|t(pluginHandle) }}
+                    </a>
+                {% else %}
+                    <a href="{{ storeUrl }}" class="btn submit ve-plan__store-link" target="_blank">
+                        {{ 'Upgrade'|t(pluginHandle) }}
+                    </a>
+                {% endif %}
+            </section>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% css %}
+.ve-plans {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: 20px;
+}
+
+/* Column borders live here (and the --current override below). */
+.ve-plan {
+    flex: 1 1 220px;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    border: 2px solid rgba(51, 64, 77, 0.15);
+    border-radius: 5px;
+}
+
+.ve-plan--current {
+    border-color: #2563eb;
+}
+
+.ve-plan__name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ve-plan__badge {
+    padding: 2px 8px;
+    border-radius: 3px;
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.ve-plan__features {
+    margin-bottom: 14px;
+}
+
+.ve-plan__features li {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    padding: 3px 0;
+}
+
+/* margin-top: auto pins the sentence + button to the bottom, so every column's
+button lines up regardless of feature-list length. */
+.ve-plan__ideal-for {
+    margin-top: auto;
+    margin-bottom: 14px;
+}
+
+.ve-plan__store-link {
+    align-self: flex-start;
+}
+
+/* Invisible stand-in for the button on the current edition's column, so the
+ideal-for text keeps the same bottom offset as in the other columns. */
+.ve-plan__btn-placeholder {
+    height: var(--ui-control-height, 34px);
+    align-self: flex-start;
+    visibility: hidden;
+}
+
+/* Stack the columns on narrow viewports; the flex gap keeps the 20px gutter. */
+@media (max-width: 600px) {
+    .ve-plan {
+        flex-basis: 100%;
+    }
+}
+{% endcss %}

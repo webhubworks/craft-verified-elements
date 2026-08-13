@@ -1,0 +1,87 @@
+{% extends pluginHandle ~ '/_settings/_layout.twig' %}
+
+{# Volumes have no site dimension in Craft, so there are no site tabs here - the save action
+   applies each volume's settings to every site. #}
+
+{% set fullPageForm = true %}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% set formActions = [
+    {
+        label: 'Save'|t('app'),
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{% block content %}
+    {{ actionInput(pluginHandle ~ '/settings/save-assets') }}
+    {{ redirectInput(pluginHandle ~ '/settings/assets') }}
+
+    <div class="ve-table-wrap">
+        <table class="ve-table">
+            <thead>
+            <tr>
+                <th>{{ 'Location'|t('app') }}</th>
+                <th>{{ 'Enabled'|t('app') }}</th>
+                <th>{{ 'Default Reviewer'|t(pluginHandle) }}</th>
+                <th>{{ 'Default Period'|t(pluginHandle) }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for volume in volumes %}
+                {% set ns = 'volumes[' ~ volume.id ~ ']' %}
+                {% namespace ns %}
+                    <tr>
+                        <th>{{ volume.name }}</th>
+                        <td>
+                            {{ forms.lightswitch({
+                                name: 'enabled',
+                                on: volume.enabled
+                            }) }}
+                        </td>
+                        <td>
+                            {% set reviewerSelectField %}
+                                {{ forms.elementSelect({
+                                    name: 'reviewerId',
+                                    elementType: 'craft\\elements\\User',
+                                    elements: volume.reviewerId ? [volume.reviewer] : [],
+                                    criteria: {
+                                        status: 'active',
+                                        can: assignableReviewerPermission,
+                                    },
+                                    limit: 1,
+                                    hideSidebar: true,
+                                }) }}
+                            {% endset %}
+
+                            {% if volume.enabled and not volume.reviewerId %}
+                                <div class="flex" style="align-items:center;flex-wrap:nowrap;">
+                                    {{ reviewerSelectField }}
+                                    <p class="warning" style="margin:0;max-width:400px;">
+                                        {{ 'No default reviewer. Expired assets will go unnotified.'|t(pluginHandle) }}
+                                    </p>
+                                </div>
+                            {% else %}
+                                {{ reviewerSelectField }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ forms.select({
+                                name: 'defaultPeriod',
+                                options: periodSelectOptions,
+                                value: volume.defaultPeriod,
+                            }) }}
+                        </td>
+                    </tr>
+                {% endnamespace %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% js %}
+    Craft.initUiElements();
+{% endjs %}

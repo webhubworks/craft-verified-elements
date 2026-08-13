@@ -1,70 +1,70 @@
 <?php
 
-namespace webhubworks\verifiedentries\controllers;
+/** @noinspection PhpUnused */
+
+namespace webhubworks\verifiedelements\controllers;
 
 use Craft;
-use craft\helpers\DateTimeHelper;
-use craft\i18n\Formatter;
 use craft\web\Controller;
+use webhubworks\verifiedelements\helpers\DateHelper;
+use webhubworks\verifiedelements\Plugin;
 use yii\web\Response;
 
 /**
- * Custom Date controller
+ * Handles the custom date modal for selecting a specific verification date on an entry's "edit"
+ * page.
  */
 class CustomDateController extends Controller
 {
-    public $defaultAction = 'index';
     protected array|int|bool $allowAnonymous = self::ALLOW_ANONYMOUS_NEVER;
 
+    /** @inheritDoc */
+    public function beforeAction($action): bool
+    {
+        $this->requireCpRequest();
+        return parent::beforeAction($action);
+    }
+
     /**
-     * verified-entries/custom-date action
+     * Renders the custom date modal.
+     *
+     * @return Response
      */
     public function actionIndex(): Response
     {
-        $response = $this->asCpModal()
-            ->action('verified-entries/custom-date/validate')
-            ->contentTemplate('verified-entries/_modals/_date.twig');
-
-        return $response;
+        return $this->asCpModal()
+            ->action(Plugin::HANDLE . '/custom-date/resolve-date')
+            ->contentTemplate(Plugin::HANDLE . '/_modals/_date.twig');
     }
 
-    public function actionValidate(): Response
+    /**
+     * Resolves the user's selected date value in an entry's "Verified until" date field.
+     *
+     * @return Response
+     * @throws \yii\web\MethodNotAllowedHttpException
+     */
+    public function actionResolveDate(): Response
     {
         $this->requirePostRequest();
 
-        $date = DateTimeHelper::toDateTime($this->request->getBodyParam('verifiedUntilDate'));
+        $date = DateHelper::toDateTime($this->request->getBodyParam('verifiedUntilDate'));
 
         if (!$date) {
             return $this->asFailure(
-                Craft::t('verified-entries', 'No date provided.'),
+                Craft::t(Plugin::HANDLE, 'No date provided.'),
                 [
                     'errors' => [
                         'verifiedUntilDate' => [
-                            Craft::t('app', '{attribute} cannot be blank.', ['attribute' => 'Date'])
-                        ]
-                    ]
+                            Craft::t('app', '{attribute} cannot be blank.', ['attribute' => 'Date']),
+                        ],
+                    ],
                 ]
             );
         }
-
-        if ($date < DateTimeHelper::now()) {
-            return $this->asFailure(
-                Craft::t('verified-entries', 'Could not set verification date.'),
-                [
-                    'errors' => [
-                        'verifiedUntilDate' => [
-                            Craft::t('verified-entries', 'Date must be in the future.'),
-                        ]
-                    ]
-                ]
-            );
-        }
-
-        $formatter = new Formatter();
 
         return $this->asJson([
             'date' => $date->format('Y-m-d'),
-            'label' => $formatter->asDate($date),
+            'label' => Craft::$app->getFormatter()->asDate($date),
         ]);
     }
 }

@@ -1,10 +1,10 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.selectField({
-    label: 'Verify for'|t('verified-entries'),
+    label: 'Verify for'|t(pluginHandle),
     id: 'verificationPeriod',
     name: 'verificationPeriod',
-    options: periodOptions,
+    options: periodSelectOptions,
     toggle: true
 }) }}
 

@@ -1,27 +1,37 @@
 <?php
 
-namespace webhubworks\verifiedentries\elements\actions;
+/** @noinspection JSUnresolvedReference */
+
+namespace webhubworks\verifiedelements\elements\actions;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementAction;
-use craft\elements\Entry;
-use craft\elements\User;
+use craft\elements\db\ElementQueryInterface;
+use Throwable;
+use webhubworks\verifiedelements\base\VerifiableElementInterface;
+use webhubworks\verifiedelements\enums\ElementType;
+use webhubworks\verifiedelements\Plugin;
 
 /**
- * Assign Reviewer element action
+ * Bulk action that assigns a Reviewer to one or more elements from the element index in the CP.
+ *
+ * @property-read null|string $triggerHtml
  */
 class AssignReviewer extends ElementAction
 {
     public ?int $reviewerId = null;
 
+    /** @inheritDoc */
     public static function displayName(): string
     {
-        return Craft::t('verified-entries', 'Assign Reviewer');
+        return Craft::t(Plugin::HANDLE, 'Assign Reviewer');
     }
 
+    /** @inheritDoc */
     public function getTriggerHtml(): ?string
     {
-        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type, $canPermission) => <<<JS
             (() => {
                 new Craft.ElementActionTrigger({
                     type: $type,
@@ -36,12 +46,12 @@ class AssignReviewer extends ElementAction
 
                     activate: (selectedItems, elementIndex) => {
                       elementIndex.setIndexBusy();
-                      
+
                       Craft.createElementSelectorModal('craft\\\\elements\\\\User', {
                           multiSelect: false,
                           criteria: {
                               'status': 'active',
-                              'can': 'verifyEntries',
+                              'can': $canPermission,
                           },
                           onSelect: ([user]) => {
                               elementIndex.submitAction($type, { reviewerId: user.id })
@@ -53,32 +63,40 @@ class AssignReviewer extends ElementAction
                     },
                 });
             })();
-        JS, [static::class]);
+        JS, [
+            static::class,
+            ElementType::fromElementClass($this->elementType)->verifyPermission()->value,
+        ]);
 
         return null;
     }
 
-    public function performAction(Craft\elements\db\ElementQueryInterface $query): bool
+    /** @inheritDoc */
+    public function performAction(ElementQueryInterface $query): bool
     {
         $elements = $query->all();
-        $elementsService = \Craft::$app->getElements();
+        $elementsService = Craft::$app->getElements();
 
-        $sucessCount = count(array_filter($elements, function (Entry $entry) use ($elementsService) {
-            try {
-                $entry->setReviewerId($this->reviewerId);
-                $elementsService->saveElement($entry);
-                return true;
-            } catch (\Throwable) {
-                return false;
+        $savedElements = array_filter(
+            $elements,
+            function(Element $element) use ($elementsService) {
+                try {
+                    /** @var Element&VerifiableElementInterface $element */
+                    $element->setReviewerId($this->reviewerId);
+                    $elementsService->saveElement($element);
+                    return true;
+                } catch (Throwable) {
+                    return false;
+                }
             }
-        }));
+        );
 
-        if ($sucessCount !== count($elements)) {
-            $this->setMessage('Could not assign Reviewer to all entries.');
+        if (count($savedElements) !== count($elements)) {
+            $this->setMessage(Craft::t(Plugin::HANDLE, 'Could not assign a Reviewer to all elements.'));
             return false;
         }
 
-        $this->setMessage('Entries assigned.');
+        $this->setMessage(Craft::t(Plugin::HANDLE, 'Elements assigned.'));
         return true;
     }
 }

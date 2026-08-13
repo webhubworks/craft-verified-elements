@@ -2,7 +2,7 @@
 
 <fieldset>
     <legend class="h6 status-label">
-        <span class="mb-[1px]">{{ 'Verification'|t('verified-entries') }}</span>
+        <span class="mb-[1px]">{{ 'Verification'|t(pluginHandle) }}</span>
         {% if isVerified %}
             <span data-icon="circle-check" class="cp-icon puny"></span>
         {% endif %}
@@ -11,22 +11,22 @@
     <div class="meta">
         {{ forms.selectizeField({
             label:
-                (not isVerified ? '<span data-icon="alert"></span>') ~ 'Verified until'|t('verified-entries'),
+                (not isVerified ? '<span data-icon="alert"></span>') ~ 'Verified until'|t(pluginHandle),
             id: 'verifiedUntilDate',
             name: 'verifiedUntilDate',
-            options: options,
+            options: dateSelectOptions,
             selectizeOptions: {
                 allowEmptyOption: false,
                 autocomplete: false,
             },
             includeEnvVars: false,
             value: verifiedUntilDate ? verifiedUntilDate|date('Y-m-d') : false,
-            addOptionLabel: 'Specific Date'|t('verified-entries'),
+            addOptionLabel: 'Specific Date'|t(pluginHandle),
             addOptionFn: addOptionFn,
         }) }}
 
         {{ forms.elementSelectField({
-            label: 'Reviewer'|t('verified-entries'),
+            label: 'Reviewer'|t(pluginHandle),
             id: 'reviewerId',
             name: 'reviewerId',
             elementType: 'craft\\elements\\User',
@@ -35,7 +35,7 @@
             elements: reviewer ? [reviewer] : [],
             criteria: {
                 status: 'active',
-                can: 'verifyEntries',
+                can: assignableReviewerPermission,
             }
         }) }}
     </div>

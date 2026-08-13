@@ -1,0 +1,101 @@
+{% extends pluginHandle ~ '/_settings/_layout.twig' %}
+
+{% set fullPageForm = true %}
+
+{% if sites|length > 1 %}
+    {% set tabs = [] %}
+    {% set selectedTab = 0 %}
+    {% for site in sites %}
+        {% if site.id == currentSite.id %}
+            {% set selectedTab = loop.index0 %}
+        {% endif %}
+        {% set tabs = tabs|merge([{
+            label: site.name,
+            url: url(pluginHandle ~ '/settings/entries', {site: site.handle}),
+        }]) %}
+    {% endfor %}
+{% endif %}
+
+{% import '_includes/forms.twig' as forms %}
+
+{% set formActions = [
+    {
+        label: 'Save'|t('app'),
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{% block content %}
+    {{ actionInput(pluginHandle ~ '/settings/save-entries') }}
+    {{ redirectInput(pluginHandle ~ '/settings/entries?site=' ~ currentSite.handle) }}
+    {{ hiddenInput('siteId', currentSite.id) }}
+
+    <div class="ve-table-wrap">
+        <table class="ve-table">
+            <thead>
+            <tr>
+                <th>{{ 'Section'|t('app') }}</th>
+                <th>{{ 'Section Type'|t('app') }}</th>
+                <th>{{ 'Enabled'|t('app') }}</th>
+                <th>{{ 'Default Reviewer'|t(pluginHandle) }}</th>
+                <th>{{ 'Default Period'|t(pluginHandle) }}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for section in sections %}
+                {% set ns = 'sections[' ~ section.id ~ ']' %}
+                {% namespace ns %}
+                    <tr>
+                        <th>{{ section.name }}</th>
+                        <td>{{ section.type|capitalize|t('app') }}</td>
+                        <td>
+                            {{ forms.lightswitch({
+                                name: 'enabled',
+                                on: section.enabled
+                            }) }}
+                        </td>
+                        <td>
+                            {% set reviewerSelectField %}
+                                {{ forms.elementSelect({
+                                    name: 'reviewerId',
+                                    elementType: 'craft\\elements\\User',
+                                    elements: section.reviewerId ? [section.reviewer] : [],
+                                    criteria: {
+                                        status: 'active',
+                                        can: assignableReviewerPermission,
+                                    },
+                                    limit: 1,
+                                    hideSidebar: true,
+                                }) }}
+                            {% endset %}
+
+                            {% if section.enabled and not section.reviewerId %}
+                                <div class="flex" style="align-items:center;flex-wrap:nowrap;">
+                                    {{ reviewerSelectField }}
+                                    <p class="warning" style="margin:0;max-width:400px;">
+                                        {{ 'No default reviewer. Expired entries will go unnotified.'|t(pluginHandle) }}
+                                    </p>
+                                </div>
+                            {% else %}
+                                {{ reviewerSelectField }}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {{ forms.select({
+                                name: 'defaultPeriod',
+                                options: periodSelectOptions,
+                                value: section.defaultPeriod,
+                            }) }}
+                        </td>
+                    </tr>
+                {% endnamespace %}
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}
+
+{% js %}
+    Craft.initUiElements();
+{% endjs %}

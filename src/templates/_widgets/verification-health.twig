@@ -1,0 +1,55 @@
+{% set verifiedLength, expiredLength = 0, 0 %}
+{% if totalCount > 0 %}
+    {% set verifiedLength = (verifiedCount / totalCount * 100)|round(0, 'ceil') %}
+    {% set expiredLength = (expiredCount / totalCount * 100)|round(0, 'ceil') %}
+{% endif %}
+
+{% if siteDisplayed %}
+    <p class="light" style="margin: 0 0 8px;">{{ siteDisplayed }}</p>
+{% endif %}
+
+<div class="verificationhealth-container">
+    <svg viewBox="0 0 100 8" preserveAspectRatio="xMidYMid slice" height="8" width="100%" class="widget-heading">
+        <rect x="0" y="0" width="100" height="100%" fill="var(--gray-200)" />
+        <rect x="0" y="0" width="{{ verifiedLength }}" height="100%" fill="{{ statusColors.verified }}" />
+        <rect x="{{ verifiedLength }}" y="0" width="{{ expiredLength }}" height="100%"
+              fill="{{ statusColors.expired }}" />
+    </svg>
+
+    <div class="mt-4">
+        <ol class="widget__list" role="list">
+            {% for status in statuses %}
+                <li class="widget__list-item status-label">
+                    {{ status.icon|raw }}
+                    {{ status.label }}:
+                    <span class="light">{{ status.count }} {{ 'Elements'|t('app') }}</span>
+                </li>
+            {% endfor %}
+            <li class="widget__list-item status-label">
+                <span class="status gray" role="img" aria-label="{{ 'Total'|t(pluginHandle) }}"></span>
+                {{ 'Total'|t(pluginHandle) }}:
+                <span class="light">{{ totalCount }} {{ 'Elements'|t('app') }}</span>
+            </li>
+        </ol>
+    </div>
+</div>
+
+{% css %}
+    .verificationhealth-container svg {
+    border-radius: var(--s);
+    overflow: hidden;
+    }
+
+    .verificationhealth-container .widget__list-item {
+    display: block;
+    }
+
+    .verificationhealth-container .light {
+    display: inline-block;
+    float: right;
+    }
+
+    .verificationhealth-container .widget__list-item .status {
+    top: 2px;
+    }
+{% endcss %}
