@@ -1,14 +1,14 @@
 # Release Notes for Verified Elements
 
-## 2.0.0 - 2026-08-13
+## 2.0.0 - 2026-08-17
 
 ### Added
 - Added asset verification: verify assets, assign reviewers, and configure per-volume
   defaults, with change notifications on file replacement, alt text, and custom field
-  changes (Pro Plus edition).
+  changes (Pro edition).
 - Added multi-site support: verification state, settings, dashboards, widgets, and
   notifications are now tracked per site (Pro edition).
-- Added editions: Lite, Pro, and Pro Plus.
+- Added editions: Lite and Pro.
 - Added a "Verify assets" user permission.
 - Added the Verify and Assign Reviewer bulk actions to asset indexes.
 - Added verification condition rules to asset indexes.

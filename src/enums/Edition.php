@@ -23,7 +23,6 @@ enum Edition: string
      */
     case Lite = 'lite';
     case Pro = 'pro';
-    case ProPlus = 'pro-plus';
 
     /**
      * Note that labels for the handles are safe to edit. Only the handles can't be edited.
@@ -35,7 +34,6 @@ enum Edition: string
         return match ($this) {
             self::Lite => 'Lite',
             self::Pro => 'Pro',
-            self::ProPlus => 'Pro Plus',
         };
     }
 
@@ -55,7 +53,6 @@ enum Edition: string
         return [
             self::Lite,
             self::Pro,
-            self::ProPlus,
         ];
     }
 }
