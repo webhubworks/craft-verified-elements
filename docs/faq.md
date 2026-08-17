@@ -8,7 +8,7 @@ Check, in this order:
 
 1. Is the entry's **section enabled** in **Verified Elements → Settings → Entries** (on the site you are editing)?
 2. Do you have the **"Verify entries"** permission? Without it the panel is hidden (the status still shows in the metadata).
-3. On a multi-site installation with the Lite edition, only the **primary site** is tracked.
+3. On a multi-site installation with the Standard edition, only the **primary site** is tracked.
 4. Nested entries inside Matrix fields are not verifiable, only regular section entries.
 
 ## I don't see the Verified Elements section in the navigation
@@ -45,7 +45,7 @@ No. Verification data lives alongside your content. Setting a date or Reviewer d
 
 ## We added a new site. Why is nothing tracked there?
 
-Sections must be enabled per site: open **Verified Elements → Settings → Entries**, switch to the new site's tab, and enable them. Asset volume settings carry over to new sites automatically. Multi-site tracking requires the Pro or Pro Plus edition.
+Sections must be enabled per site: open **Verified Elements → Settings → Entries**, switch to the new site's tab, and enable them. Asset volume settings carry over to new sites automatically. Multi-site tracking requires the Pro edition.
 
 ## Who can I contact for help?
 

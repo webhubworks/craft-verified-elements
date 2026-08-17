@@ -19,10 +19,10 @@ TODO: Link to the Plugin Store page once published.
 
 Work through these steps once after installation:
 
-1. **Choose your edition.** Lite covers entries on a single site, Pro adds multi-site support, Pro Plus adds asset verification. See [Permissions and Editions](permissions-and-editions.md).
+1. **Choose your edition.** The free Standard edition covers entries on a single site, the paid Pro edition adds multi-site support and asset verification. See [Permissions and Editions](permissions-and-editions.md).
 2. **Enable the sections you want to track.** Go to **Verified Elements → Settings → Entries** and switch on each section that should be part of the review workflow. See [Settings](settings.md).
 3. **Set a default Reviewer and default period per section.** New content in an enabled section automatically receives these defaults. Without a default Reviewer, expired items go unnotified (the settings screen warns you about this).
-4. **Enable volumes (Pro Plus only).** Go to **Verified Elements → Settings → Assets** and repeat the same setup for asset volumes.
+4. **Enable volumes (Pro only).** Go to **Verified Elements → Settings → Assets** and repeat the same setup for asset volumes.
 5. **Grant permissions.** In Craft's user group settings, grant "Access Verified Elements", "Verify entries" / "Verify assets", and "Manage Verification Settings" as appropriate. See [Permissions and Editions](permissions-and-editions.md).
 6. **Add the dashboard widgets.** Each user can add "Elements to Review" and "Verification Health" to their Craft dashboard. See [Dashboard Widgets](dashboard-widgets.md).
 7. **Make sure the expiry check runs.** Reviewer email digests are sent when the plugin's scheduled check runs. Ask your developer to schedule it (see [Email Notifications](email-notifications.md)).

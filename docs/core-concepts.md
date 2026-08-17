@@ -7,7 +7,7 @@ A short glossary of the terms used throughout the plugin and this manual.
 Craft's word for a piece of content. Verified Elements works with two element types:
 
 - **Entries**, available in every edition.
-- **Assets** (files in your asset volumes), available in the Pro Plus edition.
+- **Assets** (files in your asset volumes), available in the Pro edition.
 
 Verification only applies to elements in sections and volumes that an administrator has enabled in the plugin's settings.
 
@@ -48,6 +48,6 @@ Per section (and per volume), administrators can define a default Reviewer and a
 
 ## Site scope
 
-On multi-site installations with the Pro or Pro Plus edition, verification is tracked **per site**: the same entry can be Verified on one site and Expired on another. Without multi-site support (Lite edition), the plugin manages the primary site only.
+On multi-site installations with the Pro edition, verification is tracked **per site**: the same entry can be Verified on one site and Expired on another. Without multi-site support (Standard edition), the plugin manages the primary site only.
 
 TODO: Diagram of the status lifecycle (Verified → Expired → re-verified).

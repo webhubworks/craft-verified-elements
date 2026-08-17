@@ -10,7 +10,7 @@ Verified Elements plugs into Craft's normal user and permission system. Assign t
 |---|---|
 | **Access Verified Elements** (under "Access the control panel") | See the plugin's section in the navigation, use its listings, add its dashboard widgets, and get the "Verified Elements" page on the account screen. |
 | **Verify entries** | Edit the Verification fields on entries (edit page and inline in lists) and use the Verify and Assign Reviewer bulk actions on entry listings. |
-| **Verify assets** (Pro Plus) | The same, for assets. |
+| **Verify assets** (Pro) | The same, for assets. |
 | **Manage Verification Settings** | See and use the plugin's Settings pages. |
 
 Notes:
@@ -29,24 +29,23 @@ TODO: Screenshot of the plugin's permission group in Craft's user group settings
 
 ## Editions
 
-The plugin comes in three editions. Every edition includes the full review workflow; higher editions extend it to more sites and more element types.
+The plugin comes in two editions: the free **Standard** edition and the paid **Pro** edition. Both include the full review workflow; Pro extends it to every site and to assets.
 
-| Feature | Lite | Pro | Pro Plus |
-|---|:---:|:---:|:---:|
-| Entry verification | ✓ | ✓ | ✓ |
-| Reviewer assignment | ✓ | ✓ | ✓ |
-| Verification periods per section | ✓ | ✓ | ✓ |
-| Expiry email notifications | ✓ | ✓ | ✓ |
-| Dashboard widgets | ✓ | ✓ | ✓ |
-| Bulk verification actions | ✓ | ✓ | ✓ |
-| Multi-site support | | ✓ | ✓ |
-| Asset verification | | | ✓ |
+| Feature | Standard | Pro |
+|---|:---:|:---:|
+| Entry verification | ✓ | ✓ |
+| Reviewer assignment | ✓ | ✓ |
+| Verification periods per section | ✓ | ✓ |
+| Expiry email notifications | ✓ | ✓ |
+| Dashboard widgets | ✓ | ✓ |
+| Bulk verification actions | ✓ | ✓ |
+| Multi-site support | | ✓ |
+| Asset verification | | ✓ |
 
 What this means in the interface:
 
-- **Lite:** verification applies to the primary site only. On other sites, the Verification panel and columns do not appear.
-- **Pro:** every site is tracked. Settings gain per-site tabs, listings gain a site switcher, and the Verification Health widget gains a site setting.
-- **Pro Plus:** assets join the workflow. The plugin's section gains an Assets page, settings gain an Assets page, and the "Verify assets" permission becomes available.
+- **Standard:** entries only, and verification applies to the primary site only. On other sites, the Verification panel and columns do not appear.
+- **Pro:** every site is tracked, and assets join the workflow. Settings gain per-site tabs and an Assets page, listings gain a site switcher, the plugin's section gains an Assets page, the Verification Health widget gains a site setting, and the "Verify assets" permission becomes available.
 
 You can switch editions at any time from the plugin's page on the Craft Plugin Store, or via **Verified Elements → Settings → Subscription Plan**.
 

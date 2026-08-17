@@ -7,7 +7,7 @@ The plugin adds its own **Verified Elements** area to the control panel navigati
 ## Pages
 
 - **Entries**. All entries in enabled sections. This is the landing page of the section.
-- **Assets** (Pro Plus). All assets in enabled volumes.
+- **Assets** (Pro). All assets in enabled volumes.
 - **Settings** (visible with the "Manage Verification Settings" permission). See [Settings](settings.md).
 
 TODO: Screenshot of the section with the sidebar filters.
@@ -34,7 +34,7 @@ Each row shows the element with its verification data:
 - **Verified until**, displayed in plain language ("Today", "5 days remaining", "12 days ago", or "Indefinite")
 - **Reviewer**, or "Unassigned" in italics
 
-You can sort by "Verified until", search, switch sites (multi-site editions), and adjust columns like on any Craft listing. The "Verified until" date and the Reviewer can be edited inline without opening the element.
+You can sort by "Verified until", search, switch sites (Pro edition), and adjust columns like on any Craft listing. The "Verified until" date and the Reviewer can be edited inline without opening the element.
 
 ## Acting on many elements at once
 

@@ -14,11 +14,11 @@ TODO: Screenshot of the widget with a few expired elements.
 
 ## Verification Health
 
-A team-level health meter. It counts all live, tracked elements (entries, and assets on Pro Plus) across the enabled sections and volumes, and shows how many are Verified versus Expired, as one overall gauge. Untracked dates ("Indefinitely") count as Verified.
+A team-level health meter. It counts all live, tracked elements (entries, and assets on Pro) across the enabled sections and volumes, and shows how many are Verified versus Expired, as one overall gauge. Untracked dates ("Indefinitely") count as Verified.
 
 Use it to answer "how fresh is our content overall?" at a glance. For per-type or per-person breakdowns, use the filters in [The Verified Elements Section](verified-elements-section.md) instead.
 
-**Settings (multi-site editions only):**
+**Settings (multi-site installations only):**
 
 - **Site**. Limit the meter to one site, or show all sites combined. The widget header shows which site it is displaying.
 

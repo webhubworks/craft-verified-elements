@@ -16,7 +16,7 @@ You have three views of the same queue:
 
 ### 1. Your account page
 
-Go to **My Account → Verified Elements**. This page lists all elements assigned to you, with tabs for Entries and Assets (Pro Plus), and columns for status, site, section or volume, "Verified until", and the last update. Administrators can open the same page on any user's profile to see that person's assignments.
+Go to **My Account → Verified Elements**. This page lists all elements assigned to you, with tabs for Entries and Assets (Pro), and columns for status, site, section or volume, "Verified until", and the last update. Administrators can open the same page on any user's profile to see that person's assignments.
 
 TODO: Screenshot of the account page.
 
