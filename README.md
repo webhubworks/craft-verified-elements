@@ -19,19 +19,19 @@ Perfect for marketing teams, content editors, and organizations who need to main
 
 ## Editions
 
-Verified Elements is available in three editions. Every edition includes the full
+Verified Elements is available in two editions. Every edition includes the full
 review workflow; higher editions extend it to more sites and more element types.
 
-| Feature                          | Standard | Pro |
-|----------------------------------|:--------:|:---:|
-| Entry verification               |    ✓     |  ✓  |
-| Reviewer assignment              |    ✓     |  ✓  |
-| Verification periods per section |    ✓     |  ✓  |
-| Expiry email notifications       |    ✓     |  ✓  |
-| Dashboard widgets                |    ✓     |  ✓  |
-| Bulk verification actions        |    ✓     |  ✓  |
-| Multi-site support               |          |  ✓  |
-| Asset verification               |          |  ✓  |
+| Feature                          | Lite | Pro |
+|----------------------------------|:----:|:---:|
+| Entry verification               |  ✓   |  ✓  |
+| Reviewer assignment              |  ✓   |  ✓  |
+| Verification periods per section |  ✓   |  ✓  |
+| Expiry email notifications       |  ✓   |  ✓  |
+| Dashboard widgets                |  ✓   |  ✓  |
+| Bulk verification actions        |  ✓   |  ✓  |
+| Multi-site support               |      |  ✓  |
+| Asset verification               |      |  ✓  |
 
 You can switch editions at any time from the plugin's page on the Craft Plugin Store.
 

@@ -18,23 +18,23 @@ use webhubworks\verifiedelements\Plugin;
  * otherwise have no rows until an admin re-saved the settings. Per-site types (entries) are managed
  * per site through the UI and must NOT be seeded.
  *
- * The seed only processes element types whose feature is enabled, so these tests force the pro-plus
+ * The seed only processes element types whose feature is enabled, so these tests force the pro
  * edition (the test DB installs at the default, lite - where asset verification is off) and restore
  * it afterwards, since the plugin instance is shared across the test process.
  */
 
 /**
- * Runs the given assertions with the plugin forced to the pro-plus edition (asset verification on),
+ * Runs the given assertions with the plugin forced to the pro edition (asset verification on),
  * restoring the original edition afterwards even if an assertion fails.
  *
  * @param Closure $test
  * @return void
  */
-function withProPlusEdition(Closure $test): void
+function withProEdition(Closure $test): void
 {
     $plugin = Plugin::getInstance();
     $originalEdition = $plugin->edition;
-    $plugin->edition = Edition::ProPlus->handle();
+    $plugin->edition = Edition::Pro->handle();
 
     try {
         $test();
@@ -44,7 +44,7 @@ function withProPlusEdition(Closure $test): void
 }
 
 it('seeds site-agnostic (asset) container settings for a newly created site', function() {
-    withProPlusEdition(function() {
+    withProEdition(function() {
         $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
         $reviewer = getSharedReviewer('a');
 
@@ -83,7 +83,7 @@ it('seeds site-agnostic (asset) container settings for a newly created site', fu
 });
 
 it('does not seed per-site (entry) container settings for a new site', function() {
-    withProPlusEdition(function() {
+    withProEdition(function() {
         $primarySiteId = Craft::$app->getSites()->getPrimarySite()->id;
         $section = createSection();
 
