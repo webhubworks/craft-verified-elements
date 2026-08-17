@@ -55,7 +55,7 @@ return [
     'Verify Asset' => 'Datei verifizieren',
     'Verify assets' => 'Dateien verifizieren',
     'Verify entries' => 'Einträge verifizieren',
-    'Verify for' => 'Verfizieren für',
+    'Verify for' => 'Verifizieren für',
     'Verify' => 'Verifizieren',
     'email.changeNotification.body.asset' => 'Eine Datei, die Sie überprüfen sollen, wurde aktualisiert. Bitte nehmen Sie sich einen Moment Zeit, um die letzten Änderungen zu überprüfen',
     'email.changeNotification.body.entry' => 'Ein Eintrag, den Sie überprüfen sollen, wurde aktualisiert. Bitte nehmen Sie sich einen Moment Zeit, um die letzten Änderungen zu überprüfen',
