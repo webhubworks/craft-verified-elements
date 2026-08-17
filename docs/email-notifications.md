@@ -1,13 +1,13 @@
 # Email Notifications
 
-The plugin sends two kinds of email. Both use your site's normal email settings, so they come from the address your Craft installation is configured with.
+The plugin sends two kinds of emails. Both use your site's normal email settings, so they come from the address your Craft installation is configured with.
 
 ## 1. Expiry digests
 
 When elements expire, their Reviewers are notified:
 
 - **Per Reviewer:** each Reviewer receives one digest email listing all of their expired elements ("3 items await your verification"), with links to review each item.
-- **Unassigned elements:** expired elements without a Reviewer are collected into a digest sent to the site's **system email address**, so they do not slip through unnoticed. Keep the Unassigned list short by assigning Reviewers (see [Bulk Actions](bulk-actions.md)).
+- **Unassigned elements:** expired elements without a Reviewer are collected into a digest sent to the site's **system email address**, so they don't slip through unnoticed. Keep the Unassigned list short by assigning Reviewers (see [Bulk Actions](bulk-actions.md)).
 - **Inactive Reviewers:** if a Reviewer's account no longer exists or is inactive, their expired elements are moved to the unassigned report.
 
 ### When digests are sent
@@ -28,7 +28,7 @@ When a tracked element that has a Reviewer is edited and saved, the Reviewer imm
 
 Details:
 
-- Alerts are only sent for elements that carry a "Verified until" date. Elements verified "Indefinitely" do not trigger them.
+- Alerts are only sent for elements that carry a "Verified until" date. Elements verified "Indefinitely" don't trigger them.
 - You never receive an alert for your own edits, only when someone else changes your assigned element.
 - For entries, any saved change triggers the alert.
 - For assets, the alert is triggered by meaningful content changes, such as a replaced file or changed alt text.

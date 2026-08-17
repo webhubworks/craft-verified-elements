@@ -20,7 +20,7 @@ TODO: Screenshot of the Entries settings table with the site tabs.
 
 ## Assets (Pro)
 
-The same table for asset volumes: Enabled, Default Reviewer, Default Period per volume. Volumes are not site-specific in Craft, so these settings apply to all sites at once, there are no site tabs.
+The same table for asset volumes: Enabled, Default Reviewer, Default Period per volume. Volumes aren't site-specific in Craft, so these settings apply to all sites at once, there are no site tabs.
 
 TODO: Screenshot of the Assets settings table.
 
@@ -32,6 +32,6 @@ TODO: Screenshot of the Subscription Plan page. Replace the placeholder store li
 
 ## Good to know
 
-- Defaults only apply to **new** content. Changing a section's default period does not rewrite dates on existing entries; use the **Verify** bulk action for that.
+- Defaults only apply to **new** content. Changing a section's default period doesn't rewrite dates on existing entries; use the **Verify** bulk action for that.
 - Disabling a section or volume hides its verification UI and stops its notifications. Already stored verification data is kept. TODO: verify and document exactly what happens to existing data and assignments when a section is disabled and re-enabled.
 - When a new site is created, asset volume settings are carried over to it automatically. Entry sections start unconfigured on the new site and need to be enabled on their site tab.

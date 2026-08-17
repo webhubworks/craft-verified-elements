@@ -9,7 +9,7 @@ Check, in this order:
 1. Is the entry's **section enabled** in **Verified Elements → Settings → Entries** (on the site you are editing)?
 2. Do you have the **"Verify entries"** permission? Without it the panel is hidden (the status still shows in the metadata).
 3. On a multi-site installation with the Standard edition, only the **primary site** is tracked.
-4. Nested entries inside Matrix fields are not verifiable, only regular section entries.
+4. Nested entries inside Matrix fields aren't verifiable, only regular section entries.
 
 ## I don't see the Verified Elements section in the navigation
 
@@ -17,7 +17,7 @@ You need the **"Access Verified Elements"** permission. Ask an administrator.
 
 ## Why did a new entry get a Reviewer and date I never set?
 
-The section has a **default period** and **default Reviewer** configured. They are applied automatically on first save. You can override both in the Verification panel at any time.
+The section has a **default period** and **default Reviewer** configured. They're applied automatically on first save. You can override both in the Verification panel at any time.
 
 ## Nobody received an email although content expired
 
@@ -41,7 +41,7 @@ Each element (per site) has exactly one Reviewer. For a shared responsibility, c
 
 ## Does verifying an entry publish or change it?
 
-No. Verification data lives alongside your content. Setting a date or Reviewer does save the element, but does not alter its fields, status, or publish dates.
+No. Verification data lives alongside your content. Setting a date or Reviewer does save the element, but doesn't alter its fields, status, or publish dates.
 
 ## We added a new site. Why is nothing tracked there?
 

@@ -4,12 +4,12 @@
 Everyone who works with verification. The section appears in the control panel navigation for users with the "Access Verified Elements" permission.
 :::
 
-The plugin adds its own **Verified Elements** area to the control panel navigation. This is the command center for the review workflow: one place to see every tracked entry and asset, filtered by verification state or Reviewer.
+The plugin adds its own **Verified Elements** area to the main navigation in the control panel (CP). This is the command center for the review workflow: one place to see every tracked entry and asset, filtered by verification state or Reviewer.
 
 ## Pages
 
-- **Entries**. All entries in enabled sections. This is the landing page of the section.
-- **Assets** (Pro). All assets in enabled volumes.
+- **Entries** (all editions): All entries in enabled sections. This is the landing page of the section.
+- **Assets** (Pro edition): All assets in enabled volumes.
 - **Settings** (visible with the "Manage Verification Settings" permission). See [Settings](settings.md).
 
 TODO: Screenshot of the section with the sidebar filters.
@@ -27,6 +27,10 @@ Below those, a **Reviewer** group lists one filter per person:
 
 - **Your own name** always comes first, showing the elements assigned to you.
 - Every other user who currently has review assignments gets their own filter.
+
+::: note
+See the [Core Concepts](core-concepts.md) page for explanations on what these terms mean.
+:::
 
 ## The table
 

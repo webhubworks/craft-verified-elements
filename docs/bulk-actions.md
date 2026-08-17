@@ -15,7 +15,9 @@ Sets a new "Verified until" date on all selected elements in one step.
 3. In the dialog, pick a period under "Verify for": 7 days, 30 days, 90 days, 1 year, Indefinitely, or Specific Date (which reveals a date picker).
 4. Confirm. All selected elements receive the new date and count as Verified again.
 
+::: tip
 Use this after a review round: filter the Expired list, check the content, select everything that is still accurate, and verify it in one go.
+:::
 
 TODO: Screenshot of the "Verify for" dialog.
 
@@ -28,7 +30,9 @@ Assigns one Craft user as Reviewer to all selected elements.
 3. Pick a user in the selection dialog. Only active users who may verify this element type are offered.
 4. Confirm. The user is now responsible for all selected elements.
 
-Use this together with the **Unassigned** filter in the plugin's section to make sure every expiring element has someone watching it.
+::: tip
+Use this together with the **Unassigned** filter in the plugin's CP section to make sure every expiring element has someone watching it.
+:::
 
 TODO: Screenshot of the user selection dialog.
 

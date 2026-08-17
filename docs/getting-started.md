@@ -6,14 +6,20 @@ Site administrators setting up Verified Elements for their team. Editors can ski
 
 ## What Verified Elements does
 
-- Adds a "Verified until" date and a "Reviewer" to entries and assets, per site.
-- Marks each item as **Verified** or **Expired** based on that date.
+- Adds a "Verified until" date field and a "Reviewer" user field to entries and assets, per site.
+- Marks each item as **Verified** or **Expired** based on the "Verified until" date.
 - Surfaces items that need attention: in a dedicated control panel section, in dashboard widgets, on each user's account page, and by email.
 - Lets you verify or assign many items at once with bulk actions.
 
+## Why would I need this?
+
+Let's say your Craft site has "Terms & Conditions" and "Privacy Policy" **entries**, and you want to ensure their content doesn't fall out of date. You simply enable these sections in the plugin's settings, set a "Verified until" date (let's say for 6 months), and assign a Craft user as their "Reviewer". In 6 months, they will be notified that they need to review the content to ensure it's still up to date. This can be helpful for legal experts, translators, and all content editors who need to stay on top of this particular content.
+
+The same can be applied to **assets**. If you have PDFs, for example, that need consistent review, simply set a date and assign a reviewer. 
+
 ## Requirements and installation
 
-The plugin requires Craft CMS 5.6 or later. Installation happens through the Craft Plugin Store or Composer and is typically done by your developer. See the [repository README](https://github.com/webhubworks/craft-verified-elements#installation) for the exact steps.
+The plugin requires Craft CMS 5.6 or later. Installation happens through the Craft Plugin Store or Composer and is typically done by your developer. See the repository's [README](https://github.com/webhubworks/craft-verified-elements#installation) for the exact steps.
 
 Plugin Store: [Craft Verified Elements](https://plugins.craftcms.com/verified-elements).
 
@@ -33,5 +39,7 @@ Work through these steps once after installation:
 
 1. An editor saves an entry in an enabled section. The section's default period and default Reviewer are applied automatically.
 2. Time passes. The "Verified until" date arrives and the entry becomes **Expired**.
-3. The Reviewer receives an email digest and sees the entry in their review queue and dashboard widget.
+3. The Reviewer receives an email digest, or, perhaps in the CP, they see the entry in their review queue or dashboard widget (there are multiple ways to stay informed on expiring elements).
 4. The Reviewer checks the content, updates it if needed, and sets a new "Verified until" date. The entry is **Verified** again.
+
+_The same process can be applied to **Assets**, not just **Entries**._

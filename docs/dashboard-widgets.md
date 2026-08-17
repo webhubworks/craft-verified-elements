@@ -6,7 +6,7 @@ Everyone with access to the plugin. Both widgets are added from Craft's dashboar
 
 ## Elements to Review
 
-Your personal to-do list. It shows the expired elements assigned to **you**, the most overdue first, with a link to each element, its type, and how long ago it expired. When your queue is empty, the widget says there is currently nothing to review.
+Your personal to-do list. It shows the expired elements assigned to **you**, the most overdue first, with a link to each element, its type, and how long ago it expired. When your queue is empty, the widget says there's currently nothing to review.
 
 **Settings:**
 
