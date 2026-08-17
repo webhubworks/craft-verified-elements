@@ -48,8 +48,7 @@ enum Feature
     {
         return match ($this) {
             self::EntryVerification => Edition::Lite,
-            self::MultiSite => Edition::Pro,
-            self::AssetVerification => Edition::ProPlus,
+            self::MultiSite, self::AssetVerification => Edition::Pro,
         };
     }
 
