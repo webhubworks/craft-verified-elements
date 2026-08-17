@@ -1,6 +1,8 @@
 # Getting Started
 
-> Audience: site administrators setting up Verified Elements for their team. Editors can skip ahead to [Core Concepts](core-concepts.md).
+::: info Audience
+Site administrators setting up Verified Elements for their team. Editors can skip ahead to [Core Concepts](core-concepts.md).
+:::
 
 ## What Verified Elements does
 
@@ -13,7 +15,7 @@
 
 The plugin requires Craft CMS 5.6 or later. Installation happens through the Craft Plugin Store or Composer and is typically done by your developer. See the [repository README](https://github.com/webhubworks/craft-verified-elements#installation) for the exact steps.
 
-TODO: Link to the Plugin Store page once published.
+Plugin Store: [Craft Verified Elements](https://plugins.craftcms.com/verified-elements).
 
 ## First-time setup checklist
 
@@ -33,5 +35,3 @@ Work through these steps once after installation:
 2. Time passes. The "Verified until" date arrives and the entry becomes **Expired**.
 3. The Reviewer receives an email digest and sees the entry in their review queue and dashboard widget.
 4. The Reviewer checks the content, updates it if needed, and sets a new "Verified until" date. The entry is **Verified** again.
-
-TODO: Screenshot of the full cycle (edit page sidebar, widget, email).

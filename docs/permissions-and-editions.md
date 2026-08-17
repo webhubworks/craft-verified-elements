@@ -1,6 +1,8 @@
 # Permissions and Editions
 
-> Audience: administrators.
+::: info Audience
+Administrators.
+:::
 
 ## Permissions
 

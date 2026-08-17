@@ -1,6 +1,8 @@
 # Bulk Actions
 
-> Audience: users with the "Verify entries" or "Verify assets" permission.
+::: info Audience
+Users with the "Verify entries" or "Verify assets" permission.
+:::
 
 Verified Elements adds two actions to every entry and asset listing in the control panel. They work in the plugin's own [Verified Elements section](verified-elements-section.md) as well as in Craft's regular **Entries** and **Assets** areas.
 

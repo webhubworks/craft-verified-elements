@@ -1,6 +1,8 @@
 # Working as a Reviewer
 
-> Audience: anyone who has been assigned as a Reviewer. Being a Reviewer is an assignment, not a permission. You can be assigned elements even if you cannot verify them yourself; in that case, you review the content and a colleague with the verify permission confirms it.
+::: info Audience
+Anyone who has been assigned as a Reviewer. Being a Reviewer is an assignment, not a permission. You can be assigned elements even if you cannot verify them yourself; in that case, you review the content and a colleague with the verify permission confirms it.
+:::
 
 ## What being a Reviewer means
 

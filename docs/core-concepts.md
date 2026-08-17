@@ -49,5 +49,3 @@ Per section (and per volume), administrators can define a default Reviewer and a
 ## Site scope
 
 On multi-site installations with the Pro edition, verification is tracked **per site**: the same entry can be Verified on one site and Expired on another. Without multi-site support (Standard edition), the plugin manages the primary site only.
-
-TODO: Diagram of the status lifecycle (Verified → Expired → re-verified).

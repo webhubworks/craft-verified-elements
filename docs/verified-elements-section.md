@@ -1,6 +1,8 @@
 # The Verified Elements Section
 
-> Audience: everyone who works with verification. The section appears in the control panel navigation for users with the "Access Verified Elements" permission.
+::: info Audience
+Everyone who works with verification. The section appears in the control panel navigation for users with the "Access Verified Elements" permission.
+:::
 
 The plugin adds its own **Verified Elements** area to the control panel navigation. This is the command center for the review workflow: one place to see every tracked entry and asset, filtered by verification state or Reviewer.
 

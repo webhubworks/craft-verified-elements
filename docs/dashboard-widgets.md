@@ -1,6 +1,8 @@
 # Dashboard Widgets
 
-> Audience: everyone with access to the plugin. Both widgets are added from Craft's dashboard via **New widget**, and each can be added once.
+::: info Audience
+Everyone with access to the plugin. Both widgets are added from Craft's dashboard via **New widget**, and each can be added once.
+:::
 
 ## Elements to Review
 

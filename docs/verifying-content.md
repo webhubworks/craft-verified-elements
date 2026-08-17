@@ -1,6 +1,8 @@
 # Verifying Content
 
-> Audience: everyone who edits entries or assets. You need the "Verify entries" (or "Verify assets") permission to edit the verification fields.
+::: info Audience
+Everyone who edits entries or assets. You need the "Verify entries" (or "Verify assets") permission to edit the verification fields.
+:::
 
 ## The Verification panel on the edit page
 

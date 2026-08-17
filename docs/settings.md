@@ -1,6 +1,8 @@
 # Settings
 
-> Audience: administrators and users with the "Manage Verification Settings" permission. The settings live at **Verified Elements → Settings** in the control panel.
+::: info Audience
+Administrators and users with the "Manage Verification Settings" permission. The settings live at **Verified Elements → Settings** in the control panel.
+:::
 
 The settings control **which content is tracked** and **what defaults new content receives**. There are up to three pages: Entries, Assets (Pro), and Subscription Plan.
 
