@@ -8,7 +8,7 @@ Prüfen Sie in dieser Reihenfolge:
 
 1. Ist der **Bereich des Eintrags aktiviert**, unter **Verifizierung → Einstellungen → Einträge** (auf der Website, die Sie bearbeiten)?
 2. Haben Sie die Berechtigung **"Einträge verifizieren"**? Ohne sie ist das Panel ausgeblendet (der Status erscheint weiterhin in den Metadaten).
-3. Auf einer Installation mit mehreren Websites und der Standard-Edition wird nur die **primäre Website** verfolgt.
+3. Auf einer Installation mit mehreren Websites und der Lite-Edition wird nur die **primäre Website** verfolgt.
 4. Verschachtelte Einträge in Matrix-Feldern sind nicht verifizierbar, nur reguläre Einträge in Bereichen.
 
 ## Ich sehe den Verifizierungs-Bereich nicht in der Navigation

@@ -1,6 +1,6 @@
 # Email Notifications
 
-The plugin sends two kinds of emails. Both use your site's normal email settings, so they come from the address your Craft installation is configured with.
+The plugin sends two kinds of emails. Both use your site's normal email settings, so they come from the address with which your Craft installation is configured.
 
 ## 1. Expiry digests
 
@@ -17,7 +17,7 @@ Digests are sent whenever the plugin's expiry check runs:
 - During Craft's routine maintenance (garbage collection), which runs periodically on its own.
 - When the scheduled check command is run. Site administrators should ask their developer to schedule `php craft verified-elements/check-expired-verifications` (for example nightly) so digests arrive predictably.
 
-An element keeps appearing in digests until it is verified again, so nothing is forgotten, but a long-ignored queue also means repeated emails. Clear your queue, or switch items that never go stale to "Indefinitely".
+An element keeps appearing in digests until it's verified again, so nothing is forgotten, but a long-ignored queue also means repeated emails. Clear your queue, or switch items that never go stale to "Indefinitely".
 
 TODO: Screenshot of the digest email.
 TODO: Confirm and document the recommended scheduling interval.
@@ -38,5 +38,5 @@ TODO: Screenshot of the change alert email.
 ## What Reviewers should do with these emails
 
 1. Open the linked element.
-2. Review the content (for expiry digests: check that it is still accurate; for change alerts: check the recent edits).
+2. Review the content (for expiry digests: check that it's still accurate; for change alerts: check the recent edits).
 3. Set a new "Verified until" date to confirm the content, see [Verifying Content](verifying-content.md).

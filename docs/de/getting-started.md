@@ -21,7 +21,7 @@ Plugin Store: [Craft Verified Elements](https://plugins.craftcms.com/verified-el
 
 Arbeiten Sie diese Schritte nach der Installation einmal durch:
 
-1. **Wählen Sie Ihre Edition.** Die kostenlose Standard-Edition deckt Einträge auf einer einzelnen Website ab, die kostenpflichtige Pro-Edition ergänzt Unterstützung für mehrere Websites und die Verifizierung von Dateien. Siehe [Berechtigungen und Editionen](permissions-and-editions.md).
+1. **Wählen Sie Ihre Edition.** Die kostenlose Lite-Edition deckt Einträge auf einer einzelnen Website ab, die kostenpflichtige Pro-Edition ergänzt Unterstützung für mehrere Websites und die Verifizierung von Dateien. Siehe [Berechtigungen und Editionen](permissions-and-editions.md).
 2. **Aktivieren Sie die Bereiche, die Sie verfolgen möchten.** Gehen Sie zu **Verifizierung → Einstellungen → Einträge** und schalten Sie jeden Bereich ein, der Teil des Prüf-Workflows sein soll. Siehe [Einstellungen](settings.md).
 3. **Legen Sie pro Bereich einen Standard-Prüfer und eine Standard Gültigkeitsdauer fest.** Neue Inhalte in einem aktivierten Bereich erhalten diese Vorgaben automatisch. Ohne Standard-Prüfer erfolgt für abgelaufene Elemente keine Benachrichtigung (die Einstellungsseite warnt Sie davor).
 4. **Aktivieren Sie Volumes (nur Pro).** Gehen Sie zu **Verifizierung → Einstellungen → Dateien** und wiederholen Sie dieselbe Einrichtung für Ihre Volumes.

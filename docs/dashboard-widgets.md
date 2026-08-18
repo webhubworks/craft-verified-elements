@@ -22,6 +22,6 @@ Use it to answer "how fresh is our content overall?" at a glance. For per-type o
 
 **Settings (multi-site installations only):**
 
-- **Site**. Limit the meter to one site, or show all sites combined. The widget header shows which site it is displaying.
+- **Site**. Limit the meter to one site, or show all sites combined. The widget header shows which site it's displaying.
 
 TODO: Screenshot of the widget.

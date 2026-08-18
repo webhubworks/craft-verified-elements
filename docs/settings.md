@@ -26,7 +26,7 @@ TODO: Screenshot of the Assets settings table.
 
 ## Subscription Plan
 
-Shows the two editions (Standard and Pro) side by side, marks your current plan, and links to the Craft Plugin Store to upgrade or change. See [Permissions and Editions](permissions-and-editions.md) for what each edition includes.
+Shows the two editions (Lite and Pro) side by side, marks your current plan, and links to the Craft Plugin Store to upgrade or change. See [Permissions and Editions](permissions-and-editions.md) for what each edition includes.
 
 TODO: Screenshot of the Subscription Plan page. Replace the placeholder store link once the plugin is published.
 

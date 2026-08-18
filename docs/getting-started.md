@@ -27,7 +27,7 @@ Plugin Store: [Craft Verified Elements](https://plugins.craftcms.com/verified-el
 
 Work through these steps once after installation:
 
-1. **Choose your edition.** The free Standard edition covers entries on a single site, the paid Pro edition adds multi-site support and asset verification. See [Permissions and Editions](permissions-and-editions.md).
+1. **Choose your edition.** The free Lite edition covers entries on a single site, the paid Pro edition adds multi-site support and asset verification. See [Permissions and Editions](permissions-and-editions.md).
 2. **Enable the sections you want to track.** Go to **Verified Elements → Settings → Entries** and switch on each section that should be part of the review workflow. See [Settings](settings.md).
 3. **Set a default Reviewer and default period per section.** New content in an enabled section automatically receives these defaults. Without a default Reviewer, expired items go unnotified (the settings screen warns you about this).
 4. **Enable volumes (Pro only).** Go to **Verified Elements → Settings → Assets** and repeat the same setup for asset volumes.

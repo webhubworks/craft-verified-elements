@@ -31,9 +31,9 @@ TODO: Screenshot of the plugin's permission group in Craft's user group settings
 
 ## Editionen
 
-Das Plugin gibt es in zwei Editionen: der kostenlosen **Standard**-Edition und der kostenpflichtigen **Pro**-Edition. Beide enthalten den vollständigen Prüf-Workflow; Pro erweitert ihn auf alle Websites und auf Dateien.
+Das Plugin gibt es in zwei Editionen: der kostenlosen **Lite**-Edition und der kostenpflichtigen **Pro**-Edition. Beide enthalten den vollständigen Prüf-Workflow; Pro erweitert ihn auf alle Websites und auf Dateien.
 
-| Funktion | Standard | Pro |
+| Funktion | Lite | Pro |
 |---|:---:|:---:|
 | Verifizierung von Einträgen | ✓ | ✓ |
 | Zuweisung von Prüfern | ✓ | ✓ |
@@ -46,7 +46,7 @@ Das Plugin gibt es in zwei Editionen: der kostenlosen **Standard**-Edition und d
 
 Was das in der Oberfläche bedeutet:
 
-- **Standard:** nur Einträge, und die Verifizierung gilt nur für die primäre Website. Auf anderen Websites erscheinen das Verifizierungs-Panel und die Spalten nicht.
+- **Lite:** nur Einträge, und die Verifizierung gilt nur für die primäre Website. Auf anderen Websites erscheinen das Verifizierungs-Panel und die Spalten nicht.
 - **Pro:** Jede Website wird verfolgt und Dateien kommen zum Workflow hinzu. Die Einstellungen erhalten Tabs pro Website und eine Dateien-Seite, Listen erhalten einen Website-Umschalter, der Bereich des Plugins erhält eine Dateien-Seite, das Widget "Verification Health" erhält eine Website-Einstellung, und die Berechtigung "Dateien verifizieren" wird verfügbar.
 
 Sie können die Edition jederzeit über die Seite des Plugins im Craft Plugin Store wechseln, oder über **Verifizierung → Einstellungen → Abonnement**.

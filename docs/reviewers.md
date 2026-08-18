@@ -9,8 +9,8 @@ Anyone who has been assigned as a Reviewer. Being a Reviewer is an assignment, n
 If someone assigns you as the Reviewer of an entry or asset, you become responsible for re-checking it when:
 
 - its "Verified until" date passes, you receive an **email digest** listing everything of yours that expired.
-- the element is changed while it is verified, you receive a **change alert email** so you can re-check the edits.
-- the element appears in your personal review queue (see below) until it is verified again.
+- the element is changed while it's verified, you receive a **change alert email** so you can re-check the edits.
+- the element appears in your personal review queue (see below) until it's verified again.
 
 ## Where to find your review queue
 

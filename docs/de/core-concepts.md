@@ -48,4 +48,4 @@ Pro Bereich (und pro Volume) können Administratoren einen Standard-Prüfer und 
 
 ## Website-Bezug
 
-Auf Installationen mit mehreren Websites und der Pro-Edition wird die Verifizierung **pro Website** verfolgt: Derselbe Eintrag kann auf einer Website Verifiziert und auf einer anderen Abgelaufen sein. Ohne Unterstützung für mehrere Websites (Standard-Edition) verwaltet das Plugin nur die primäre Website.
+Auf Installationen mit mehreren Websites und der Pro-Edition wird die Verifizierung **pro Website** verfolgt: Derselbe Eintrag kann auf einer Website Verifiziert und auf einer anderen Abgelaufen sein. Ohne Unterstützung für mehrere Websites (Lite-Edition) verwaltet das Plugin nur die primäre Website.

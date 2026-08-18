@@ -8,7 +8,7 @@ Check, in this order:
 
 1. Is the entry's **section enabled** in **Verified Elements → Settings → Entries** (on the site you are editing)?
 2. Do you have the **"Verify entries"** permission? Without it the panel is hidden (the status still shows in the metadata).
-3. On a multi-site installation with the Standard edition, only the **primary site** is tracked.
+3. On a multi-site installation with the Lite edition, only the **primary site** is tracked.
 4. Nested entries inside Matrix fields aren't verifiable, only regular section entries.
 
 ## I don't see the Verified Elements section in the navigation

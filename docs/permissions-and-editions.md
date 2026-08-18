@@ -31,9 +31,9 @@ TODO: Screenshot of the plugin's permission group in Craft's user group settings
 
 ## Editions
 
-The plugin comes in two editions: the free **Standard** edition and the paid **Pro** edition. Both include the full review workflow; Pro extends it to every site and to assets.
+The plugin comes in two editions: the free **Lite** edition and the paid **Pro** edition. Both include the full review workflow; Pro extends it to every site and to assets.
 
-| Feature | Standard | Pro |
+| Feature | Lite | Pro |
 |---|:---:|:---:|
 | Entry verification | ✓ | ✓ |
 | Reviewer assignment | ✓ | ✓ |
@@ -46,7 +46,7 @@ The plugin comes in two editions: the free **Standard** edition and the paid **P
 
 What this means in the interface:
 
-- **Standard:** entries only, and verification applies to the primary site only. On other sites, the Verification panel and columns don't appear.
+- **Lite:** entries only, and verification applies to the primary site only. On other sites, the Verification panel and columns don't appear.
 - **Pro:** every site is tracked, and assets join the workflow. Settings gain per-site tabs and an Assets page, listings gain a site switcher, the plugin's CP section gains an Assets page, the Verification Health widget gains a site setting, and the "Verify assets" permission becomes available.
 
 You can switch editions at any time from the plugin's page on the Craft Plugin Store, or via **Verified Elements → Settings → Subscription Plan**.

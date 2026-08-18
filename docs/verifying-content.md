@@ -16,7 +16,7 @@ A dropdown with the following choices:
 - **Specific Date**. Opens a date picker so you can choose an exact day.
 - **Indefinitely**. No expiry. The element stays Verified until someone decides otherwise.
 
-When the element is currently expired, the field is marked with a warning icon. When it is verified, the panel header shows a check icon.
+When the element is currently expired, the field is marked with a warning icon. When it's verified, the panel header shows a check icon.
 
 ### Reviewer
 

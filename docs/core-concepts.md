@@ -54,4 +54,4 @@ Per **entry** section (and per **asset** volume), administrators can define a de
 
 ## Site scope
 
-On multi-site installations with the Pro edition, verification is tracked **per site**: the same entry can be Verified on one site and Expired on another. Without multi-site support (Standard edition), the plugin manages the primary site only.
+On multi-site installations with the Pro edition, verification is tracked **per site**: the same entry can be Verified on one site and Expired on another. Without multi-site support (Lite edition), the plugin manages the primary site only.
