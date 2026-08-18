@@ -46,6 +46,12 @@ export default defineConfig({
                         ]
                     },
                     {
+                        text: 'Entwicklung',
+                        items: [
+                            {text: 'Abfragen und Eigenschaften', link: '/de/querying-and-properties'},
+                        ]
+                    },
+                    {
                         text: 'Hilfe',
                         items: [
                             {text: 'FAQ und Problemlösungen', link: '/de/faq'}
@@ -89,6 +95,12 @@ export default defineConfig({
                 items: [
                     {text: 'Settings', link: '/settings'},
                     {text: 'Permissions and Editions', link: '/permissions-and-editions'}
+                ]
+            },
+            {
+                text: 'Development',
+                items: [
+                    {text: 'Querying and Properties', link: '/querying-and-properties'},
                 ]
             },
             {
