@@ -17,11 +17,34 @@ Let's say your Craft site has "Terms & Conditions" and "Privacy Policy" **entrie
 
 The same can be applied to **assets**. If you have PDFs, for example, that need consistent review, simply set a date and assign a reviewer. 
 
-## Requirements and installation
+## Requirements
 
-The plugin requires Craft CMS 5.6 or later. Installation happens through the Craft Plugin Store or Composer and is typically done by your developer. See the repository's [README](https://github.com/webhubworks/craft-verified-elements#installation) for the exact steps.
+This plugin requires Craft CMS 5.6.0 or later, and PHP 8.2 or later.
 
-Plugin Store: [Craft Verified Elements](https://plugins.craftcms.com/verified-elements).
+## Installation
+
+You can install this plugin from the Plugin Store or with Composer.
+
+### From the Plugin Store
+
+Inside your project’s Control Panel, go to the "Plugin Store," and search for "Verified Elements". Then press "Install".
+
+View in Craft's [online plugin store](https://plugins.craftcms.com/verified-elements).
+
+### With Composer
+
+Open your terminal and run the following commands:
+
+```bash
+# 1. Go to your project's directory
+cd /path/to/my-project.test
+
+# 2. Tell Composer to load the plugin
+composer require webhubworks/craft-verified-elements
+
+# 3. Tell Craft to install the plugin
+./craft plugin/install verified-elements
+```
 
 ## First-time setup checklist
 
