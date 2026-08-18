@@ -1,22 +1,23 @@
-# Der Verifizierungs-Bereich
+# Der Plugin-CP-Bereich
 
 ::: info Zielgruppe
 Alle, die mit der Verifizierung arbeiten. Der Bereich erscheint in der Control-Panel-Navigation für Benutzer mit der Berechtigung "Zugriff auf Verifizierung".
 :::
 
-Das Plugin fügt der Control-Panel-Navigation einen eigenen Bereich **Verifizierung** hinzu (in englischer Sprachumgebung: "Verified Elements"). Das ist die Kommandozentrale des Prüf-Workflows: ein Ort, an dem Sie jeden verfolgten Eintrag und jede verfolgte Datei sehen, gefiltert nach Verifizierungsstatus oder Prüfer.
+Das Plugin fügt der Hauptnavigation des Control Panels einen eigenen Bereich **Verifizierung** hinzu. Das ist die Kommandozentrale des Prüf-Workflows: ein Ort, an dem Sie jeden verfolgten Eintrag und jede verfolgte Datei sehen, gefiltert nach Verifizierungsstatus oder Prüfer.
 
 ## Seiten
+Das Plugin fügt Crafts linker Hauptnavigation einen eigenen Bereich namens "Verifizierung" hinzu. Je nach Edition können folgende Unterseiten enthalten sein:
 
 - **Einträge**. Alle Einträge in aktivierten Bereichen. Das ist die Startseite des Bereichs.
 - **Dateien** (Pro). Alle Dateien in aktivierten Volumes.
 - **Einstellungen** (sichtbar mit der Berechtigung "Verifizierungseinstellungen verwalten"). Siehe [Einstellungen](settings.md).
 
-TODO: Screenshot of the section with the sidebar filters.
+![CP Section](/screenshots/verified-elements-cp-section/cp-section-landing.png)
 
 ## Filter in der Seitenleiste
 
-Die linke Seitenleiste gruppiert Elemente nach Status:
+Die linke Seitenleiste gruppiert Elemente nach Status (siehe Sub-Navigation im Screenshot oben):
 
 - **Abgelaufen**. Elemente, deren "Verifiziert bis"-Datum überschritten ist. Diese brauchen jetzt Aufmerksamkeit.
 - **Bevorstehend**. Verifizierte Elemente, die innerhalb der nächsten 30 Tage ablaufen. Handeln Sie hier, um vorne zu bleiben.
@@ -27,6 +28,10 @@ Darunter listet eine Gruppe **Prüfer** einen Filter pro Person:
 
 - **Ihr eigener Name** steht immer an erster Stelle und zeigt die Ihnen zugewiesenen Elemente.
 - Jeder andere Benutzer, der aktuell Prüfaufträge hat, erhält einen eigenen Filter.
+
+::: note
+Siehe die Seite [Grundbegriffe](core-concepts.md) für Erklärungen zu diesen Begriffen.
+:::
 
 ## Die Tabelle
 
@@ -42,4 +47,4 @@ Sie können nach "Verifiziert bis" sortieren, suchen, die Website wechseln (Pro-
 
 Wählen Sie beliebig viele Zeilen aus und nutzen Sie die Aktion **Verifizieren** oder **Prüfer zuweisen** am unteren Rand der Liste. Siehe [Massenaktionen](bulk-actions.md).
 
-TODO: Screenshot of the bulk action bar.
+![Acting on many elements at once](/screenshots/verified-elements-cp-section/bulk-actions.png)

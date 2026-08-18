@@ -31,7 +31,7 @@ export default defineConfig({
                         text: 'Tägliche Arbeit',
                         items: [
                             {text: 'Inhalte verifizieren', link: '/de/verifying-content'},
-                            {text: 'Der Verifizierungs-Bereich', link: '/de/verified-elements-section'},
+                            {text: 'Der Plugin-CP-Bereich', link: '/de/verified-elements-cp-section'},
                             {text: 'Massenaktionen', link: '/de/bulk-actions'},
                             {text: 'Arbeiten als Prüfer', link: '/de/reviewers'},
                             {text: 'Dashboard-Widgets', link: '/de/dashboard-widgets'},
@@ -83,7 +83,7 @@ export default defineConfig({
                 text: 'Daily Work',
                 items: [
                     {text: 'Verifying Content', link: '/verifying-content'},
-                    {text: 'The Verified Elements Section', link: '/verified-elements-section'},
+                    {text: 'The Plugin\'s CP Section', link: '/verified-elements-cp-section'},
                     {text: 'Bulk Actions', link: '/bulk-actions'},
                     {text: 'Working as a Reviewer', link: '/reviewers'},
                     {text: 'Dashboard Widgets', link: '/dashboard-widgets'},
