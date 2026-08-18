@@ -22,7 +22,14 @@ Ist das Element aktuell abgelaufen, wird das Feld mit einem Warnsymbol markiert.
 
 Wählen Sie den Craft-Benutzer, der für die Überprüfung dieses Elements verantwortlich ist, wenn es abläuft. Zur Auswahl stehen nur aktive Benutzer, die diesen Element-Typ verifizieren dürfen.
 
-TODO: Screenshot of the sidebar panel in both the verified and expired state.
+<div class="screenshot-row">
+    <img src="/screenshots/verifying-content/reviewer-select-verified.png" alt="Reviewer select: verified" />
+    <img src="/screenshots/verifying-content/reviewer-select-expired.png" alt="Reviewer select: expired" />
+</div>
+
+::: tip
+Legen Sie in Crafts [Benutzerberechtigungen](https://craftcms.com/docs/5.x/system/user-management.html#permissions) fest, wer Inhalte prüfen oder die Verifizierungsfelder eines Eintrags bzw. einer Datei bearbeiten darf.
+:::
 
 ## Die Statusanzeige
 
@@ -31,7 +38,7 @@ Neben den Feldern zeigt der Metadaten-Bereich der Bearbeitungsseite (unter "Stat
 ## Was beim Speichern passiert
 
 - Beim Speichern des Elements werden Verifizierungsdatum und Prüfer **für die Website gespeichert, die Sie gerade bearbeiten**. Auf Installationen mit mehreren Websites behalten die anderen Websites ihren eigenen Verifizierungsstatus.
-- Ist das Element **neu** und haben Sie selbst kein Datum gesetzt, wird automatisch die **Standard Gültigkeitsdauer** des Bereichs oder Volumes angewendet. Ein **Standard-Prüfer** wird ebenfalls gesetzt, sofern der Bereich einen hat und das Element noch keinen.
+- Ist das Element **neu** und haben Sie selbst kein Datum gesetzt, wird automatisch die **Standard Gültigkeitsdauer** des Bereichs oder Volumes angewendet. Ein **Standard-Prüfer** wird ebenfalls gesetzt, sofern der Bereich einen hat.
 - Ist ein Prüfer zugewiesen und das Element aktuell verifiziert, löst das Speichern einer Änderung eine kurze E-Mail an den Prüfer aus ("Ein Eintrag wurde aktualisiert" bzw. "Eine Datei wurde aktualisiert"), damit er die Änderungen nachprüfen kann. Siehe [E-Mail-Benachrichtigungen](email-notifications.md).
 
 ## Direkt aus einer Liste verifizieren
@@ -43,7 +50,7 @@ Sie müssen nicht jedes Element öffnen. In jeder Eintrags- oder Dateiliste kön
 - Das "Verifiziert bis"-Datum und den Prüfer direkt in der Tabelle bearbeiten (bei aktivierter Inline-Bearbeitung).
 - Mehrere Elemente auswählen und die Massenaktionen **Verifizieren** oder **Prüfer zuweisen** nutzen. Siehe [Massenaktionen](bulk-actions.md).
 
-TODO: Screenshot of an entry index with the plugin columns enabled.
+<img src="/screenshots/verifying-content/entries-index-with-ver-columns.png" alt="Entries index with verification columns" />
 
 ## Listen nach Verifizierungsstatus filtern
 
@@ -53,4 +60,4 @@ Das Plugin ergänzt Crafts Element-Filter um drei Regeln, mit denen Sie eigene g
 - **Verifiziert-bis-Datum** (Datumsvergleich)
 - **Prüfer** (bestimmter Benutzer)
 
-TODO: Screenshot of the filter/condition builder with the plugin's rules.
+<img src="/screenshots/verifying-content/filter-lists-by-ver-state.png" alt="Filtering lists by verification state" />

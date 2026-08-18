@@ -22,7 +22,10 @@ When the element is currently expired, the field is marked with a warning icon. 
 
 Select the Craft user who is responsible for reviewing this element when it expires. Only active users who are allowed to verify this element type can be selected.
 
-TODO: Screenshot of the sidebar panel in both the verified and expired state.
+<div class="screenshot-row">
+    <img src="/screenshots/verifying-content/reviewer-select-verified.png" alt="Reviewer select: verified" />
+    <img src="/screenshots/verifying-content/reviewer-select-expired.png" alt="Reviewer select: expired" />
+</div>
 
 ::: tip
 Control who's allowed to review content or edit an entry/asset's verification fields in Craft's [user permissions](https://craftcms.com/docs/5.x/system/user-management.html#permissions).
@@ -47,7 +50,7 @@ You don't have to open every element. In any entry or asset list you can:
 - Edit the "Verified until" date and Reviewer inline, right in the table (with inline editing enabled).
 - Select several elements and use the **Verify** or **Assign Reviewer** bulk actions. See [Bulk Actions](bulk-actions.md).
 
-TODO: Screenshot of an entry index with the plugin columns enabled.
+<img src="/screenshots/verifying-content/entries-index-with-ver-columns.png" alt="Entries index with verification columns" />
 
 ## Filtering lists by verification state
 
@@ -57,30 +60,4 @@ The plugin adds three rules to Craft's element filters, so you can build your ow
 - **Verified Until Date** (date comparison)
 - **Reviewer** (specific user)
 
-You can also filter in the code:
-
-::: code-group
-
-```twig [Twig]
-{% set entries = craft.entries
-    .section('jobListings')
-    .isVerified(false)
-    .verifiedUntilDate('< 2026-08-22')
-    .reviewerId(1)
-    .all()
-%}
-```
-
-```php [PHP]
-use craft\elements\Entry;
-
-$entries = Entry::find()
-    ->section('jobListings')
-    ->verifiedUntilDate('< 2026-08-22')
-    ->reviewerId(1)
-    ->all();
-```
-
-:::
-
-TODO: Screenshot of the filter/condition builder with the plugin's rules.
+<img src="/screenshots/verifying-content/filter-lists-by-ver-state.png" alt="Filtering lists by verification state" />
