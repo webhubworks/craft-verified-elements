@@ -62,7 +62,7 @@ return [
     'email.changeNotification.subject.asset' => 'Ресурс обновлен',
     'email.changeNotification.subject.entry' => 'Запись обновлена',
     'email.expiredNotification.body' => 'Эти элементы требуют Вашей проверки',
-    'email.expiredNotification.subject' => '{count, number} {count, plural, one{элемент ожидает} few{элемента ожидают} many{элементов ожидают} other{элемента ожидают}} Вашей верификации',
+    'email.expiredNotification.subject' => '{count, number} {count, plural, one{элемент ожидает} few{элемента ожидают} many{элементов ожидают} other{элемента ожидает}} Вашей верификации',
     '{n} days ago' => '{n, plural, one{# день назад} few{# дня назад} many{# дней назад} other{# дня назад}}',
     '{n} days remaining' => '{n, plural, one{Остался # день} few{Осталось # дня} many{Осталось # дней} other{Осталось # дня}}',
 ];
