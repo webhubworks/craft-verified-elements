@@ -26,16 +26,16 @@ features:
     details: Email digests when periods expire, and instant alerts when verified content changes.
 ---
 
-## Who should read what
 
+## Who should read what
 | You are a...                                 | Start with                                                                                                              |
 |----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------|
 | Content editor who verifies content          | [Core Concepts](core-concepts.md), [Verifying Content](verifying-content.md)                                            |
 | Reviewer who receives review assignments     | [Working as a Reviewer](reviewers.md), [Email Notifications](email-notifications.md)                                    |
 | Site administrator who configures the plugin | [Getting Started](getting-started.md), [Settings](settings.md), [Permissions and Editions](permissions-and-editions.md) |
 
-## Table of contents
 
+## Table of contents
 1. [Getting Started](getting-started.md). What the plugin does and how to set it up for your team.
 2. [Core Concepts](core-concepts.md). The vocabulary: verification status, "Verified until", Reviewer, Indefinite, Imminent.
 3. [Verifying Content](verifying-content.md). The Verification panel on entry and asset edit pages.
