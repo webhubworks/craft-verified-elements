@@ -1,17 +1,17 @@
-.screenshot-row {
+.screenshot-row, .screenshot-row > p {
     display: flex;
     align-items: flex-start;
     gap: 1rem;
 }
 
-.screenshot-row img {
+.screenshot-row img, .screenshot-row > p img {
     flex: 1;
     width: 100%;
     min-width: 0;
 }
 
 @media (max-width: 640px) {
-    .screenshot-row {
+    .screenshot-row, .screenshot-row > p {
         flex-direction: column;
     }
 }
