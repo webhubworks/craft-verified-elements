@@ -1,6 +1,6 @@
 # Permissions and Editions
 
-::: info Audience
+::: info Who's this page for?
 Administrators.
 :::
 

@@ -1,6 +1,6 @@
 # Verifying Content
 
-::: info Audience
+::: info Who's this page for?
 Everyone who edits entries or assets. You need the "Verify entries" (or "Verify assets") permission to edit the verification fields.
 :::
 

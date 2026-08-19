@@ -1,6 +1,6 @@
 # Dashboard-Widgets
 
-::: info Zielgruppe
+::: info An wen richtet sich diese Seite?
 Alle mit Zugriff auf das Plugin. Beide Widgets werden auf Crafts Dashboard über **Neues Widget** hinzugefügt, jedes kann einmal hinzugefügt werden.
 :::
 

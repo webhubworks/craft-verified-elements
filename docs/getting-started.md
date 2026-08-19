@@ -1,6 +1,6 @@
 # Getting Started
 
-::: info Audience
+::: info Who's this page for?
 Site administrators setting up Verified Elements for their team. Editors can skip ahead to [Core Concepts](core-concepts.md).
 :::
 

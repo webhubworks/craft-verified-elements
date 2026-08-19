@@ -1,6 +1,6 @@
 # Berechtigungen und Editionen
 
-::: info Zielgruppe
+::: info An wen richtet sich diese Seite?
 Administratoren.
 :::
 

@@ -1,6 +1,6 @@
 # Abfragen und Eigenschaften
 
-::: info Zielgruppe
+::: info An wen richtet sich diese Seite?
 Entwickler, die mit dem Code arbeiten.
 :::
 

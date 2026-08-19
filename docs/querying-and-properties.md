@@ -1,6 +1,6 @@
 # Querying and Properties
 
-::: info Audience
+::: info Who's this page for?
 Developers working with the code.
 :::
 

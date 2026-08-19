@@ -1,6 +1,6 @@
 # Der Plugin-CP-Bereich
 
-::: info Zielgruppe
+::: info An wen richtet sich diese Seite?
 Alle, die mit der Verifizierung arbeiten. Der Bereich erscheint in der Control-Panel-Navigation für Benutzer mit der Berechtigung "Zugriff auf Verifizierung".
 :::
 

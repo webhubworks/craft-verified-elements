@@ -1,6 +1,6 @@
 # Einstellungen
 
-::: info Zielgruppe
+::: info An wen richtet sich diese Seite?
 Administratoren und Benutzer mit der Berechtigung "Verifizierungseinstellungen verwalten". Die Einstellungen finden Sie im Control Panel unter **Verifizierung → Einstellungen**.
 :::
 

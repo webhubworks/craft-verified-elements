@@ -1,6 +1,6 @@
 # Working as a Reviewer
 
-::: info Audience
+::: info Who's this page for?
 Anyone who has been assigned as a Reviewer. Being a Reviewer is an assignment, not a permission. You can be assigned elements even if you can't verify them yourself. In that case, you review the content and a colleague with the verify permission confirms it.
 :::
 

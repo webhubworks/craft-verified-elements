@@ -1,6 +1,6 @@
 # Erste Schritte
 
-::: info Zielgruppe
+::: info An wen richtet sich diese Seite?
 Website-Administratoren, die Verified Elements für ihr Team einrichten. Redakteure können direkt zu den [Grundbegriffen](core-concepts.md) springen.
 :::
 

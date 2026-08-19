@@ -1,6 +1,6 @@
 # Dashboard Widgets
 
-::: info Audience
+::: info Who's this page for?
 Everyone with access to the plugin. Both widgets are added from Craft's dashboard via **New widget**, and each can be added once.
 :::
 

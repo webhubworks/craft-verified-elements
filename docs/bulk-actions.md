@@ -1,6 +1,6 @@
 # Bulk Actions
 
-::: info Audience
+::: info Who's this page for?
 Users with the "Verify entries" or "Verify assets" permission.
 :::
 

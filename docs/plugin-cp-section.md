@@ -1,6 +1,6 @@
 # The Verified Elements CP Section
 
-::: info Audience
+::: info Who's this page for?
 Everyone who works with verification. The section appears in the control panel navigation for users with the "Access Verified Elements" permission.
 :::
 

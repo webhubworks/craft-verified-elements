@@ -1,6 +1,6 @@
 # Inhalte verifizieren
 
-::: info Zielgruppe
+::: info An wen richtet sich diese Seite?
 Alle, die Einträge oder Dateien bearbeiten. Um die Verifizierungsfelder zu bearbeiten, benötigen Sie die Berechtigung "Einträge verifizieren" (bzw. "Dateien verifizieren").
 :::
 

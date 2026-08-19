@@ -1,6 +1,6 @@
 # Settings
 
-::: info Audience
+::: info Who's this page for?
 Administrators and users with the "Manage Verification Settings" permission. The settings live at **Verified Elements → Settings** in the control panel.
 :::
 

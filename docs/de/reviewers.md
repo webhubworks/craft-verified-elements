@@ -1,6 +1,6 @@
 # Arbeiten als Prüfer
 
-::: info Zielgruppe
+::: info An wen richtet sich diese Seite?
 Alle, die als Prüfer eingesetzt wurden. Prüfer zu sein ist eine Zuweisung, keine Berechtigung. Ihnen können Elemente zugewiesen werden, auch wenn Sie sie selbst nicht verifizieren dürfen. In dem Fall prüfen Sie den Inhalt und ein Kollege mit der Verifizierungs-Berechtigung bestätigt ihn.
 :::
 
