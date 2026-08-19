@@ -62,6 +62,28 @@ composer require webhubworks/craft-verified-elements
 ./craft plugin/install verified-elements
 ```
 
+## CP Localization Support
+Everything the plugin adds to Craft (labels, buttons, status badges, and notification emails) has been translated into the following languages:
+
+| Language           | Locale code |
+|--------------------|-------------|
+| Czech              | `cs`        |
+| Danish             | `da`        |
+| English            | `en`        |
+| French             | `fr`        |
+| German             | `de`        |
+| Italian            | `it`        |
+| Norwegian (Bokmål) | `nb`        |
+| Polish             | `pl`        |
+| Portuguese (Portugal) | `pt`      |
+| Portuguese (Brazil)   | `pt-BR`   |
+| Russian            | `ru`        |
+| Spanish            | `es`        |
+| Swedish            | `sv`        |
+| Turkish            | `tr`        |
+| Ukrainian          | `uk`        |
+
+
 ## Changelog
 
 Please see [CHANGELOG](CHANGELOG.md) for more information on verstion-to-version updates.

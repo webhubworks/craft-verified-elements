@@ -14,6 +14,14 @@ export default defineConfig({
             label: 'Deutsch',
             lang: 'de',
             link: '/de/',
+            markdown: {
+                container: {
+                    tipLabel: 'TIPP',
+                    noteLabel: 'HINWEIS',
+                    warningLabel: 'WARNUNG',
+                    infoLabel: 'INFO'
+                }
+            },
             themeConfig: {
                 nav: [
                     {text: 'Start', link: '/de/'},
@@ -25,14 +33,15 @@ export default defineConfig({
                         text: 'Einführung',
                         items: [
                             {text: 'Erste Schritte', link: '/de/getting-started'},
-                            {text: 'Grundbegriffe', link: '/de/core-concepts'}
+                            {text: 'Grundbegriffe', link: '/de/core-concepts'},
+                            {text: 'Control-Panel-Lokalisierung', link: '/de/localization'}
                         ]
                     },
                     {
                         text: 'Tägliche Arbeit',
                         items: [
                             {text: 'Inhalte verifizieren', link: '/de/verifying-content'},
-                            {text: 'Der Plugin-CP-Bereich', link: '/de/verified-elements-cp-section'},
+                            {text: 'Der Plugin-CP-Bereich', link: '/de/plugin-cp-section'},
                             {text: 'Massenaktionen', link: '/de/bulk-actions'},
                             {text: 'Arbeiten als Prüfer', link: '/de/reviewers'},
                             {text: 'Dashboard-Widgets', link: '/de/dashboard-widgets'},
@@ -77,14 +86,15 @@ export default defineConfig({
                 text: 'Introduction',
                 items: [
                     {text: 'Getting Started', link: '/getting-started'},
-                    {text: 'Core Concepts', link: '/core-concepts'}
+                    {text: 'Core Concepts', link: '/core-concepts'},
+                    {text: 'CP Localization', link: '/localization'},
                 ]
             },
             {
                 text: 'Daily Work',
                 items: [
                     {text: 'Verifying Content', link: '/verifying-content'},
-                    {text: 'The Plugin\'s CP Section', link: '/verified-elements-cp-section'},
+                    {text: 'The Plugin\'s CP Section', link: '/plugin-cp-section'},
                     {text: 'Bulk Actions', link: '/bulk-actions'},
                     {text: 'Working as a Reviewer', link: '/reviewers'},
                     {text: 'Dashboard Widgets', link: '/dashboard-widgets'},
