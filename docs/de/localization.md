@@ -15,7 +15,8 @@ Alles, was das Plugin zu Craft hinzufügt (Beschriftungen, Schaltflächen, Statu
 | Italienisch         | `it`       |
 | Norwegisch (Bokmål) | `nb`       |
 | Polnisch            | `pl`       |
-| Portugiesisch       | `pt`       |
+| Portugiesisch (Portugal) | `pt`  |
+| Portugiesisch (Brasilien) | `pt-BR` |
 | Russisch            | `ru`       |
 | Schwedisch          | `sv`       |
 | Spanisch            | `es`       |

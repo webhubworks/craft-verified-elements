@@ -16,7 +16,8 @@ Everything the plugin adds to Craft (labels, buttons, status badges, and notific
 | Italian            | `it`        |
 | Norwegian (Bokmål) | `nb`        |
 | Polish             | `pl`        |
-| Portuguese         | `pt`        |
+| Portuguese (Portugal) | `pt`      |
+| Portuguese (Brazil)   | `pt-BR`   |
 | Russian            | `ru`        |
 | Spanish            | `es`        |
 | Swedish            | `sv`        |
