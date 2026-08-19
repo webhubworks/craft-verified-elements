@@ -28,7 +28,7 @@ Add it to your Craft dashboard. It lists your expired elements, most overdue fir
 
 ### 3. The plugin's CP section
 
-In **Verified Elements**, the sidebar has a filter with your name that shows everything assigned to you, regardless of status. See [The Verified Elements Section](verified-elements-section.md).
+In **Verified Elements**, the sidebar has a filter with your name that shows everything assigned to you, regardless of status. See [The Verified Elements Section](verified-elements-cp-section.md).
 
 ## How to clear an item from your queue
 

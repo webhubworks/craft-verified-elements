@@ -18,7 +18,7 @@ Your personal to-do list. It shows the expired elements assigned to **you**, the
 
 A team-level health meter. It counts all live, tracked elements (entries, and assets on Pro) across the enabled sections and volumes, and shows how many are Verified versus Expired, as one overall gauge. Untracked dates ("Indefinitely") count as Verified.
 
-Use it to answer "how fresh is our content overall?" at a glance. For per-type or per-person breakdowns, use the filters in [The Verified Elements Section](verified-elements-section.md) instead.
+Use it to answer "how fresh is our content overall?" at a glance. For per-type or per-person breakdowns, use the filters in [The Verified Elements Section](verified-elements-cp-section.md) instead.
 
 **Settings (multi-site installations only):**
 
