@@ -2,7 +2,7 @@
 
 Das Plugin versendet zwei Arten von E-Mails. Beide verwenden die normalen E-Mail-Einstellungen Ihrer Website, sie kommen also von der Adresse, mit der Ihre Craft-Installation konfiguriert ist.
 
-## 1. Ablauf-Zusammenfassungen
+## Ablauf-Zusammenfassungen
 
 Wenn Elemente ablaufen, werden ihre Prüfer benachrichtigt:
 
@@ -10,19 +10,22 @@ Wenn Elemente ablaufen, werden ihre Prüfer benachrichtigt:
 - **Nicht zugewiesene Elemente:** Abgelaufene Elemente ohne Prüfer werden in einer Zusammenfassung an die **System-E-Mail-Adresse** der Website gesammelt, damit sie nicht unbemerkt durchrutschen. Halten Sie die Liste der nicht zugewiesenen Elemente kurz, indem Sie Prüfer zuweisen (siehe [Massenaktionen](bulk-actions.md)).
 - **Inaktive Prüfer:** Existiert das Konto eines Prüfers nicht mehr oder ist es inaktiv, wandern seine abgelaufenen Elemente in den Bericht für nicht zugewiesene Elemente.
 
+![Expiry digest email](/screenshots/email-notifications/expiry-digest.png)
+
 ### Wann Zusammenfassungen versendet werden
 
 Zusammenfassungen werden versendet, wenn die Ablaufprüfung des Plugins läuft:
 
 - Während Crafts routinemäßiger Wartung (Garbage Collection), die regelmäßig von selbst läuft.
-- Wenn der geplante Prüfbefehl ausgeführt wird. Website-Administratoren sollten ihren Entwickler bitten, `php craft verified-elements/check-expired-verifications` einzuplanen (zum Beispiel nächtlich), damit Zusammenfassungen verlässlich ankommen.
+- Wenn der geplante Prüfbefehl ausgeführt wird. Website-Administratoren sollten ihren Entwickler bitten, `php craft verified-elements/check-expired-verifications` **einmal täglich** einzuplanen (zum Beispiel nächtlich per Cron), damit Zusammenfassungen verlässlich ankommen.
 
 Ein Element erscheint so lange in den Zusammenfassungen, bis es wieder verifiziert ist, damit nichts vergessen wird. Eine lange ignorierte Liste bedeutet aber auch wiederholte E-Mails. Arbeiten Sie Ihre Liste ab, oder stellen Sie Elemente, die nie veralten, auf "Unbegrenzt".
 
-TODO: Screenshot of the digest email.
-TODO: Confirm and document the recommended scheduling interval.
+::: tip
+Die Prüfung erfolgt ohne Deduplizierung — jeder Durchlauf versendet erneut eine vollständige Zusammenfassung aller aktuell abgelaufenen Elemente. Wird der Befehl öfter als einmal täglich eingeplant, erhalten Prüfer doppelte Zusammenfassungen für dieselben Elemente. Einmal täglich ist daher das richtige Intervall.
+:::
 
-## 2. Änderungshinweise
+## Änderungshinweise
 
 Wenn ein verfolgtes Element mit Prüfer bearbeitet und gespeichert wird, erhält der Prüfer sofort einen kurzen Hinweis ("Ein Eintrag, den Sie überprüfen sollen, wurde aktualisiert") mit einem Link zum Element. So können Prüfer guten Gewissens für Inhalte einstehen: Nichts ändert sich hinter ihrem Rücken.
 
@@ -33,7 +36,7 @@ Details:
 - Bei Einträgen löst jede gespeicherte Änderung den Hinweis aus.
 - Bei Dateien wird der Hinweis durch inhaltlich relevante Änderungen ausgelöst, etwa eine ersetzte Datei oder geänderten Alternativtext.
 
-TODO: Screenshot of the change alert email.
+![Change alert email](/screenshots/email-notifications/change-alert.png)
 
 ## Was Prüfer mit diesen E-Mails tun sollten
 
