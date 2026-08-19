@@ -14,6 +14,14 @@ export default defineConfig({
             label: 'Deutsch',
             lang: 'de',
             link: '/de/',
+            markdown: {
+                container: {
+                    tipLabel: 'TIPP',
+                    noteLabel: 'HINWEIS',
+                    warningLabel: 'WARNUNG',
+                    infoLabel: 'INFO'
+                }
+            },
             themeConfig: {
                 nav: [
                     {text: 'Start', link: '/de/'},
