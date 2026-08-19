@@ -1,5 +1,11 @@
 # Release Notes for Verified Elements
 
+## Unreleased
+
+### Added
+- WBHB-10111: CP localization support for 12 languages: Czech, Danish, French, Italian, Norwegian, Polish, Portuguese, Russian, Spanish, Swedish, Turkish, and Ukrainian.
+- VitePress docs for content editors and developers alike.
+
 ## 2.0.0 - 2026-08-17
 
 ### Added
