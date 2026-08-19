@@ -27,7 +27,7 @@ Fügen Sie es zu Ihrem Craft-Dashboard hinzu. Es listet Ihre abgelaufenen Elemen
 ![Dashboard widget: elements to review](/screenshots/reviewers/dashboard-widget-view.png)
 
 ### 3. Der Bereich des Plugins
-Im Bereich **Verifizierung** hat die Seitenleiste einen Filter mit Ihrem Namen, der alles zeigt, was Ihnen zugewiesen ist, unabhängig vom Status. Siehe [Der Plugin-CP-Bereich](verified-elements-cp-section.md).
+Im Bereich **Verifizierung** hat die Seitenleiste einen Filter mit Ihrem Namen, der alles zeigt, was Ihnen zugewiesen ist, unabhängig vom Status. Siehe [Der Plugin-CP-Bereich](plugin-cp-section.md).
 
 ![Dashboard widget: elements to review](/screenshots/reviewers/plugin-dashboard-user-view.png)
 

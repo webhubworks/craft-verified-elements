@@ -39,7 +39,7 @@ features:
 1. [Getting Started](getting-started.md). What the plugin does and how to set it up for your team.
 2. [Core Concepts](core-concepts.md). The vocabulary: verification status, "Verified until", Reviewer, Indefinite, Imminent.
 3. [Verifying Content](verifying-content.md). The Verification panel on entry and asset edit pages.
-4. [The Verified Elements Section](verified-elements-cp-section.md). The plugin's own control panel area for searching and filtering by verification state.
+4. [The Plugin's CP Section](plugin-cp-section.md). The plugin's own control panel area for searching and filtering by verification state.
 5. [Bulk Actions](bulk-actions.md). Verifying or assigning a Reviewer to many elements at once.
 6. [Working as a Reviewer](reviewers.md). Your personal review queue and how to clear it.
 7. [Dashboard Widgets](dashboard-widgets.md). "Elements to Review" and "Verification Health".

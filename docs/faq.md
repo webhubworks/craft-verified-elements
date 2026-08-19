@@ -11,7 +11,7 @@ Check, in this order:
 3. On a multi-site installation with the Lite edition, only the **primary site** is tracked.
 4. Nested entries inside Matrix fields aren't verifiable, only regular section entries.
 
-## I don't see the Verified Elements section in the navigation
+## I don't see the plugin's CP section in the navigation
 
 You need the **"Access Verified Elements"** permission. Ask an administrator.
 

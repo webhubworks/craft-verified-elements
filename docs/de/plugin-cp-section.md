@@ -13,7 +13,7 @@ Das Plugin fügt Crafts linker Hauptnavigation einen eigenen Bereich namens "Ver
 - **Dateien** (Pro). Alle Dateien in aktivierten Volumes.
 - **Einstellungen** (sichtbar mit der Berechtigung "Verifizierungseinstellungen verwalten"). Siehe [Einstellungen](settings.md).
 
-![CP Section](/screenshots/verified-elements-cp-section/cp-section-landing.png)
+![CP Section](/screenshots/plugin-cp-section/landing.png)
 
 ## Filter in der Seitenleiste
 
@@ -47,4 +47,4 @@ Sie können nach "Verifiziert bis" sortieren, suchen, die Website wechseln (Pro-
 
 Wählen Sie beliebig viele Zeilen aus und nutzen Sie die Aktion **Verifizieren** oder **Prüfer zuweisen** am unteren Rand der Liste. Siehe [Massenaktionen](bulk-actions.md).
 
-![Acting on many elements at once](/screenshots/verified-elements-cp-section/bulk-actions.png)
+![Acting on many elements at once](/screenshots/plugin-cp-section/bulk-actions.png)

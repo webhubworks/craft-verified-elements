@@ -13,7 +13,7 @@ The plugin adds its own section in Craft's main left-hand navigation called "Ver
 - **Assets** (Pro edition): All assets in enabled volumes.
 - **Settings** (visible with the "Manage Verification Settings" permission). See [Settings](settings.md).
 
-![CP Section](/screenshots/verified-elements-cp-section/cp-section-landing.png)
+![CP Section](/screenshots/plugin-cp-section/landing.png)
 
 ## Filters in the sidebar
 
@@ -47,4 +47,4 @@ You can sort by "Verified until", search, switch sites (Pro edition), and adjust
 
 Select any number of rows and use the **Verify** or **Assign Reviewer** action at the bottom of the list. See [Bulk Actions](bulk-actions.md).
 
-![Acting on many elements at once](/screenshots/verified-elements-cp-section/bulk-actions.png)
+![Acting on many elements at once](/screenshots/plugin-cp-section/bulk-actions.png)

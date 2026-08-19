@@ -18,7 +18,7 @@ TODO: Screenshot of the widget with a few expired elements.
 
 Ein Gesundheitsbarometer für das Team. Es zählt alle live geschalteten, verfolgten Elemente (Einträge, und Dateien bei Pro) über die aktivierten Bereiche und Volumes hinweg und zeigt als Gesamtanzeige, wie viele Verifiziert und wie viele Abgelaufen sind. Elemente ohne Ablaufdatum ("Unbegrenzt") zählen als Verifiziert.
 
-Nutzen Sie es, um die Frage "Wie aktuell sind unsere Inhalte insgesamt?" auf einen Blick zu beantworten. Für Auswertungen pro Typ oder pro Person nutzen Sie stattdessen die Filter im [Verifizierungs-Bereich](verified-elements-cp-section.md).
+Nutzen Sie es, um die Frage "Wie aktuell sind unsere Inhalte insgesamt?" auf einen Blick zu beantworten. Für Auswertungen pro Typ oder pro Person nutzen Sie stattdessen die Filter im [Plugin-CP-Bereich](plugin-cp-section.md).
 
 **Einstellungen (nur Installationen mit mehreren Websites):**
 
