@@ -33,7 +33,8 @@ export default defineConfig({
                         text: 'Einführung',
                         items: [
                             {text: 'Erste Schritte', link: '/de/getting-started'},
-                            {text: 'Grundbegriffe', link: '/de/core-concepts'}
+                            {text: 'Grundbegriffe', link: '/de/core-concepts'},
+                            {text: 'Control-Panel-Lokalisierung', link: '/de/localization'}
                         ]
                     },
                     {
@@ -85,7 +86,8 @@ export default defineConfig({
                 text: 'Introduction',
                 items: [
                     {text: 'Getting Started', link: '/getting-started'},
-                    {text: 'Core Concepts', link: '/core-concepts'}
+                    {text: 'Core Concepts', link: '/core-concepts'},
+                    {text: 'CP Localization', link: '/localization'},
                 ]
             },
             {
