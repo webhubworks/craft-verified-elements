@@ -1,0 +1,17 @@
+.screenshot-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.screenshot-row img {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+}
+
+@media (max-width: 640px) {
+    .screenshot-row {
+        flex-direction: column;
+    }
+}

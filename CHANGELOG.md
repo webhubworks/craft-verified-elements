@@ -8,7 +8,7 @@
   changes (Pro edition).
 - Added multi-site support: verification state, settings, dashboards, widgets, and
   notifications are now tracked per site (Pro edition).
-- Added editions: Lite and Pro.
+- Added editions: Standard and Pro.
 - Added a "Verify assets" user permission.
 - Added the Verify and Assign Reviewer bulk actions to asset indexes.
 - Added verification condition rules to asset indexes.
