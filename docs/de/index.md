@@ -28,10 +28,10 @@ features:
 
 ## Wer sollte was lesen
 
-| Sie sind...                                        | Beginnen Sie mit                                                                                                            |
-|----------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
-| Redakteur, der Inhalte verifiziert                 | [Grundbegriffe](core-concepts.md), [Inhalte verifizieren](verifying-content.md)                                              |
-| Prüfer, der Prüfaufträge erhält                    | [Arbeiten als Prüfer](reviewers.md), [E-Mail-Benachrichtigungen](email-notifications.md)                                     |
+| Sie sind...                                        | Beginnen Sie mit                                                                                                                |
+|----------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------|
+| Redakteur, der Inhalte verifiziert                 | [Grundbegriffe](core-concepts.md), [Inhalte verifizieren](verifying-content.md)                                                 |
+| Prüfer, der Prüfaufträge erhält                    | [Arbeiten als Prüfer](reviewers.md), [E-Mail-Benachrichtigungen](email-notifications.md)                                        |
 | Website-Administrator, der das Plugin konfiguriert | [Erste Schritte](getting-started.md), [Einstellungen](settings.md), [Berechtigungen und Editionen](permissions-and-editions.md) |
 
 ## Inhaltsverzeichnis
@@ -39,7 +39,7 @@ features:
 1. [Erste Schritte](getting-started.md). Was das Plugin leistet und wie Sie es für Ihr Team einrichten.
 2. [Grundbegriffe](core-concepts.md). Das Vokabular: Verifizierungsstatus, "Verifiziert bis", Prüfer, Unbegrenzt, Bevorstehend.
 3. [Inhalte verifizieren](verifying-content.md). Das Verifizierungs-Panel auf den Bearbeitungsseiten von Einträgen und Dateien.
-4. [Der Verifizierungs-Bereich](verified-elements-section.md). Der eigene Control-Panel-Bereich des Plugins zum Suchen und Filtern nach Verifizierungsstatus.
+4. [Der Verifizierungs-Bereich](verified-elements-cp-section.md). Der eigene Control-Panel-Bereich des Plugins zum Suchen und Filtern nach Verifizierungsstatus.
 5. [Massenaktionen](bulk-actions.md). Viele Elemente auf einmal verifizieren oder einem Prüfer zuweisen.
 6. [Arbeiten als Prüfer](reviewers.md). Ihre persönliche Prüfliste und wie Sie sie abarbeiten.
 7. [Dashboard-Widgets](dashboard-widgets.md). "Elemente zum Prüfen" und "Verification Health".

@@ -4,7 +4,7 @@
 Benutzer mit der Berechtigung "Einträge verifizieren" oder "Dateien verifizieren".
 :::
 
-Verified Elements ergänzt jede Eintrags- und Dateiliste im Control Panel um zwei Aktionen. Sie funktionieren im eigenen [Verifizierungs-Bereich](verified-elements-section.md) des Plugins ebenso wie in Crafts regulären Bereichen **Einträge** und **Dateien**.
+Verified Elements ergänzt jede Eintrags- und Dateiliste im Control Panel um zwei Aktionen. Sie funktionieren im eigenen [Verifizierungs-Bereich](verified-elements-cp-section.md) des Plugins ebenso wie in Crafts regulären Bereichen **Einträge** und **Dateien**.
 
 ## Verifizieren
 
