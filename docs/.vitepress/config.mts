@@ -4,6 +4,7 @@ import {defineConfig} from 'vitepress'
 export default defineConfig({
     title: "Verified Elements",
     description: "Learn how to make use of the Verified Elements Craft plugin for your CMS content.",
+    base: '/craft/verified-elements/',
     locales: {
         root: {
             label: 'English',
