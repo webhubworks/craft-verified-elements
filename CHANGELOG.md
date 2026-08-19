@@ -1,10 +1,13 @@
 # Release Notes for Verified Elements
 
-## Unreleased
+## 2.1.0 - 2026-08-19
 
 ### Added
 - WBHB-10111: CP localization support for 12 languages: Czech, Danish, French, Italian, Norwegian, Polish, Portuguese, Russian, Spanish, Swedish, Turkish, and Ukrainian.
 - VitePress docs for content editors and developers alike.
+
+### Changed
+- Updated the plugin's link to itself in Craft's plugin store for the "Subscription Plan" page in the plugin's settings.
 
 ## 2.0.0 - 2026-08-17
 
