@@ -6,8 +6,8 @@ Benutzer mit der Berechtigung "Einträge verifizieren" oder "Dateien verifiziere
 
 Verified Elements ergänzt jede Eintrags- und Dateiliste im Control Panel um zwei Aktionen. Sie funktionieren im eigenen [Plugin-CP-Bereich](plugin-cp-section.md) des Plugins ebenso wie in Crafts regulären Bereichen **Einträge** und **Dateien**.
 
-## Verifizieren
 
+## Verifizieren
 Setzt in einem Schritt ein neues "Verifiziert bis"-Datum auf alle ausgewählten Elemente.
 
 1. Wählen Sie ein oder mehrere Elemente in der Liste aus (Checkboxen).
@@ -23,7 +23,6 @@ Nutzen Sie das nach einer Prüfrunde: Filtern Sie die Liste der abgelaufenen Ele
 
 
 ## Prüfer zuweisen
-
 Weist einen Craft-Benutzer als Prüfer allen ausgewählten Elementen zu.
 
 1. Wählen Sie ein oder mehrere Elemente in der Liste aus.
@@ -39,6 +38,5 @@ Nutzen Sie das zusammen mit dem Filter **Unbestimmt** im Bereich des Plugins, um
 
 
 ## Hinweise
-
 - Beide Aktionen speichern jedes ausgewählte Element, es gilt also das übliche Speicherverhalten (einschließlich Änderungsbenachrichtigungen an Prüfer, siehe [E-Mail-Benachrichtigungen](email-notifications.md)).
 - Konnten einige Elemente nicht gespeichert werden, meldet die Aktion, dass nicht alle Elemente verarbeitet wurden. Führen Sie sie für die verbliebene Auswahl erneut aus.

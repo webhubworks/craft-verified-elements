@@ -4,8 +4,8 @@
 Anyone who has been assigned as a Reviewer. Being a Reviewer is an assignment, not a permission. You can be assigned elements even if you can't verify them yourself. In that case, you review the content and a colleague with the verify permission confirms it.
 :::
 
-## What being a Reviewer means
 
+## What being a Reviewer means
 If someone assigns you as the Reviewer of an entry or asset, you become responsible for re-checking it when:
 
 - its "Verified until" date passes, you receive an **email digest** listing everything of yours that expired.

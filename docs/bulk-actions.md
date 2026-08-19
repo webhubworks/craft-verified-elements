@@ -6,8 +6,8 @@ Users with the "Verify entries" or "Verify assets" permission.
 
 Verified Elements adds two actions to every entry and asset listing in the control panel. They work in the plugin's own [CP section](plugin-cp-section.md) as well as in Craft's regular **Entries** and **Assets** areas.
 
-## Verify
 
+## Verify
 Sets a new "Verified until" date on all selected elements in one step.
 
 1. Select one or more elements in the list (checkboxes).
@@ -23,7 +23,6 @@ Use this after a review round: filter the Expired list, check the content, selec
 
 
 ## Assign Reviewer
-
 Assigns one Craft user as Reviewer to all selected elements.
 
 1. Select one or more elements in the list.
@@ -39,6 +38,5 @@ Use this together with the **Unassigned** filter in the plugin's CP section to m
 
 
 ## Notes
-
 - Both actions save each selected element, so the usual save behavior applies (including change notifications to Reviewers, see [Email Notifications](email-notifications.md)).
 - If some elements could not be saved, the action reports that not all elements were processed. Re-run it on the remaining selection.
