@@ -16,7 +16,7 @@ A table of all sections in your installation. Per section you configure:
 
 **Multi-site (Pro):** the page has one tab per site. Each site has its own enablement and defaults, so a section can be tracked on one site with different Reviewers than on another. Remember to save each site's tab separately.
 
-TODO: Screenshot of the Entries settings table with the site tabs.
+[//]: # (TODO: Screenshot of the Entries settings table with the site tabs.)
 
 ## Assets (Pro)
 

@@ -27,22 +27,22 @@ Notes:
 - **Reviewers from outside the editorial team** (for example legal or product experts): Access Verified Elements only; they review, editors verify.
 - **Content leads / admins:** all four permissions.
 
-TODO: Screenshot of the plugin's permission group in Craft's user group settings.
+[//]: # (TODO: Screenshot of the plugin's permission group in Craft's user group settings.)
 
 ## Editions
 
 The plugin comes in two editions: the free **Lite** edition and the paid **Pro** edition. Both include the full review workflow; Pro extends it to every site and to assets.
 
-| Feature | Lite | Pro |
-|---|:---:|:---:|
-| Entry verification | ✓ | ✓ |
-| Reviewer assignment | ✓ | ✓ |
-| Verification periods per section | ✓ | ✓ |
-| Expiry email notifications | ✓ | ✓ |
-| Dashboard widgets | ✓ | ✓ |
-| Bulk verification actions | ✓ | ✓ |
-| Multi-site support | | ✓ |
-| Asset verification | | ✓ |
+| Feature                          | Lite | Pro |
+|----------------------------------|:----:|:---:|
+| Entry verification               |  ✓   |  ✓  |
+| Reviewer assignment              |  ✓   |  ✓  |
+| Verification periods per section |  ✓   |  ✓  |
+| Expiry email notifications       |  ✓   |  ✓  |
+| Dashboard widgets                |  ✓   |  ✓  |
+| Bulk verification actions        |  ✓   |  ✓  |
+| Multi-site support               |      |  ✓  |
+| Asset verification               |      |  ✓  |
 
 What this means in the interface:
 

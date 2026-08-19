@@ -12,7 +12,7 @@ Your personal to-do list. It shows the expired elements assigned to **you**, the
 
 - **Limit**. How many elements to show at most (default 10).
 
-TODO: Screenshot of the widget with a few expired elements.
+[//]: # (TODO: Screenshot of the widget with a few expired elements.)
 
 ## Verification Health
 
