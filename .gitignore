@@ -3,6 +3,7 @@
 *.log
 *Thumbs.db
 .env
+/.git-tag
 /node_modules
 /vendor
 /docs/.vitepress/cache/**/*
