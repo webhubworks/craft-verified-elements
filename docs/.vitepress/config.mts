@@ -1,4 +1,19 @@
 import {defineConfig} from 'vitepress'
+import {readFileSync} from 'node:fs'
+
+// The release workflow writes the current git tag to .git-tag in the repo
+// root before building the docs. Locally the file usually doesn't exist,
+// in which case the footer simply omits the version.
+function readGitTag(): string {
+    try {
+        const tag = readFileSync(new URL('../../.git-tag', import.meta.url), 'utf8').trim()
+        return tag && !tag.startsWith('v') ? `v${tag}` : tag
+    } catch {
+        return ''
+    }
+}
+
+const gitTag = readGitTag()
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -127,7 +142,7 @@ export default defineConfig({
         ],
 
         footer: {
-            message: 'Released under The Craft License',
+            message: `Released under The Craft License${gitTag ? ` (${gitTag})` : ''}`,
             copyright: 'Copyright © 2026-present webhub GmbH'
         }
     }
